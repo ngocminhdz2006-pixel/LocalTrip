@@ -8,6 +8,7 @@ public class User {
     private String fullName;
     private String email;
     private String passwordHash;
+    private String role;
     private boolean active;
     private Timestamp createdAt;
 
@@ -44,6 +45,14 @@ public class User {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public boolean isActive() {

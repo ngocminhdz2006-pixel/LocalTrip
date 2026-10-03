@@ -62,4 +62,20 @@ public class TripMember {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    public String getRole() {
+        return memberRole;
+    }
+
+    public void setRole(String role) {
+        this.memberRole = role;
+    }
+
+    public int getId() {
+        return userId;
+    }
+
+    public void setId(int id) {
+        this.userId = id;
+    }
 }

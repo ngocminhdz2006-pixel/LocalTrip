@@ -14,12 +14,14 @@ BEGIN
     INSERT INTO Users (
         full_name,
         email,
-        password_hash
+        password_hash,
+        role
     )
     VALUES (
         N'Nguyễn Ngọc Minh',
         N'minh@localtrip.vn',
-        N'20000:f4793f1d4b13d5693234a8bb2c2c6c79:c5da67d25cec2716b973e6495def155e9c3b1629767357145264b377361478c1'
+        N'20000:f4793f1d4b13d5693234a8bb2c2c6c79:c5da67d25cec2716b973e6495def155e9c3b1629767357145264b377361478c1',
+        'ADMIN'
     );
 END;
 GO
@@ -32,15 +34,87 @@ BEGIN
     INSERT INTO Users (
         full_name,
         email,
-        password_hash
+        password_hash,
+        role
     )
     VALUES (
         N'Thanh',
         N'thanh@localtrip.vn',
-        N'20000:c5d9099a7c7a0d0fd193b2a299bf31ab:2b7eafb66e624543723032f1daeec0a7ee982cf20b830b1db9ef8b3ce4771318'
+        N'20000:c5d9099a7c7a0d0fd193b2a299bf31ab:2b7eafb66e624543723032f1daeec0a7ee982cf20b830b1db9ef8b3ce4771318',
+        'USER'
     );
 END;
 GO
+/* Các tài khoản người dùng mẫu của LocalTrip.
+   Mật khẩu kiểm thử: 123456 */
+
+IF NOT EXISTS (
+    SELECT 1 FROM Users
+    WHERE email = N'lananh@localtrip.vn'
+)
+BEGIN
+    INSERT INTO Users (
+        full_name,
+        email,
+        password_hash,
+        role,
+        is_active
+    )
+    VALUES (
+        N'Nguyễn Lan Anh',
+        N'lananh@localtrip.vn',
+        N'20000:d5e14c10dc9cb41416fd4c3ef2deec09:b9f93bc1d5bc8ebf976dcb1583b788c16c83a256071c2b48fbb9d9ccd6cd42c6',
+        'USER',
+        1
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM Users
+    WHERE email = N'hoangnam@localtrip.vn'
+)
+BEGIN
+    INSERT INTO Users (
+        full_name,
+        email,
+        password_hash,
+        role,
+        is_active
+    )
+    VALUES (
+        N'Hoàng Nam',
+        N'hoangnam@localtrip.vn',
+        N'20000:cab055e465dec7f70aa3b753b9fba44c:0e9bf6f4609fe6a253e63f2df3565f8e0ec0f5765234b2ca552a951402e00688',
+        'USER',
+        1
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT 1 FROM Users
+    WHERE email = N'locked@localtrip.vn'
+)
+BEGIN
+    INSERT INTO Users (
+        full_name,
+        email,
+        password_hash,
+        role,
+        is_active
+    )
+    VALUES (
+        N'Tài khoản kiểm thử đã khóa',
+        N'locked@localtrip.vn',
+        N'20000:10f0220a4317e460eec564f449d5f283:e278eb7f1fe11641aa0bb5f8eb14aebfb44d86e82ece798e2d91003d9162e441',
+        'USER',
+        0
+    );
+END;
+GO
+
+
 
 /* =========================
    2. CATEGORIES

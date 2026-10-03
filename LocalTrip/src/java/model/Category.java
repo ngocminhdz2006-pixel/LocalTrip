@@ -31,9 +31,53 @@ public class Category {
         return categoryName;
     }
 
-    public void setCategoryName(
-            String categoryName
-    ) {
+    public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
+    }
+
+    public int getId() {
+        return categoryId;
+    }
+
+    public void setId(int id) {
+        this.categoryId = id;
+    }
+
+    public String getName() {
+        return categoryName;
+    }
+
+    public void setName(String name) {
+        this.categoryName = name;
+    }
+
+    public String getIcon() {
+        if (categoryCode == null) {
+            return "📍";
+        }
+
+        String code = categoryCode.toUpperCase();
+
+        if ("FOOD".equals(code)) {
+            return "🍜";
+        }
+
+        if ("NATURE".equals(code)) {
+            return "🌳";
+        }
+
+        if ("SHOPPING".equals(code)) {
+            return "🛍️";
+        }
+
+        if ("ENTERTAINMENT".equals(code)) {
+            return "🎡";
+        }
+
+        if ("CULTURE".equals(code)) {
+            return "🏛️";
+        }
+
+        return "📍";
     }
 }

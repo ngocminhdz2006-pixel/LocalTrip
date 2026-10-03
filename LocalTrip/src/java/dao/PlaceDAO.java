@@ -10,8 +10,8 @@ import model.Place;
 
 public class PlaceDAO {
 
-    private static final String SELECT_BASE =
-            "SELECT p.place_id, "
+    private static final String SELECT_BASE
+            = "SELECT p.place_id, "
             + "p.category_id, "
             + "c.category_name, "
             + "p.place_name, "
@@ -30,21 +30,18 @@ public class PlaceDAO {
             + "ON p.category_id = c.category_id ";
 
     public List<Place> findAll() {
-        List<Place> places =
-                new ArrayList<Place>();
+        List<Place> places
+                = new ArrayList<Place>();
 
         String sql = SELECT_BASE
                 + "WHERE p.is_active = 1 "
                 + "ORDER BY p.place_name";
 
         try (
-            Connection connection =
-                    DBContext.getConnection();
-            PreparedStatement statement =
-                    connection.prepareStatement(sql);
-            ResultSet resultSet =
-                    statement.executeQuery()
-        ) {
+                 Connection connection
+                = DBContext.getConnection();  PreparedStatement statement
+                = connection.prepareStatement(sql);  ResultSet resultSet
+                = statement.executeQuery()) {
             while (resultSet.next()) {
                 places.add(mapPlace(resultSet));
             }
@@ -61,8 +58,8 @@ public class PlaceDAO {
     public List<Place> findByCategory(
             int categoryId
     ) {
-        List<Place> places =
-                new ArrayList<Place>();
+        List<Place> places
+                = new ArrayList<Place>();
 
         String sql = SELECT_BASE
                 + "WHERE p.is_active = 1 "
@@ -70,17 +67,14 @@ public class PlaceDAO {
                 + "ORDER BY p.place_name";
 
         try (
-            Connection connection =
-                    DBContext.getConnection();
-            PreparedStatement statement =
-                    connection.prepareStatement(sql)
-        ) {
+                 Connection connection
+                = DBContext.getConnection();  PreparedStatement statement
+                = connection.prepareStatement(sql)) {
             statement.setInt(1, categoryId);
 
             try (
-                ResultSet resultSet =
-                        statement.executeQuery()
-            ) {
+                     ResultSet resultSet
+                    = statement.executeQuery()) {
                 while (resultSet.next()) {
                     places.add(mapPlace(resultSet));
                 }
@@ -93,6 +87,36 @@ public class PlaceDAO {
         }
 
         return places;
+    }
+
+    public Place findById(int placeId) {
+
+        String sql = SELECT_BASE
+                + "WHERE p.place_id = ? "
+                + "AND p.is_active = 1";
+
+        try ( Connection connection
+                = DBContext.getConnection();  PreparedStatement statement
+                = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, placeId);
+
+            try ( ResultSet resultSet
+                    = statement.executeQuery()) {
+
+                if (resultSet.next()) {
+                    return mapPlace(resultSet);
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "Không thể đọc thông tin địa điểm.",
+                    e
+            );
+        }
+
+        return null;
     }
 
     private Place mapPlace(

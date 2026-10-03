@@ -17,6 +17,12 @@ public class Trip {
     private String status;
     private Timestamp createdAt;
 
+    /*
+     * Vai trò của user hiện tại trong Trip:
+     * OWNER hoặc MEMBER.
+     */
+    private String role;
+
     public Trip() {
     }
 
@@ -98,5 +104,41 @@ public class Trip {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    /*
+     * Getter alias dành cho các JSP hiện tại.
+     */
+
+    public int getId() {
+        return tripId;
+    }
+
+    public void setId(int id) {
+        this.tripId = id;
+    }
+
+    public String getName() {
+        return tripName;
+    }
+
+    public void setName(String name) {
+        this.tripName = name;
+    }
+
+    public String getArea() {
+        return destination;
+    }
+
+    public void setArea(String area) {
+        this.destination = area;
     }
 }

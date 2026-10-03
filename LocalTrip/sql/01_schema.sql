@@ -15,8 +15,12 @@ CREATE TABLE Users (
     full_name NVARCHAR(100) NOT NULL,
     email NVARCHAR(150) NOT NULL UNIQUE,
     password_hash NVARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'USER',
     is_active BIT NOT NULL DEFAULT 1,
-    created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME()
+    created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+
+    CONSTRAINT CK_Users_Role
+        CHECK (role IN ('ADMIN', 'USER'))
 );
 GO
 

@@ -148,4 +148,93 @@ public class Place {
     public void setActive(boolean active) {
         this.active = active;
     }
+
+    /*
+ * Getter alias dành cho JSP hiện tại.
+     */
+
+    public int getId() {
+        return placeId;
+    }
+
+    public void setId(int id) {
+        this.placeId = id;
+    }
+
+    public String getName() {
+        return placeName;
+    }
+
+    public void setName(String name) {
+        this.placeName = name;
+    }
+
+    public BigDecimal getEstimatedPrice() {
+        return estimatedCost;
+    }
+
+    public void setEstimatedPrice(BigDecimal estimatedPrice) {
+        this.estimatedCost = estimatedPrice;
+    }
+
+    public String getOpenHours() {
+        if (openingTime == null && closingTime == null) {
+            return "Chưa cập nhật";
+        }
+
+        if (openingTime == null) {
+            return "Đến " + formatTime(closingTime);
+        }
+
+        if (closingTime == null) {
+            return "Từ " + formatTime(openingTime);
+        }
+
+        return formatTime(openingTime)
+                + " - "
+                + formatTime(closingTime);
+    }
+
+    public String getCategoryIcon() {
+        if (categoryName == null) {
+            return "📍";
+        }
+
+        String value = categoryName.toUpperCase();
+
+        if (value.contains("FOOD")
+                || value.contains("ẨM THỰC")) {
+            return "🍜";
+        }
+
+        if (value.contains("NATURE")
+                || value.contains("THIÊN NHIÊN")) {
+            return "🌳";
+        }
+
+        if (value.contains("SHOP")
+                || value.contains("MUA SẮM")) {
+            return "🛍️";
+        }
+
+        if (value.contains("ENTERTAINMENT")
+                || value.contains("GIẢI TRÍ")) {
+            return "🎡";
+        }
+
+        if (value.contains("CULTURE")
+                || value.contains("VĂN HÓA")) {
+            return "🏛️";
+        }
+
+        return "📍";
+    }
+
+    private String formatTime(Time time) {
+        String value = time.toString();
+
+        return value.length() >= 5
+                ? value.substring(0, 5)
+                : value;
+    }
 }
