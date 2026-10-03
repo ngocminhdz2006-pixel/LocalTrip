@@ -1,9 +1,10 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%
     request.setAttribute("pageTitle", "Đăng nhập");
     String emailValue = request.getParameter("email");
 %>
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
+<div class="auth-tagline">CÙNG NHAU ĐI XA HƠN</div>
 <div class="row justify-content-center">
     <div class="col-md-5">
         <div class="app-card">
