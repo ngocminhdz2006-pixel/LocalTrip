@@ -5,6 +5,7 @@ public class Category {
     private int categoryId;
     private String categoryCode;
     private String categoryName;
+    private int placeCount;
 
     public Category() {
     }
@@ -33,6 +34,14 @@ public class Category {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
+    }
+
+    public int getPlaceCount() {
+        return placeCount;
+    }
+
+    public void setPlaceCount(int placeCount) {
+        this.placeCount = placeCount;
     }
 
     public int getId() {
