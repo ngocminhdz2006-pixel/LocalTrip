@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-**/nbproject/private/
-**/build/
-**/dist/
-=======
-/LocalTrip/nbproject/private/
-/LocalTrip/build/
-/LocalTrip/dist/
->>>>>>> 1f8cf38 (Update UI)
+/LocalTrip_10.4/LocalTrip/dist/
+/LocalTrip_10.4/LocalTrip/build/
+/LocalTrip_10.4/LocalTrip/nbproject/private/
