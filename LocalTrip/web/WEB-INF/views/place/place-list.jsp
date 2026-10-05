@@ -3,7 +3,11 @@
 <c:set var="pageTitle" value="Places" scope="request"/>
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
+<<<<<<< HEAD
 <div class="page-intro"><span class="eyebrow">ĐI &amp; KHÁM PHÁ</span><h3>Điểm đến cho hành trình tiếp theo</h3><p class="text-muted">Tìm địa điểm theo sở thích, xem thông tin và lên kế hoạch cùng nhóm.</p></div>
+=======
+<h3 class="mb-3">Địa điểm</h3>
+>>>>>>> 1f8cf38 (Update UI)
 
 <div class="mb-4">
     <a href="${pageContext.request.contextPath}/places"

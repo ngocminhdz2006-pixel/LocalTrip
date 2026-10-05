@@ -34,6 +34,18 @@
                     </c:forEach>
                 </div>
 
+<<<<<<< HEAD
+=======
+                <div class="mb-4">
+                    <label class="form-label">Mức độ quen thuộc với khu vực</label>
+                    <select name="familiarity" class="form-select">
+                        <option value="FIRST_TIME" ${familiarity == 'FIRST_TIME' ? 'selected' : ''}>First time</option>
+                        <option value="VISITED_BEFORE" ${familiarity == 'VISITED_BEFORE' ? 'selected' : ''}>Visited before</option>
+                        <option value="FAMILIAR" ${familiarity == 'FAMILIAR' ? 'selected' : ''}>Familiar</option>
+                    </select>
+                </div>
+
+>>>>>>> 1f8cf38 (Update UI)
                 <button type="submit" class="btn btn-brand">Lưu Preferences</button>
                 <a href="${pageContext.request.contextPath}/preferences/group?tripId=${trip.id}"
                    class="btn btn-outline-secondary">Xem Group Preferences</a>

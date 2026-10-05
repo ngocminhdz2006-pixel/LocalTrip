@@ -24,6 +24,7 @@
         <div class="app-card p-0">
             <table class="table mb-0 align-middle">
                 <thead>
+<<<<<<< HEAD
                     <tr>
                         <th>Mô tả</th>
                         <th>Người trả</th>
@@ -94,6 +95,39 @@
                             </td>
                         </tr>
                     </c:forEach>
+=======
+                <tr>
+                    <th>Mô tả</th>
+                    <th>Người trả</th>
+                    <th>Số tiền</th>
+                    <th>Người tham gia</th>
+                    <th>Nguồn</th>
+                </tr>
+                </thead>
+                <tbody>
+                <c:forEach var="expense" items="${expenses}">
+                    <tr>
+                        <td>${expense.description}</td>
+                        <td>${expense.payerName}</td>
+                        <td><fmt:formatNumber value="${expense.amount}" type="number"/> đ</td>
+                        <td>
+                            <c:forEach var="p" items="${expense.participantNames}" varStatus="st">
+                                ${p}<c:if test="${!st.last}">, </c:if>
+                            </c:forEach>
+                        </td>
+                        <td>
+                            <c:choose>
+                                <c:when test="${expense.fromGroupFund}">
+                                    <span class="badge bg-info text-dark">Quỹ nhóm</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="badge bg-secondary">Cá nhân</span>
+                                </c:otherwise>
+                            </c:choose>
+                        </td>
+                    </tr>
+                </c:forEach>
+>>>>>>> 1f8cf38 (Update UI)
                 </tbody>
             </table>
         </div>

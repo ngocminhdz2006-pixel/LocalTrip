@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 </main>
 <footer class="app-footer">
@@ -6,6 +7,14 @@
         <div>Collaborative Trip Planner · PRJ301</div>
     </div>
 </footer>
+=======
+</div><!-- /.container -->
+
+<footer class="app-footer">
+    Collaborative Local Trip Planner &amp; Expense Management System &middot; PRJ301
+</footer>
+
+>>>>>>> 1f8cf38 (Update UI)
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="${pageContext.request.contextPath}/js/app.js"></script>
 </body>
