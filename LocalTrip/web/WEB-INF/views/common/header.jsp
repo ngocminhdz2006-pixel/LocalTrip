@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="model.User,utils.HtmlUtil" %>
 
 <%
@@ -240,6 +240,7 @@
         <a href="<%= request.getContextPath() %>/itinerary?tripId=<%= workspaceTrip.getTripId() %>">Lịch trình</a>
         <a href="<%= request.getContextPath() %>/expenses?tripId=<%= workspaceTrip.getTripId() %>">Chi phí</a>
         <a href="<%= request.getContextPath() %>/settlement?tripId=<%= workspaceTrip.getTripId() %>">Chia tiền</a>
+        <a href="<%= request.getContextPath() %>/group-fund?tripId=<%= workspaceTrip.getTripId() %>">Quỹ nhóm</a>
     </nav>
 </div>
 <% } } %>
@@ -269,3 +270,4 @@
         </div>
 
     <% } %>
+

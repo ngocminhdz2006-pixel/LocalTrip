@@ -116,6 +116,71 @@ public class RecommendationDAO {
         return recommendations;
     }
 
+
+
+    /**
+     * Lấy toàn bộ địa điểm thuộc một danh mục cho một Trip, nhưng vẫn
+     * tính preference của các thành viên trong Trip cho danh mục đó.
+     * Dùng cho Auto Itinerary để luôn có đủ FOOD + CAFE + hoạt động cuối.
+     */
+    public List<Recommendation> findForTripByCategory(int tripId, String categoryCode) {
+        List<Recommendation> recommendations = new ArrayList<>();
+
+        String sql =
+                "SELECT p.place_id, p.category_id, c.category_name, "
+                + "p.place_name, p.address, p.description, "
+                + "p.estimated_cost, p.rating, p.opening_time, p.closing_time, "
+                + "p.latitude, p.longitude, p.place_type, p.is_active, "
+                + "COUNT(DISTINCT pref.user_id) AS preference_count, "
+                + "t.budget, "
+                + "(SELECT COUNT(*) FROM TripMembers tm "
+                + " WHERE tm.trip_id = t.trip_id) AS total_members "
+                + "FROM Trips t "
+                + "CROSS JOIN Places p "
+                + "INNER JOIN Categories c ON c.category_id = p.category_id "
+                + "LEFT JOIN TripMemberPreferences pref "
+                + "ON pref.trip_id = t.trip_id "
+                + "AND pref.category_id = p.category_id "
+                + "WHERE t.trip_id = ? "
+                + "AND p.is_active = 1 "
+                + "AND c.category_code = ? "
+                + "GROUP BY p.place_id, p.category_id, c.category_name, "
+                + "p.place_name, p.address, p.description, p.estimated_cost, "
+                + "p.rating, p.opening_time, p.closing_time, p.latitude, "
+                + "p.longitude, p.place_type, p.is_active, t.budget, t.trip_id";
+
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setInt(1, tripId);
+            statement.setString(2, categoryCode);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Place place = mapPlace(resultSet);
+                    int preferenceCount = resultSet.getInt("preference_count");
+                    int totalMembers = resultSet.getInt("total_members");
+                    BigDecimal tripBudget = resultSet.getBigDecimal("budget");
+
+                    recommendations.add(calculateRecommendation(
+                            place, preferenceCount, totalMembers, tripBudget));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "Không thể tạo danh sách gợi ý theo danh mục.", e);
+        }
+
+        Collections.sort(recommendations, new Comparator<Recommendation>() {
+            @Override
+            public int compare(Recommendation first, Recommendation second) {
+                return Double.compare(second.getScore(), first.getScore());
+            }
+        });
+
+        return recommendations;
+    }
+
     private Recommendation calculateRecommendation(
             Place place,
             int preferenceCount,

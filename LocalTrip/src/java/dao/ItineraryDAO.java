@@ -19,7 +19,7 @@ public class ItineraryDAO {
                 = "SELECT i.item_id, i.trip_id, i.place_id, "
                 + "p.place_name, i.visit_date, "
                 + "i.start_time, i.end_time, i.note, "
-                + "i.estimated_cost, i.created_at "
+                + "i.estimated_cost, p.latitude, p.longitude, i.created_at "
                 + "FROM ItineraryItems i "
                 + "INNER JOIN Places p "
                 + "ON p.place_id = i.place_id "
@@ -160,6 +160,12 @@ public class ItineraryDAO {
         item.setNote(resultSet.getString("note"));
         item.setEstimatedCost(
                 resultSet.getBigDecimal("estimated_cost")
+        );
+        item.setLatitude(
+                resultSet.getBigDecimal("latitude")
+        );
+        item.setLongitude(
+                resultSet.getBigDecimal("longitude")
         );
         item.setCreatedAt(
                 resultSet.getTimestamp("created_at")
