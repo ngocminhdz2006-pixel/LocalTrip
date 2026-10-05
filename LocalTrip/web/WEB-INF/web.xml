@@ -11,7 +11,11 @@
     <!-- Welcome file                                                  -->
     <!-- ============================================================ -->
     <welcome-file-list>
+<<<<<<< HEAD
         <welcome-file>index.jsp</welcome-file>
+=======
+        <welcome-file>index.html</welcome-file>
+>>>>>>> 1f8cf38 (Update UI)
     </welcome-file-list>
 
     <!-- ============================================================ -->

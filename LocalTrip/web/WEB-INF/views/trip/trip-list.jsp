@@ -5,7 +5,11 @@
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
+<<<<<<< HEAD
     <div class="page-intro mb-0"><span class="eyebrow">SỔ TAY HÀNH TRÌNH</span><h3 class="mb-1">Chuyến đi của bạn</h3><p class="text-muted">Những kế hoạch chung, những trải nghiệm riêng.</p></div>
+=======
+    <h3 class="mb-0">My Trips</h3>
+>>>>>>> 1f8cf38 (Update UI)
     <a href="${pageContext.request.contextPath}/trip/create" class="btn btn-brand">+ Tạo Trip mới</a>
 </div>
 

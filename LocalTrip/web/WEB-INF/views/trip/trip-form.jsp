@@ -49,6 +49,17 @@
                            value="${trip.budget}" min="0" step="1000" required>
                 </div>
 
+<<<<<<< HEAD
+=======
+                <div class="mb-3">
+                    <label class="form-label">Loại chuyến đi</label>
+                    <select name="tripType" class="form-select">
+                        <option value="SOLO" ${trip.tripType == 'SOLO' ? 'selected' : ''}>Solo Trip</option>
+                        <option value="GROUP" ${trip.tripType == 'GROUP' ? 'selected' : ''}>Group Trip</option>
+                    </select>
+                </div>
+
+>>>>>>> 1f8cf38 (Update UI)
                 <button type="submit" class="btn btn-brand">Lưu Trip</button>
                 <a href="${pageContext.request.contextPath}/trips" class="btn btn-outline-secondary">Hủy</a>
             </form>

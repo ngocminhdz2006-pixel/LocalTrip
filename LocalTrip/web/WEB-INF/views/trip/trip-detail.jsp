@@ -14,6 +14,7 @@
                 &nbsp;|&nbsp; <span class="badge bg-secondary">${trip.status}</span></p>
         </div>
         <c:if test="${trip.role == 'OWNER'}">
+<<<<<<< HEAD
             <div>
                 <span class="badge badge-owner">OWNER</span>
 
@@ -22,6 +23,9 @@
                     Sửa Trip
                 </a>
             </div>
+=======
+            <span class="badge badge-owner">OWNER</span>
+>>>>>>> 1f8cf38 (Update UI)
         </c:if>
         <c:if test="${trip.role != 'OWNER'}">
             <span class="badge badge-member">MEMBER</span>
@@ -42,6 +46,7 @@
                                 <span class="badge badge-owner">OWNER</span>
                             </c:when>
                             <c:otherwise>
+<<<<<<< HEAD
                                 <div class="d-flex align-items-center">
                                     <span class="badge badge-member">
                                         MEMBER
@@ -67,6 +72,9 @@
                                         </form>
                                     </c:if>
                                 </div>
+=======
+                                <span class="badge badge-member">MEMBER</span>
+>>>>>>> 1f8cf38 (Update UI)
                             </c:otherwise>
                         </c:choose>
                     </li>
@@ -100,10 +108,13 @@
                    class="btn btn-outline-secondary">Xem Recommendation</a>
                 <a href="${pageContext.request.contextPath}/itinerary?tripId=${trip.id}"
                    class="btn btn-outline-secondary">Itinerary</a>
+<<<<<<< HEAD
                 <a href="${pageContext.request.contextPath}/expenses?tripId=${trip.id}"
                    class="btn btn-outline-secondary">
                     Quản lý chi phí
                 </a>
+=======
+>>>>>>> 1f8cf38 (Update UI)
             </div>
         </div>
     </div>
