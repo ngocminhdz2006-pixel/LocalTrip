@@ -39,6 +39,7 @@ public class GroupFundServlet extends HttpServlet {
         request.setAttribute("fundSummary", groupFundDAO.findSummary(tripId));
         request.setAttribute("fundTransactions", groupFundDAO.findTransactions(tripId));
         request.setAttribute("members", tripMemberDAO.findByTrip(tripId));
+        request.setAttribute("memberFundSummaries", groupFundDAO.findMemberSummaries(tripId));
         request.getRequestDispatcher("/WEB-INF/views/expense/group-fund.jsp").forward(request, response);
     }
 
@@ -71,7 +72,7 @@ public class GroupFundServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/group-fund?tripId=" + tripId);
             return;
         }
-        if (!tripMemberDAO.exists(tripId, memberId)) {
+        if (!groupFundDAO.isTripParticipant(tripId, memberId)) {
             setError(request, "Người đóng tiền không thuộc Trip.");
             response.sendRedirect(request.getContextPath() + "/group-fund?tripId=" + tripId);
             return;

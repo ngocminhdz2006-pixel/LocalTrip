@@ -16,6 +16,8 @@ public class ItineraryItem {
     private Time endTime;
     private String note;
     private BigDecimal estimatedCost;
+    private BigDecimal latitude;
+    private BigDecimal longitude;
     private Timestamp createdAt;
 
     public ItineraryItem() {
@@ -107,6 +109,22 @@ public class ItineraryItem {
 
     public void setEstimatedCost(BigDecimal estimatedCost) {
         this.estimatedCost = estimatedCost;
+    }
+
+    public BigDecimal getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(BigDecimal latitude) {
+        this.latitude = latitude;
+    }
+
+    public BigDecimal getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(BigDecimal longitude) {
+        this.longitude = longitude;
     }
 
     public Timestamp getCreatedAt() {

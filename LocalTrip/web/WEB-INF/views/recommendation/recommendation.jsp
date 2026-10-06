@@ -5,10 +5,14 @@
 <c:set var="currentTrip" value="${trip}" scope="request"/>
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <h3 class="mb-0">Gợi ý địa điểm cho "${trip.name}"</h3>
-    <a href="${pageContext.request.contextPath}/preferences/group?tripId=${trip.id}"
-       class="btn btn-outline-secondary btn-sm">Xem Group Preferences</a>
+    <div class="d-flex gap-2">
+        <a href="${pageContext.request.contextPath}/preferences/group?tripId=${trip.id}"
+           class="btn btn-outline-secondary btn-sm">Xem Group Preferences</a>
+        <a href="${pageContext.request.contextPath}/itinerary?tripId=${trip.id}"
+           class="btn btn-outline-secondary btn-sm">Xem Itinerary</a>
+    </div>
 </div>
 
 <c:choose>

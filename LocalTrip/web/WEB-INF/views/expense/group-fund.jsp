@@ -28,7 +28,7 @@
         <div class="col-md-4">
             <label class="form-label">Thành viên</label>
             <select name="memberId" class="form-select" required>
-                <c:forEach var="member" items="${members}"><option value="${member.id}">${member.fullName} (${member.role})</option></c:forEach>
+                <c:forEach var="memberFund" items="${memberFundSummaries}"><option value="${memberFund.userId}">${memberFund.memberName} (${memberFund.role})</option></c:forEach>
             </select>
         </div>
         <div class="col-md-3">
@@ -43,6 +43,33 @@
     </form>
 </div>
 </c:if>
+
+<div class="app-card mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h5 class="mb-1">Đóng góp của từng thành viên</h5>
+            <p class="text-muted mb-0">Theo dõi số tiền, số lần nạp và lần đóng gần nhất của từng thành viên.</p>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead><tr><th>#</th><th>Thành viên</th><th>Vai trò</th><th class="text-center">Số lần nạp</th><th>Lần nạp gần nhất</th><th class="text-end">Đã nạp vào quỹ</th></tr></thead>
+            <tbody>
+                <c:forEach var="memberFund" items="${memberFundSummaries}" varStatus="st">
+                    <tr>
+                        <td>${st.count}</td>
+                        <td><strong>${memberFund.memberName}</strong></td>
+                        <td><c:choose><c:when test="${memberFund.role == 'OWNER'}"><span class="badge bg-primary">Owner</span></c:when><c:otherwise><span class="badge bg-secondary">Member</span></c:otherwise></c:choose></td>
+                        <td class="text-center">${memberFund.contributionCount}</td>
+                        <td><c:choose><c:when test="${not empty memberFund.lastContributionAt}"><fmt:formatDate value="${memberFund.lastContributionAt}" pattern="dd/MM/yyyy HH:mm"/></c:when><c:otherwise><span class="text-muted">Chưa nạp</span></c:otherwise></c:choose></td>
+                        <td class="text-end"><strong><fmt:formatNumber value="${memberFund.contributed}" type="number"/> đ</strong></td>
+                    </tr>
+                </c:forEach>
+                <c:if test="${empty memberFundSummaries}"><tr><td colspan="6" class="text-muted text-center">Chưa có thành viên trong quỹ.</td></tr></c:if>
+            </tbody>
+        </table>
+    </div>
+</div>
 
 <div class="app-card">
     <h5 class="mb-3">Lịch sử giao dịch quỹ</h5>
