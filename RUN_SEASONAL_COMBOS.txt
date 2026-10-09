@@ -1,0 +1,10 @@
+LOCALTRIP - CẬP NHẬT COMBO THEO 4 MÙA
+
+1. Sao lưu database LocalTripDB trước khi chạy script.
+2. Mở SQL Server Management Studio, chọn database LocalTripDB.
+3. Mở và chạy file sql/10_seasonal_combos.sql.
+4. Trong NetBeans, mở project và chọn Clean and Build Project.
+5. Chạy lại ứng dụng trên Tomcat, vào Chuyến đi > Combo địa điểm.
+
+Combo mới: Mùa xuân, Mùa hạ, Mùa thu, Mùa đông.
+Script SQL dùng IF/NOT EXISTS để tránh thêm trùng địa điểm khi chạy lại.
