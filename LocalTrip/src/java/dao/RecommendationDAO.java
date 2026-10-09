@@ -17,11 +17,11 @@ public class RecommendationDAO {
 
     public List<Recommendation> findForTrip(int tripId) {
 
-        List<Recommendation> recommendations =
-                new ArrayList<>();
+        List<Recommendation> recommendations
+                = new ArrayList<>();
 
-        String sql =
-                "SELECT p.place_id, p.category_id, "
+        String sql
+                = "SELECT p.place_id, p.category_id, "
                 + "c.category_name, p.place_name, "
                 + "p.address, p.description, "
                 + "p.estimated_cost, p.rating, "
@@ -44,6 +44,8 @@ public class RecommendationDAO {
                 + "INNER JOIN Categories c "
                 + "ON c.category_id = p.category_id "
                 + "WHERE t.trip_id = ? "
+                + "AND t.destination = "
+                + "(p.district_name + N', ' + p.city_name) "
                 + "GROUP BY p.place_id, p.category_id, "
                 + "c.category_name, p.place_name, "
                 + "p.address, p.description, "
@@ -53,33 +55,32 @@ public class RecommendationDAO {
                 + "p.place_type, p.is_active, "
                 + "t.budget, t.trip_id";
 
-        try (Connection connection = DBContext.getConnection();
-             PreparedStatement statement =
-                     connection.prepareStatement(sql)) {
+        try ( Connection connection = DBContext.getConnection();  PreparedStatement statement
+                = connection.prepareStatement(sql)) {
 
             statement.setInt(1, tripId);
 
-            try (ResultSet resultSet =
-                         statement.executeQuery()) {
+            try ( ResultSet resultSet
+                    = statement.executeQuery()) {
 
                 while (resultSet.next()) {
                     Place place = mapPlace(resultSet);
 
-                    int preferenceCount =
-                            resultSet.getInt(
+                    int preferenceCount
+                            = resultSet.getInt(
                                     "preference_count"
                             );
 
-                    int totalMembers =
-                            resultSet.getInt(
+                    int totalMembers
+                            = resultSet.getInt(
                                     "total_members"
                             );
 
-                    BigDecimal tripBudget =
-                            resultSet.getBigDecimal("budget");
+                    BigDecimal tripBudget
+                            = resultSet.getBigDecimal("budget");
 
-                    Recommendation recommendation =
-                            calculateRecommendation(
+                    Recommendation recommendation
+                            = calculateRecommendation(
                                     place,
                                     preferenceCount,
                                     totalMembers,
@@ -100,34 +101,32 @@ public class RecommendationDAO {
         Collections.sort(
                 recommendations,
                 new Comparator<Recommendation>() {
-                    @Override
-                    public int compare(
-                            Recommendation first,
-                            Recommendation second) {
+            @Override
+            public int compare(
+                    Recommendation first,
+                    Recommendation second) {
 
-                        return Double.compare(
-                                second.getScore(),
-                                first.getScore()
-                        );
-                    }
-                }
+                return Double.compare(
+                        second.getScore(),
+                        first.getScore()
+                );
+            }
+        }
         );
 
         return recommendations;
     }
 
-
-
     /**
-     * Lấy toàn bộ địa điểm thuộc một danh mục cho một Trip, nhưng vẫn
-     * tính preference của các thành viên trong Trip cho danh mục đó.
-     * Dùng cho Auto Itinerary để luôn có đủ FOOD + CAFE + hoạt động cuối.
+     * Lấy toàn bộ địa điểm thuộc một danh mục cho một Trip, nhưng vẫn tính
+     * preference của các thành viên trong Trip cho danh mục đó. Dùng cho Auto
+     * Itinerary để luôn có đủ FOOD + CAFE + hoạt động cuối.
      */
     public List<Recommendation> findForTripByCategory(int tripId, String categoryCode) {
         List<Recommendation> recommendations = new ArrayList<>();
 
-        String sql =
-                "SELECT p.place_id, p.category_id, c.category_name, "
+        String sql
+                = "SELECT p.place_id, p.category_id, c.category_name, "
                 + "p.place_name, p.address, p.description, "
                 + "p.estimated_cost, p.rating, p.opening_time, p.closing_time, "
                 + "p.latitude, p.longitude, p.place_type, p.is_active, "
@@ -144,18 +143,19 @@ public class RecommendationDAO {
                 + "WHERE t.trip_id = ? "
                 + "AND p.is_active = 1 "
                 + "AND c.category_code = ? "
+                + "AND t.destination = "
+                + "(p.district_name + N', ' + p.city_name) "
                 + "GROUP BY p.place_id, p.category_id, c.category_name, "
                 + "p.place_name, p.address, p.description, p.estimated_cost, "
                 + "p.rating, p.opening_time, p.closing_time, p.latitude, "
                 + "p.longitude, p.place_type, p.is_active, t.budget, t.trip_id";
 
-        try (Connection connection = DBContext.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        try ( Connection connection = DBContext.getConnection();  PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setInt(1, tripId);
             statement.setString(2, categoryCode);
 
-            try (ResultSet resultSet = statement.executeQuery()) {
+            try ( ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     Place place = mapPlace(resultSet);
                     int preferenceCount = resultSet.getInt("preference_count");
@@ -187,17 +187,17 @@ public class RecommendationDAO {
             int totalMembers,
             BigDecimal tripBudget) {
 
-        double preferenceMatch =
-                totalMembers <= 0
-                ? 0
-                : preferenceCount * 100.0
-                  / totalMembers;
+        double preferenceMatch
+                = totalMembers <= 0
+                        ? 0
+                        : preferenceCount * 100.0
+                        / totalMembers;
 
-        double ratingScore =
-                place.getRating() == null
+        double ratingScore
+                = place.getRating() == null
                 ? 0
                 : place.getRating().doubleValue()
-                  / 5.0 * 100.0;
+                / 5.0 * 100.0;
 
         double budgetMatch = calculateBudgetMatch(
                 place.getEstimatedCost(),
@@ -205,13 +205,13 @@ public class RecommendationDAO {
                 totalMembers
         );
 
-        double score =
-                preferenceMatch * 0.50
+        double score
+                = preferenceMatch * 0.50
                 + ratingScore * 0.30
                 + budgetMatch * 0.20;
 
-        Recommendation recommendation =
-                new Recommendation();
+        Recommendation recommendation
+                = new Recommendation();
 
         recommendation.setPlace(place);
         recommendation.setPreferenceMatch(
@@ -249,8 +249,8 @@ public class RecommendationDAO {
             return 50;
         }
 
-        BigDecimal budgetPerMember =
-                tripBudget.divide(
+        BigDecimal budgetPerMember
+                = tripBudget.divide(
                         BigDecimal.valueOf(totalMembers),
                         2,
                         RoundingMode.HALF_UP
@@ -261,8 +261,8 @@ public class RecommendationDAO {
             return 100;
         }
 
-        double percentage =
-                budgetPerMember
+        double percentage
+                = budgetPerMember
                         .divide(
                                 estimatedCost,
                                 4,

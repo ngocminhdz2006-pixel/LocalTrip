@@ -185,3 +185,82 @@ h1,h2,h3,h4,h5,h6{color:var(--brand-text);line-height:1.25;letter-spacing:-.035e
 .itinerary-mode-card .border {
     background: rgba(255, 255, 255, 0.55);
 }
+
+
+/* Fix Vietnamese heading wrapping and shared footer layout. */
+h1, h2, h3, h4, h5, h6 {
+    overflow-wrap: normal;
+    word-break: normal;
+}
+.dashboard-hero .hero-copy {
+    width: 100%;
+}
+.dashboard-hero h1 {
+    font-size: clamp(2rem, 3.2vw, 3.2rem);
+}
+.app-footer-content > div {
+    min-width: 0;
+    overflow-wrap: normal;
+    word-break: normal;
+    line-height: 1.6;
+}
+/* Keep the login tagline separate from the Bootstrap grid columns. */
+.auth-page .app-main > .row::before {
+    flex: 0 0 100%;
+    width: 100%;
+    margin-bottom: 0;
+}
+/* Dùng font hỗ trợ tiếng Việt cho các tiêu đề */
+.dashboard-hero h1,
+.auth-page h3 {
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-weight: 600;
+    letter-spacing: normal;
+    word-spacing: normal;
+}
+
+/* Dùng mã Unicode để khẩu hiệu không bị lỗi mã hóa */
+.auth-page .app-main > .row::before {
+    content: "C\00D9NG NHAU \0110I XA H\01A0N";
+    font-family: "Segoe UI", Arial, sans-serif;
+    letter-spacing: 0.08em;
+}
+.auth-page .app-main > .row::before {
+    content: "C\00D9NG NHAU \0110I XA H\01A0N";
+    flex: 0 0 100%;
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 0 16px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: clamp(18px, 2.5vw, 24px);
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 0.04em;
+    text-align: center;
+    color: #245b48;
+}
+.itinerary-day-filter {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 10px;
+    max-width: 100%;
+}
+
+.itinerary-day-filter label {
+    margin: 0;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-size: 14px;
+}
+
+.itinerary-day-filter .form-select {
+    flex: 0 1 170px;
+    width: 170px;
+    min-width: 110px;
+}
+
+.itinerary-day-filter .badge {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}

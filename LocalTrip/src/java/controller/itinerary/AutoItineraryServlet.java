@@ -29,26 +29,18 @@ import model.User;
 /**
  * Tự động tạo lịch trình.
  *
- * Mỗi ngày có 3 cột mốc:
- * 07:00 - 11:00
- * 11:00 - 17:00
- * 17:00 - 22:00
+ * Mỗi ngày có 3 cột mốc: 07:00 - 11:00 11:00 - 17:00 17:00 - 22:00
  *
- * Mỗi cột mốc ưu tiên:
- * FOOD + CAFE + ACTIVITY
+ * Mỗi cột mốc ưu tiên: FOOD + CAFE + ACTIVITY
  *
- * ACTIVITY gồm:
- * SIGHTSEEING / ENTERTAINMENT / SHOPPING
+ * ACTIVITY gồm: SIGHTSEEING / ENTERTAINMENT / SHOPPING
  *
- * Ưu tiên:
- * 1. Số cột mốc hoàn chỉnh.
- * 2. Tổng số địa điểm.
- * 3. Tổng Recommendation Score.
+ * Ưu tiên: 1. Số cột mốc hoàn chỉnh. 2. Tổng số địa điểm. 3. Tổng
+ * Recommendation Score.
  *
- * QUAN TRỌNG:
- * Không gọi ItineraryDAO.hasTimeConflict() trong quá trình
- * tìm phương án. Conflict được kiểm tra trực tiếp trong RAM
- * để tránh mở quá nhiều DB connection.
+ * QUAN TRỌNG: Không gọi ItineraryDAO.hasTimeConflict() trong quá trình tìm
+ * phương án. Conflict được kiểm tra trực tiếp trong RAM để tránh mở quá nhiều
+ * DB connection.
  */
 @WebServlet(name = "AutoItineraryServlet", urlPatterns = {"/itinerary/auto"})
 public class AutoItineraryServlet extends HttpServlet {
@@ -139,8 +131,8 @@ public class AutoItineraryServlet extends HttpServlet {
             return;
         }
 
-        User currentUser =
-                (User) session.getAttribute("user");
+        User currentUser
+                = (User) session.getAttribute("user");
 
         if (!"USER".equalsIgnoreCase(currentUser.getRole())) {
 
@@ -173,8 +165,8 @@ public class AutoItineraryServlet extends HttpServlet {
 
         try {
 
-            Trip trip =
-                    tripDAO.findByIdForUser(
+            Trip trip
+                    = tripDAO.findByIdForUser(
                             tripId,
                             currentUser.getUserId());
 
@@ -195,25 +187,33 @@ public class AutoItineraryServlet extends HttpServlet {
 
                 return;
             }
+            if (!"PLANNING".equalsIgnoreCase(trip.getStatus())
+                    && !"ONGOING".equalsIgnoreCase(trip.getStatus())) {
+
+                response.sendError(
+                        HttpServletResponse.SC_FORBIDDEN,
+                        "Không thể thay đổi lịch trình của chuyến đi đã hoàn thành hoặc đã hủy."
+                );
+                return;
+            }
 
             /*
              * =========================================================
              * 1. LẤY RECOMMENDATION
              * =========================================================
              */
-
-            List<Recommendation> foods =
-                    recommendationDAO.findForTripByCategory(
+            List<Recommendation> foods
+                    = recommendationDAO.findForTripByCategory(
                             tripId,
                             "FOOD");
 
-            List<Recommendation> cafes =
-                    recommendationDAO.findForTripByCategory(
+            List<Recommendation> cafes
+                    = recommendationDAO.findForTripByCategory(
                             tripId,
                             "CAFE");
 
-            List<Recommendation> activities =
-                    new ArrayList<Recommendation>();
+            List<Recommendation> activities
+                    = new ArrayList<Recommendation>();
 
             activities.addAll(
                     recommendationDAO.findForTripByCategory(
@@ -237,7 +237,6 @@ public class AutoItineraryServlet extends HttpServlet {
              * 2. KIỂM TRA DỮ LIỆU
              * =========================================================
              */
-
             if (foods.isEmpty()
                     || cafes.isEmpty()
                     || activities.isEmpty()) {
@@ -264,18 +263,16 @@ public class AutoItineraryServlet extends HttpServlet {
              * trong hàng trăm / hàng nghìn vòng lặp nữa.
              * =========================================================
              */
-
-            List<ItineraryItem> existing =
-                    itineraryDAO.findByTrip(tripId);
+            List<ItineraryItem> existing
+                    = itineraryDAO.findByTrip(tripId);
 
             /*
              * =========================================================
              * 4. LƯU PLACE ID ĐÃ DÙNG
              * =========================================================
              */
-
-            Set<Integer> scheduledPlaceIds =
-                    new HashSet<Integer>();
+            Set<Integer> scheduledPlaceIds
+                    = new HashSet<Integer>();
 
             for (ItineraryItem item : existing) {
 
@@ -292,40 +289,54 @@ public class AutoItineraryServlet extends HttpServlet {
              * 5. CÁC MILESTONE
              * =========================================================
              */
-
             Slot[] milestones = {
-
                 new Slot(
-                        LocalTime.of(7, 0),
-                        LocalTime.of(11, 0)),
-
+                LocalTime.of(7, 0),
+                LocalTime.of(11, 0)),
                 new Slot(
-                        LocalTime.of(11, 0),
-                        LocalTime.of(17, 0)),
-
+                LocalTime.of(11, 0),
+                LocalTime.of(17, 0)),
                 new Slot(
-                        LocalTime.of(17, 0),
-                        LocalTime.of(22, 0))
+                LocalTime.of(17, 0),
+                LocalTime.of(22, 0))
             };
 
             int added = 0;
 
-            LocalDate currentDate =
-                    trip.getStartDate().toLocalDate();
+            LocalDate today = LocalDate.now(
+                    java.time.ZoneId.of("Asia/Ho_Chi_Minh")
+            );
 
-            LocalDate endDate =
-                    trip.getEndDate().toLocalDate();
+            LocalDate currentDate
+                    = trip.getStartDate().toLocalDate();
+
+            LocalDate endDate
+                    = trip.getEndDate().toLocalDate();
+
+            if (endDate.isBefore(today)) {
+                request.getSession().setAttribute(
+                        "errorMessage",
+                        "Chuyến đi đã kết thúc, không thể tạo lịch trình mới."
+                );
+                response.sendRedirect(
+                        request.getContextPath() + "/itinerary?tripId=" + tripId
+                );
+                return;
+            }
+
+            if (currentDate.isBefore(today)) {
+                currentDate = today;
+            }
 
             /*
              * =========================================================
              * 6. TẠO LỊCH THEO TỪNG NGÀY
              * =========================================================
              */
-
             while (!currentDate.isAfter(endDate)) {
 
-                DayPlan dayPlan =
-                        buildBestDayPlan(
+                DayPlan dayPlan
+                        = buildBestDayPlan(
                                 currentDate,
                                 milestones,
                                 foods,
@@ -339,7 +350,6 @@ public class AutoItineraryServlet extends HttpServlet {
                  * 7. LƯU KẾT QUẢ
                  * =====================================================
                  */
-
                 for (ScheduledPlan plan
                         : dayPlan.milestones) {
 
@@ -350,7 +360,6 @@ public class AutoItineraryServlet extends HttpServlet {
                     /*
                      * FOOD
                      */
-
                     if (plan.food != null
                             && addItem(
                                     tripId,
@@ -370,7 +379,6 @@ public class AutoItineraryServlet extends HttpServlet {
                     /*
                      * CAFE
                      */
-
                     if (plan.cafe != null
                             && addItem(
                                     tripId,
@@ -390,7 +398,6 @@ public class AutoItineraryServlet extends HttpServlet {
                     /*
                      * ACTIVITY
                      */
-
                     if (plan.activity != null
                             && addItem(
                                     tripId,
@@ -412,8 +419,8 @@ public class AutoItineraryServlet extends HttpServlet {
                     }
                 }
 
-                currentDate =
-                        currentDate.plusDays(1);
+                currentDate
+                        = currentDate.plusDays(1);
             }
 
             /*
@@ -421,7 +428,6 @@ public class AutoItineraryServlet extends HttpServlet {
              * 8. THÔNG BÁO THÀNH CÔNG
              * =========================================================
              */
-
             response.sendRedirect(
                     request.getContextPath()
                     + "/itinerary?tripId="
@@ -449,8 +455,8 @@ public class AutoItineraryServlet extends HttpServlet {
             Set<Integer> globallyScheduled,
             List<ItineraryItem> existing) {
 
-        DayPlan best =
-                new DayPlan();
+        DayPlan best
+                = new DayPlan();
 
         searchDayPlans(
                 date,
@@ -493,17 +499,16 @@ public class AutoItineraryServlet extends HttpServlet {
             return;
         }
 
-        Slot slot =
-                milestones[milestoneIndex];
+        Slot slot
+                = milestones[milestoneIndex];
 
         /*
          * =============================================================
          * ƯU TIÊN PHƯƠNG ÁN ĐỦ 3 LOẠI
          * =============================================================
          */
-
-        List<ScheduledPlan> completeOptions =
-                buildCompleteOptions(
+        List<ScheduledPlan> completeOptions
+                = buildCompleteOptions(
                         date,
                         slot,
                         foods,
@@ -521,8 +526,8 @@ public class AutoItineraryServlet extends HttpServlet {
             for (ScheduledPlan option
                     : completeOptions) {
 
-                Set<Integer> nextUsed =
-                        new HashSet<Integer>(
+                Set<Integer> nextUsed
+                        = new HashSet<Integer>(
                                 usedIds);
 
                 nextUsed.add(
@@ -562,7 +567,6 @@ public class AutoItineraryServlet extends HttpServlet {
              * Có phương án đủ 3 loại thì không cho
              * phương án thiếu cạnh tranh.
              */
-
             return;
         }
 
@@ -571,9 +575,8 @@ public class AutoItineraryServlet extends HttpServlet {
          * KHÔNG ĐỦ 3 LOẠI -> THỬ PARTIAL
          * =============================================================
          */
-
-        List<ScheduledPlan> partialOptions =
-                buildBestPartialOptions(
+        List<ScheduledPlan> partialOptions
+                = buildBestPartialOptions(
                         date,
                         slot,
                         foods,
@@ -589,8 +592,8 @@ public class AutoItineraryServlet extends HttpServlet {
         for (ScheduledPlan option
                 : partialOptions) {
 
-            Set<Integer> nextUsed =
-                    new HashSet<Integer>(
+            Set<Integer> nextUsed
+                    = new HashSet<Integer>(
                             usedIds);
 
             if (option.food != null) {
@@ -640,7 +643,6 @@ public class AutoItineraryServlet extends HttpServlet {
          * BỎ QUA MILESTONE
          * =============================================================
          */
-
         current.add(
                 new ScheduledPlan());
 
@@ -675,8 +677,8 @@ public class AutoItineraryServlet extends HttpServlet {
             Set<Integer> usedIds,
             List<ItineraryItem> existing) {
 
-        List<ScheduledPlan> options =
-                new ArrayList<ScheduledPlan>();
+        List<ScheduledPlan> options
+                = new ArrayList<ScheduledPlan>();
 
         for (Recommendation food : foods) {
 
@@ -684,13 +686,13 @@ public class AutoItineraryServlet extends HttpServlet {
                 continue;
             }
 
-            LocalTime foodStart =
-                    getValidStart(
+            LocalTime foodStart
+                    = getValidStart(
                             food,
                             slot.start);
 
-            LocalTime foodEnd =
-                    foodStart.plusMinutes(
+            LocalTime foodEnd
+                    = foodStart.plusMinutes(
                             FOOD_MINUTES);
 
             if (!fits(
@@ -711,8 +713,8 @@ public class AutoItineraryServlet extends HttpServlet {
                 continue;
             }
 
-            LocalTime cafeEarliest =
-                    foodEnd.plusMinutes(
+            LocalTime cafeEarliest
+                    = foodEnd.plusMinutes(
                             BREAK_MINUTES);
 
             for (Recommendation cafe : cafes) {
@@ -723,13 +725,13 @@ public class AutoItineraryServlet extends HttpServlet {
                     continue;
                 }
 
-                LocalTime cafeStart =
-                        getValidStart(
+                LocalTime cafeStart
+                        = getValidStart(
                                 cafe,
                                 cafeEarliest);
 
-                LocalTime cafeEnd =
-                        cafeStart.plusMinutes(
+                LocalTime cafeEnd
+                        = cafeStart.plusMinutes(
                                 CAFE_MINUTES);
 
                 if (!fits(
@@ -754,7 +756,6 @@ public class AutoItineraryServlet extends HttpServlet {
                  * Kiểm tra conflict với FOOD
                  * trong chính phương án hiện tại.
                  */
-
                 if (isTimeOverlap(
                         foodStart,
                         foodEnd,
@@ -764,8 +765,8 @@ public class AutoItineraryServlet extends HttpServlet {
                     continue;
                 }
 
-                LocalTime activityEarliest =
-                        cafeEnd.plusMinutes(
+                LocalTime activityEarliest
+                        = cafeEnd.plusMinutes(
                                 BREAK_MINUTES);
 
                 for (Recommendation activity
@@ -784,13 +785,13 @@ public class AutoItineraryServlet extends HttpServlet {
                         continue;
                     }
 
-                    LocalTime activityStart =
-                            getValidStart(
+                    LocalTime activityStart
+                            = getValidStart(
                                     activity,
                                     activityEarliest);
 
-                    LocalTime activityEnd =
-                            activityStart.plusMinutes(
+                    LocalTime activityEnd
+                            = activityStart.plusMinutes(
                                     ACTIVITY_MINUTES);
 
                     if (!fits(
@@ -815,7 +816,6 @@ public class AutoItineraryServlet extends HttpServlet {
                      * Kiểm tra conflict trong
                      * chính phương án hiện tại.
                      */
-
                     if (isTimeOverlap(
                             foodStart,
                             foodEnd,
@@ -834,8 +834,8 @@ public class AutoItineraryServlet extends HttpServlet {
                         continue;
                     }
 
-                    ScheduledPlan plan =
-                            new ScheduledPlan();
+                    ScheduledPlan plan
+                            = new ScheduledPlan();
 
                     plan.food = food;
                     plan.cafe = cafe;
@@ -843,11 +843,11 @@ public class AutoItineraryServlet extends HttpServlet {
 
                     plan.foodStart = foodStart;
                     plan.cafeStart = cafeStart;
-                    plan.activityStart =
-                            activityStart;
+                    plan.activityStart
+                            = activityStart;
 
-                    plan.score =
-                            food.getScore()
+                    plan.score
+                            = food.getScore()
                             + cafe.getScore()
                             + activity.getScore();
 
@@ -875,28 +875,27 @@ public class AutoItineraryServlet extends HttpServlet {
             Set<Integer> usedIds,
             List<ItineraryItem> existing) {
 
-        List<ScheduledPlan> options =
-                new ArrayList<ScheduledPlan>();
+        List<ScheduledPlan> options
+                = new ArrayList<ScheduledPlan>();
 
         /*
          * =============================================================
          * FOOD
          * =============================================================
          */
-
         for (Recommendation food : foods) {
 
             if (isUsed(food, usedIds)) {
                 continue;
             }
 
-            LocalTime start =
-                    getValidStart(
+            LocalTime start
+                    = getValidStart(
                             food,
                             slot.start);
 
-            LocalTime end =
-                    start.plusMinutes(
+            LocalTime end
+                    = start.plusMinutes(
                             FOOD_MINUTES);
 
             if (fits(
@@ -910,13 +909,13 @@ public class AutoItineraryServlet extends HttpServlet {
                             end,
                             existing)) {
 
-                ScheduledPlan plan =
-                        new ScheduledPlan();
+                ScheduledPlan plan
+                        = new ScheduledPlan();
 
                 plan.food = food;
                 plan.foodStart = start;
-                plan.score =
-                        food.getScore();
+                plan.score
+                        = food.getScore();
 
                 options.add(plan);
             }
@@ -927,20 +926,19 @@ public class AutoItineraryServlet extends HttpServlet {
          * FOOD + CAFE
          * =============================================================
          */
-
         for (Recommendation food : foods) {
 
             if (isUsed(food, usedIds)) {
                 continue;
             }
 
-            LocalTime foodStart =
-                    getValidStart(
+            LocalTime foodStart
+                    = getValidStart(
                             food,
                             slot.start);
 
-            LocalTime foodEnd =
-                    foodStart.plusMinutes(
+            LocalTime foodEnd
+                    = foodStart.plusMinutes(
                             FOOD_MINUTES);
 
             if (!fits(
@@ -969,14 +967,14 @@ public class AutoItineraryServlet extends HttpServlet {
                     continue;
                 }
 
-                LocalTime cafeStart =
-                        getValidStart(
+                LocalTime cafeStart
+                        = getValidStart(
                                 cafe,
                                 foodEnd.plusMinutes(
                                         BREAK_MINUTES));
 
-                LocalTime cafeEnd =
-                        cafeStart.plusMinutes(
+                LocalTime cafeEnd
+                        = cafeStart.plusMinutes(
                                 CAFE_MINUTES);
 
                 if (!fits(
@@ -1006,20 +1004,20 @@ public class AutoItineraryServlet extends HttpServlet {
                     continue;
                 }
 
-                ScheduledPlan plan =
-                        new ScheduledPlan();
+                ScheduledPlan plan
+                        = new ScheduledPlan();
 
                 plan.food = food;
                 plan.cafe = cafe;
 
-                plan.foodStart =
-                        foodStart;
+                plan.foodStart
+                        = foodStart;
 
-                plan.cafeStart =
-                        cafeStart;
+                plan.cafeStart
+                        = cafeStart;
 
-                plan.score =
-                        food.getScore()
+                plan.score
+                        = food.getScore()
                         + cafe.getScore();
 
                 options.add(plan);
@@ -1064,15 +1062,14 @@ public class AutoItineraryServlet extends HttpServlet {
     }
 
     /**
-     * Tính giờ bắt đầu hợp lệ dựa trên
-     * giờ mở cửa của địa điểm.
+     * Tính giờ bắt đầu hợp lệ dựa trên giờ mở cửa của địa điểm.
      */
     private LocalTime getValidStart(
             Recommendation recommendation,
             LocalTime earliest) {
 
-        Place place =
-                recommendation.getPlace();
+        Place place
+                = recommendation.getPlace();
 
         if (place == null
                 || place.getOpeningTime() == null) {
@@ -1080,8 +1077,8 @@ public class AutoItineraryServlet extends HttpServlet {
             return earliest;
         }
 
-        LocalTime opening =
-                place.getOpeningTime()
+        LocalTime opening
+                = place.getOpeningTime()
                         .toLocalTime();
 
         return opening.isAfter(earliest)
@@ -1090,8 +1087,7 @@ public class AutoItineraryServlet extends HttpServlet {
     }
 
     /**
-     * Kiểm tra địa điểm có hoạt động được
-     * trong khoảng thời gian hay không.
+     * Kiểm tra địa điểm có hoạt động được trong khoảng thời gian hay không.
      */
     private boolean fits(
             Recommendation recommendation,
@@ -1099,8 +1095,8 @@ public class AutoItineraryServlet extends HttpServlet {
             LocalTime end,
             LocalTime milestoneEnd) {
 
-        Place place =
-                recommendation.getPlace();
+        Place place
+                = recommendation.getPlace();
 
         if (place == null) {
             return false;
@@ -1122,8 +1118,8 @@ public class AutoItineraryServlet extends HttpServlet {
     }
 
     /**
-     * ================================================================
-     * KIỂM TRA CONFLICT TRONG RAM
+     * ================================================================ KIỂM TRA
+     * CONFLICT TRONG RAM
      * ================================================================
      *
      * Không gọi DB.
@@ -1153,20 +1149,20 @@ public class AutoItineraryServlet extends HttpServlet {
                 continue;
             }
 
-            LocalDate itemDate =
-                    item.getVisitDate()
+            LocalDate itemDate
+                    = item.getVisitDate()
                             .toLocalDate();
 
             if (!date.equals(itemDate)) {
                 continue;
             }
 
-            LocalTime itemStart =
-                    item.getStartTime()
+            LocalTime itemStart
+                    = item.getStartTime()
                             .toLocalTime();
 
-            LocalTime itemEnd =
-                    item.getEndTime()
+            LocalTime itemEnd
+                    = item.getEndTime()
                             .toLocalTime();
 
             /*
@@ -1176,7 +1172,6 @@ public class AutoItineraryServlet extends HttpServlet {
              * &&
              * end > itemStart
              */
-
             if (isTimeOverlap(
                     start,
                     end,
@@ -1206,10 +1201,7 @@ public class AutoItineraryServlet extends HttpServlet {
     /**
      * Đánh giá DayPlan.
      *
-     * Ưu tiên:
-     * 1. Số milestone hoàn chỉnh.
-     * 2. Tổng số item.
-     * 3. Tổng score.
+     * Ưu tiên: 1. Số milestone hoàn chỉnh. 2. Tổng số item. 3. Tổng score.
      */
     private void evaluatePlan(
             List<ScheduledPlan> current,
@@ -1234,13 +1226,11 @@ public class AutoItineraryServlet extends HttpServlet {
             score += plan.score;
         }
 
-        boolean better =
-                complete > best.completeMilestones
-
+        boolean better
+                = complete > best.completeMilestones
                 || (complete
                 == best.completeMilestones
                 && items > best.scheduledItems)
-
                 || (complete
                 == best.completeMilestones
                 && items == best.scheduledItems
@@ -1253,14 +1243,14 @@ public class AutoItineraryServlet extends HttpServlet {
             best.milestones.addAll(
                     current);
 
-            best.completeMilestones =
-                    complete;
+            best.completeMilestones
+                    = complete;
 
-            best.scheduledItems =
-                    items;
+            best.scheduledItems
+                    = items;
 
-            best.totalScore =
-                    score;
+            best.totalScore
+                    = score;
         }
     }
 
@@ -1297,17 +1287,17 @@ public class AutoItineraryServlet extends HttpServlet {
             return false;
         }
 
-        LocalTime actualStart =
-                getValidStart(
+        LocalTime actualStart
+                = getValidStart(
                         recommendation,
                         start);
 
-        LocalTime actualEnd =
-                actualStart.plusMinutes(
+        LocalTime actualEnd
+                = actualStart.plusMinutes(
                         minutes);
 
-        ItineraryItem item =
-                new ItineraryItem();
+        ItineraryItem item
+                = new ItineraryItem();
 
         item.setTripId(tripId);
 
@@ -1366,9 +1356,8 @@ public class AutoItineraryServlet extends HttpServlet {
     /**
      * Comparator score giảm dần.
      */
-    private static final Comparator<ScheduledPlan>
-            PLAN_SCORE_DESC =
-            new Comparator<ScheduledPlan>() {
+    private static final Comparator<ScheduledPlan> PLAN_SCORE_DESC
+            = new Comparator<ScheduledPlan>() {
 
         @Override
         public int compare(
@@ -1382,21 +1371,18 @@ public class AutoItineraryServlet extends HttpServlet {
     };
 
     /**
-     * Comparator:
-     * nhiều item hơn trước,
-     * sau đó score cao hơn.
+     * Comparator: nhiều item hơn trước, sau đó score cao hơn.
      */
-    private static final Comparator<ScheduledPlan>
-            PLAN_PRIORITY_DESC =
-            new Comparator<ScheduledPlan>() {
+    private static final Comparator<ScheduledPlan> PLAN_PRIORITY_DESC
+            = new Comparator<ScheduledPlan>() {
 
         @Override
         public int compare(
                 ScheduledPlan first,
                 ScheduledPlan second) {
 
-            int countCompare =
-                    Integer.compare(
+            int countCompare
+                    = Integer.compare(
                             second.count(),
                             first.count());
 
@@ -1420,8 +1406,8 @@ public class AutoItineraryServlet extends HttpServlet {
             return "không xác định";
         }
 
-        LocalTime start =
-                plan.foodStart;
+        LocalTime start
+                = plan.foodStart;
 
         if (start.isBefore(
                 LocalTime.of(11, 0))) {

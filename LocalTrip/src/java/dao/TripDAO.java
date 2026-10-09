@@ -14,8 +14,8 @@ public class TripDAO {
     public List<Trip> findByUser(int userId) {
         List<Trip> trips = new ArrayList<>();
 
-        String sql =
-                "SELECT t.trip_id, t.owner_id, t.trip_name, "
+        String sql
+                = "SELECT t.trip_id, t.owner_id, t.trip_name, "
                 + "t.destination, t.start_date, t.end_date, "
                 + "t.budget, t.description, t.status, t.created_at, "
                 + "CASE WHEN t.owner_id = ? "
@@ -26,15 +26,14 @@ public class TripDAO {
                 + "WHERE t.owner_id = ? OR tm.user_id IS NOT NULL "
                 + "ORDER BY t.created_at DESC, t.trip_id DESC";
 
-        try (Connection connection = DBContext.getConnection();
-             PreparedStatement statement =
-                     connection.prepareStatement(sql)) {
+        try ( Connection connection = DBContext.getConnection();  PreparedStatement statement
+                = connection.prepareStatement(sql)) {
 
             statement.setInt(1, userId);
             statement.setInt(2, userId);
             statement.setInt(3, userId);
 
-            try (ResultSet resultSet = statement.executeQuery()) {
+            try ( ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     trips.add(mapTrip(resultSet));
                 }
@@ -52,8 +51,8 @@ public class TripDAO {
 
     public Trip findByIdForUser(int tripId, int userId) {
 
-        String sql =
-                "SELECT t.trip_id, t.owner_id, t.trip_name, "
+        String sql
+                = "SELECT t.trip_id, t.owner_id, t.trip_name, "
                 + "t.destination, t.start_date, t.end_date, "
                 + "t.budget, t.description, t.status, t.created_at, "
                 + "CASE WHEN t.owner_id = ? "
@@ -64,16 +63,15 @@ public class TripDAO {
                 + "WHERE t.trip_id = ? "
                 + "AND (t.owner_id = ? OR tm.user_id IS NOT NULL)";
 
-        try (Connection connection = DBContext.getConnection();
-             PreparedStatement statement =
-                     connection.prepareStatement(sql)) {
+        try ( Connection connection = DBContext.getConnection();  PreparedStatement statement
+                = connection.prepareStatement(sql)) {
 
             statement.setInt(1, userId);
             statement.setInt(2, userId);
             statement.setInt(3, tripId);
             statement.setInt(4, userId);
 
-            try (ResultSet resultSet = statement.executeQuery()) {
+            try ( ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     return mapTrip(resultSet);
                 }
@@ -91,18 +89,18 @@ public class TripDAO {
 
     public int create(Trip trip, int ownerId) {
 
-        String insertTrip =
-                "INSERT INTO Trips "
+        String insertTrip
+                = "INSERT INTO Trips "
                 + "(owner_id, trip_name, destination, start_date, "
                 + "end_date, budget, description, status) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        String insertOwner =
-                "INSERT INTO TripMembers "
+        String insertOwner
+                = "INSERT INTO TripMembers "
                 + "(trip_id, user_id, member_role) "
                 + "VALUES (?, ?, 'OWNER')";
 
-        try (Connection connection = DBContext.getConnection()) {
+        try ( Connection connection = DBContext.getConnection()) {
 
             boolean originalAutoCommit = connection.getAutoCommit();
             connection.setAutoCommit(false);
@@ -110,48 +108,48 @@ public class TripDAO {
             try {
                 int tripId;
 
-                try (PreparedStatement statement =
-                             connection.prepareStatement(
-                                     insertTrip,
-                                     Statement.RETURN_GENERATED_KEYS
-                             )) {
+                try ( PreparedStatement statement
+                        = connection.prepareStatement(
+                                insertTrip,
+                                Statement.RETURN_GENERATED_KEYS
+                        )) {
 
-                    statement.setInt(1, ownerId);
-                    statement.setString(2, trip.getTripName());
-                    statement.setString(3, trip.getDestination());
-                    statement.setDate(4, trip.getStartDate());
-                    statement.setDate(5, trip.getEndDate());
-                    statement.setBigDecimal(6, trip.getBudget());
-                    statement.setString(7, trip.getDescription());
-                    statement.setString(8, trip.getStatus());
+                            statement.setInt(1, ownerId);
+                            statement.setString(2, trip.getTripName());
+                            statement.setString(3, trip.getDestination());
+                            statement.setDate(4, trip.getStartDate());
+                            statement.setDate(5, trip.getEndDate());
+                            statement.setBigDecimal(6, trip.getBudget());
+                            statement.setString(7, trip.getDescription());
+                            statement.setString(8, trip.getStatus());
 
-                    if (statement.executeUpdate() == 0) {
-                        connection.rollback();
-                        return -1;
-                    }
+                            if (statement.executeUpdate() == 0) {
+                                connection.rollback();
+                                return -1;
+                            }
 
-                    try (ResultSet keys =
-                                 statement.getGeneratedKeys()) {
+                            try ( ResultSet keys
+                                    = statement.getGeneratedKeys()) {
 
-                        if (!keys.next()) {
-                            connection.rollback();
-                            return -1;
+                                if (!keys.next()) {
+                                    connection.rollback();
+                                    return -1;
+                                }
+
+                                tripId = keys.getInt(1);
+                            }
                         }
 
-                        tripId = keys.getInt(1);
-                    }
-                }
+                        try ( PreparedStatement statement
+                                = connection.prepareStatement(insertOwner)) {
 
-                try (PreparedStatement statement =
-                             connection.prepareStatement(insertOwner)) {
+                            statement.setInt(1, tripId);
+                            statement.setInt(2, ownerId);
+                            statement.executeUpdate();
+                        }
 
-                    statement.setInt(1, tripId);
-                    statement.setInt(2, ownerId);
-                    statement.executeUpdate();
-                }
-
-                connection.commit();
-                return tripId;
+                        connection.commit();
+                        return tripId;
 
             } catch (SQLException e) {
                 connection.rollback();
@@ -171,8 +169,8 @@ public class TripDAO {
 
     public boolean updateByOwner(Trip trip, int ownerId) {
 
-        String sql =
-                "UPDATE Trips SET "
+        String sql
+                = "UPDATE Trips SET "
                 + "trip_name = ?, "
                 + "destination = ?, "
                 + "start_date = ?, "
@@ -182,9 +180,8 @@ public class TripDAO {
                 + "status = ? "
                 + "WHERE trip_id = ? AND owner_id = ?";
 
-        try (Connection connection = DBContext.getConnection();
-             PreparedStatement statement =
-                     connection.prepareStatement(sql)) {
+        try ( Connection connection = DBContext.getConnection();  PreparedStatement statement
+                = connection.prepareStatement(sql)) {
 
             statement.setString(1, trip.getTripName());
             statement.setString(2, trip.getDestination());
@@ -208,18 +205,17 @@ public class TripDAO {
 
     public boolean isOwner(int tripId, int userId) {
 
-        String sql =
-                "SELECT 1 FROM Trips "
+        String sql
+                = "SELECT 1 FROM Trips "
                 + "WHERE trip_id = ? AND owner_id = ?";
 
-        try (Connection connection = DBContext.getConnection();
-             PreparedStatement statement =
-                     connection.prepareStatement(sql)) {
+        try ( Connection connection = DBContext.getConnection();  PreparedStatement statement
+                = connection.prepareStatement(sql)) {
 
             statement.setInt(1, tripId);
             statement.setInt(2, userId);
 
-            try (ResultSet resultSet = statement.executeQuery()) {
+            try ( ResultSet resultSet = statement.executeQuery()) {
                 return resultSet.next();
             }
 
@@ -249,5 +245,100 @@ public class TripDAO {
         trip.setRole(resultSet.getString("user_role"));
 
         return trip;
+    }
+
+    public boolean deletePlanningTrip(int tripId, int ownerId) {
+        try ( Connection connection = DBContext.getConnection()) {
+            connection.setTransactionIsolation(
+                    Connection.TRANSACTION_SERIALIZABLE
+            );
+            connection.setAutoCommit(false);
+
+            try {
+                String checkSql
+                        = "SELECT status FROM dbo.Trips "
+                        + "WITH (UPDLOCK, HOLDLOCK) "
+                        + "WHERE trip_id = ? AND owner_id = ?";
+                try ( PreparedStatement statement
+                        = connection.prepareStatement(checkSql)) {
+                    statement.setInt(1, tripId);
+                    statement.setInt(2, ownerId);
+
+                    try ( ResultSet result = statement.executeQuery()) {
+                        if (!result.next()) {
+                            throw new IllegalArgumentException(
+                                    "Chuyến đi không còn tồn tại hoặc bạn không có quyền xóa."
+                            );
+                        }
+
+                        if (!"PLANNING".equals(result.getString("status"))) {
+                            throw new IllegalArgumentException(
+                                    "Chỉ xóa được chuyến đang lên kế hoạch. "
+                                    + "Chuyến đã bắt đầu, hoàn thành hoặc hủy "
+                                    + "được giữ lại để lưu lịch sử."
+                            );
+                        }
+                    }
+                }
+
+                String financeSql
+                        = "SELECT "
+                        + "(SELECT COUNT(*) FROM dbo.Expenses "
+                        + "WHERE trip_id = ?) AS expense_count, "
+                        + "(SELECT COUNT(*) FROM dbo.GroupFundContributions "
+                        + "WHERE trip_id = ?) AS contribution_count";
+
+                try ( PreparedStatement statement
+                        = connection.prepareStatement(financeSql)) {
+                    statement.setInt(1, tripId);
+                    statement.setInt(2, tripId);
+
+                    try ( ResultSet result = statement.executeQuery()) {
+                        result.next();
+
+                        if (!result.next()) {
+                            throw new IllegalArgumentException(
+                                    "Chuyến đi không còn tồn tại hoặc bạn không có quyền xóa."
+                            );
+                        }
+
+                        if (!"PLANNING".equals(result.getString("status"))) {
+                            throw new IllegalArgumentException(
+                                    "Chỉ xóa được chuyến đang lên kế hoạch. "
+                                    + "Chuyến đã bắt đầu, hoàn thành hoặc hủy "
+                                    + "được giữ lại để lưu lịch sử."
+                            );
+                        }
+                    }
+                }
+
+                String[] deleteStatements = {
+                    "DELETE FROM dbo.TripMemberPreferences WHERE trip_id = ?",
+                    "DELETE FROM dbo.ItineraryItems WHERE trip_id = ?",
+                    "DELETE FROM dbo.TripMembers WHERE trip_id = ?",
+                    "DELETE FROM dbo.Trips WHERE trip_id = ?"
+                };
+
+                for (String sql : deleteStatements) {
+                    try ( PreparedStatement statement
+                            = connection.prepareStatement(sql)) {
+                        statement.setInt(1, tripId);
+                        statement.executeUpdate();
+                    }
+                }
+
+                connection.commit();
+                return true;
+
+            } catch (SQLException | RuntimeException e) {
+                connection.rollback();
+                throw e;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "Không thể xóa chuyến đi.", e
+            );
+        }
     }
 }

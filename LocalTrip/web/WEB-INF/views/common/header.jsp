@@ -76,7 +76,7 @@
 
     <link rel="stylesheet"
           href="<%= request.getContextPath() %>/css/style.css">
-    <link rel="stylesheet" href="<%= request.getContextPath() %>/css/localtrip.css?v=1">
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/css/localtrip.css?v=2">
 </head>
 
 <body class="<%= headerUser == null ? "auth-page" : (headerIsAdmin ? "admin-page" : "user-page") %>">

@@ -1,5 +1,6 @@
 package controller.trip;
 
+import dao.PlaceDAO;
 import dao.TripDAO;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -14,6 +15,8 @@ import model.Trip;
 import model.User;
 import dao.TripMemberDAO;
 import dao.UserDAO;
+import dao.ItineraryDAO;
+import model.ItineraryItem;
 
 @WebServlet({
     "/trips",
@@ -130,9 +133,15 @@ public class TripServlet extends HttpServlet {
         }
     }
 
-    private void showCreateForm(HttpServletRequest request,
+    private void showCreateForm(
+            HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
+
+        request.setAttribute(
+                "tripAreas",
+                new PlaceDAO().findTripAreas()
+        );
 
         request.getRequestDispatcher(FORM_VIEW)
                 .forward(request, response);
@@ -172,8 +181,23 @@ public class TripServlet extends HttpServlet {
             );
             return;
         }
+        if (!"PLANNING".equalsIgnoreCase(trip.getStatus())
+                && !"ONGOING".equalsIgnoreCase(trip.getStatus())) {
 
+            request.getSession().setAttribute(
+                    "errorMessage",
+                    "Không thể sửa thông tin chuyến đi đã hoàn thành hoặc đã hủy."
+            );
+
+            redirectToDetail(request, response, tripId);
+            return;
+        }
         request.setAttribute("trip", trip);
+
+        request.setAttribute(
+                "tripAreas",
+                new PlaceDAO().findTripAreas()
+        );
 
         request.getRequestDispatcher(FORM_VIEW)
                 .forward(request, response);
@@ -293,7 +317,19 @@ public class TripServlet extends HttpServlet {
             );
             return;
         }
+        java.time.LocalDate today = java.time.LocalDate.now(
+                java.time.ZoneId.of("Asia/Ho_Chi_Minh")
+        );
 
+        if (requestedTripId <= 0
+                && startDate.toLocalDate().isBefore(today)) {
+            forwardCreateError(
+                    request,
+                    response,
+                    "Ngày bắt đầu không được trước ngày hôm nay."
+            );
+            return;
+        }
         if (endDate.before(startDate)) {
             forwardCreateError(
                     request,
@@ -311,7 +347,14 @@ public class TripServlet extends HttpServlet {
             );
             return;
         }
-
+        if (!new PlaceDAO().findTripAreas().contains(area)) {
+            forwardCreateError(
+                    request,
+                    response,
+                    "Hãy chọn khu vực có trong danh sách."
+            );
+            return;
+        }
         Trip trip = new Trip();
         trip.setTripName(name);
         trip.setDestination(area);
@@ -345,7 +388,61 @@ public class TripServlet extends HttpServlet {
                 );
                 return;
             }
+            if (!"PLANNING".equalsIgnoreCase(existing.getStatus())
+                    && !"ONGOING".equalsIgnoreCase(existing.getStatus())) {
 
+                request.getSession().setAttribute(
+                        "errorMessage",
+                        "Không thể sửa thông tin chuyến đi đã hoàn thành hoặc đã hủy."
+                );
+
+                redirectToDetail(request, response, requestedTripId);
+                return;
+            }
+            java.sql.Date firstActivityDate = null;
+            java.sql.Date lastActivityDate = null;
+
+            for (ItineraryItem item
+                    : new ItineraryDAO().findByTrip(requestedTripId)) {
+
+                java.sql.Date activityDate = item.getVisitDate();
+
+                if (firstActivityDate == null
+                        || activityDate.before(firstActivityDate)) {
+                    firstActivityDate = activityDate;
+                }
+
+                if (lastActivityDate == null
+                        || activityDate.after(lastActivityDate)) {
+                    lastActivityDate = activityDate;
+                }
+            }
+
+            if (firstActivityDate != null
+                    && (startDate.after(firstActivityDate)
+                    || endDate.before(lastActivityDate))) {
+
+                // Giữ form ở chế độ sửa và hiển thị dữ liệu đã lưu.
+                request.setAttribute("trip", existing);
+
+                java.time.format.DateTimeFormatter dateFormat
+                        = java.time.format.DateTimeFormatter.ofPattern(
+                                "dd/MM/yyyy"
+                        );
+
+                forwardCreateError(
+                        request,
+                        response,
+                        "Không thể đổi thời gian chuyến đi. "
+                        + "Lịch trình hiện có hoạt động từ "
+                        + firstActivityDate.toLocalDate().format(dateFormat)
+                        + " đến "
+                        + lastActivityDate.toLocalDate().format(dateFormat)
+                        + ". Ngày bắt đầu và kết thúc phải bao phủ "
+                        + "các hoạt động này."
+                );
+                return;
+            }
             trip.setTripId(requestedTripId);
             trip.setDescription(existing.getDescription());
             trip.setStatus(existing.getStatus());
@@ -407,6 +504,7 @@ public class TripServlet extends HttpServlet {
                 response,
                 createdTripId
         );
+
     }
 
     private void addMember(HttpServletRequest request,
@@ -623,6 +721,11 @@ public class TripServlet extends HttpServlet {
             throws ServletException, IOException {
 
         request.setAttribute("errorMessage", message);
+
+        request.setAttribute(
+                "tripAreas",
+                new PlaceDAO().findTripAreas()
+        );
 
         request.getRequestDispatcher(FORM_VIEW)
                 .forward(request, response);

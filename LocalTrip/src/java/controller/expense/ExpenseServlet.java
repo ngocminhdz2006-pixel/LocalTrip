@@ -68,7 +68,22 @@ public class ExpenseServlet extends HttpServlet {
             }
 
             String path = request.getServletPath();
+            if (("/expenses/create".equals(path)
+                    || "/expenses/edit".equals(path))
+                    && !"PLANNING".equalsIgnoreCase(trip.getStatus())
+                    && !"ONGOING".equalsIgnoreCase(trip.getStatus())) {
 
+                request.getSession().setAttribute(
+                        "errorMessage",
+                        "Không thể thay đổi chi phí của chuyến đi đã hoàn thành hoặc đã hủy."
+                );
+
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/expenses?tripId=" + tripId
+                );
+                return;
+            }
             if ("/expenses/create".equals(path)) {
                 showCreateForm(request, response, trip);
                 return;
@@ -155,6 +170,20 @@ public class ExpenseServlet extends HttpServlet {
             if ("/expenses/delete".equals(
                     request.getServletPath()
             )) {
+                if (!"PLANNING".equalsIgnoreCase(trip.getStatus())
+                        && !"ONGOING".equalsIgnoreCase(trip.getStatus())) {
+
+                    request.getSession().setAttribute(
+                            "errorMessage",
+                            "Không thể thay đổi chi phí của chuyến đi đã hoàn thành hoặc đã hủy."
+                    );
+
+                    response.sendRedirect(
+                            request.getContextPath()
+                            + "/expenses?tripId=" + tripId
+                    );
+                    return;
+                }
                 deleteExpense(
                         request,
                         response,

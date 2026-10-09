@@ -147,3 +147,24 @@ footer.app-footer {
 .group-fund-option .form-check-label {
     color: #174d35;
 }
+/* Giữ nguyên từ khi tiêu đề xuống dòng */
+h1, h2, h3, h4, h5, h6 {
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+.dashboard-hero .hero-copy {
+    width: 100%;
+}
+
+.dashboard-hero h1 {
+    font-size: clamp(2rem, 3.2vw, 3.2rem);
+}
+
+/* Giữ bố cục chân trang dễ đọc */
+.app-footer-content > div {
+    min-width: 0;
+    overflow-wrap: normal;
+    word-break: normal;
+    line-height: 1.6;
+}

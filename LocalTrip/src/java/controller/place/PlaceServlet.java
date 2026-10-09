@@ -56,7 +56,8 @@ public class PlaceServlet extends HttpServlet {
         );
     }
 
-    private void showList(HttpServletRequest request,
+    private void showList(
+            HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -64,31 +65,36 @@ public class PlaceServlet extends HttpServlet {
                 request.getParameter("categoryId")
         );
 
+        String city = request.getParameter("city");
+        String district = request.getParameter("district");
+
+        city = city == null ? "" : city.trim();
+        district = district == null ? "" : district.trim();
+
         try {
+            request.setAttribute("categories", categoryDAO.findAll());
+            request.setAttribute("cities", placeDAO.findCities());
+
             request.setAttribute(
-                    "categories",
-                    categoryDAO.findAll()
+                    "districts",
+                    placeDAO.findDistricts(city)
             );
 
-            if (categoryId > 0) {
-                request.setAttribute(
-                        "places",
-                        placeDAO.findByCategory(categoryId)
-                );
-            } else {
-                request.setAttribute(
-                        "places",
-                        placeDAO.findAll()
-                );
-            }
+            request.setAttribute("selectedCity", city);
+            request.setAttribute("selectedDistrict", district);
+            request.setAttribute("selectedCategoryId", categoryId);
+
+            request.setAttribute(
+                    "places",
+                    placeDAO.findFiltered(categoryId, city, district)
+            );
 
             request.getRequestDispatcher(LIST_VIEW)
                     .forward(request, response);
 
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể tải danh sách địa điểm.",
-                    e
+                    "Không thể tải danh sách địa điểm.", e
             );
         }
     }
