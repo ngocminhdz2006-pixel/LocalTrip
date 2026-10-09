@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import model.Place;
+import dao.PlaceDAO;
 
 public class PlaceDAO {
 
@@ -119,7 +120,6 @@ public class PlaceDAO {
         return null;
     }
 
-
     public List<Place> searchAdmin(String keyword, int categoryId, String status) {
         List<Place> places = new ArrayList<Place>();
         StringBuilder sql = new StringBuilder(SELECT_BASE);
@@ -138,8 +138,7 @@ public class PlaceDAO {
         }
         sql.append("ORDER BY p.place_name");
 
-        try (Connection connection = DBContext.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql.toString())) {
+        try ( Connection connection = DBContext.getConnection();  PreparedStatement statement = connection.prepareStatement(sql.toString())) {
             int index = 1;
             if (keyword != null && !keyword.trim().isEmpty()) {
                 String value = "%" + keyword.trim() + "%";
@@ -149,7 +148,7 @@ public class PlaceDAO {
             if (categoryId > 0) {
                 statement.setInt(index++, categoryId);
             }
-            try (ResultSet resultSet = statement.executeQuery()) {
+            try ( ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     places.add(mapPlace(resultSet));
                 }
@@ -162,11 +161,12 @@ public class PlaceDAO {
 
     public Place findByIdAdmin(int placeId) {
         String sql = SELECT_BASE + "WHERE p.place_id = ?";
-        try (Connection connection = DBContext.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        try ( Connection connection = DBContext.getConnection();  PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, placeId);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) return mapPlace(resultSet);
+            try ( ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return mapPlace(resultSet);
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Không thể đọc địa điểm.", e);
@@ -179,12 +179,13 @@ public class PlaceDAO {
                 + "(category_id, place_name, address, description, estimated_cost, rating, "
                 + "opening_time, closing_time, latitude, longitude, place_type, is_active) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)";
-        try (Connection connection = DBContext.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql, new String[]{"place_id"})) {
+        try ( Connection connection = DBContext.getConnection();  PreparedStatement statement = connection.prepareStatement(sql, new String[]{"place_id"})) {
             setPlaceParameters(statement, place);
             statement.executeUpdate();
-            try (ResultSet rs = statement.getGeneratedKeys()) {
-                if (rs.next()) return rs.getInt(1);
+            try ( ResultSet rs = statement.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Không thể thêm địa điểm.", e);
@@ -196,8 +197,7 @@ public class PlaceDAO {
         String sql = "UPDATE Places SET category_id=?, place_name=?, address=?, description=?, "
                 + "estimated_cost=?, rating=?, opening_time=?, closing_time=?, latitude=?, longitude=?, place_type=? "
                 + "WHERE place_id=?";
-        try (Connection connection = DBContext.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        try ( Connection connection = DBContext.getConnection();  PreparedStatement statement = connection.prepareStatement(sql)) {
             setPlaceParameters(statement, place);
             statement.setInt(12, place.getPlaceId());
             return statement.executeUpdate() == 1;
@@ -208,8 +208,7 @@ public class PlaceDAO {
 
     public boolean setActive(int placeId, boolean active) {
         String sql = "UPDATE Places SET is_active = ? WHERE place_id = ?";
-        try (Connection connection = DBContext.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        try ( Connection connection = DBContext.getConnection();  PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setBoolean(1, active);
             statement.setInt(2, placeId);
             return statement.executeUpdate() == 1;
@@ -222,14 +221,33 @@ public class PlaceDAO {
         statement.setInt(1, place.getCategoryId());
         statement.setString(2, place.getPlaceName());
         statement.setString(3, place.getAddress());
-        if (place.getDescription() == null || place.getDescription().isEmpty()) statement.setNull(4, java.sql.Types.NVARCHAR);
-        else statement.setString(4, place.getDescription());
+        if (place.getDescription() == null || place.getDescription().isEmpty()) {
+            statement.setNull(4, java.sql.Types.NVARCHAR);
+        } else {
+            statement.setString(4, place.getDescription());
+        }
         statement.setBigDecimal(5, place.getEstimatedCost());
         statement.setBigDecimal(6, place.getRating());
-        if (place.getOpeningTime() == null) statement.setNull(7, java.sql.Types.TIME); else statement.setTime(7, place.getOpeningTime());
-        if (place.getClosingTime() == null) statement.setNull(8, java.sql.Types.TIME); else statement.setTime(8, place.getClosingTime());
-        if (place.getLatitude() == null) statement.setNull(9, java.sql.Types.DECIMAL); else statement.setBigDecimal(9, place.getLatitude());
-        if (place.getLongitude() == null) statement.setNull(10, java.sql.Types.DECIMAL); else statement.setBigDecimal(10, place.getLongitude());
+        if (place.getOpeningTime() == null) {
+            statement.setNull(7, java.sql.Types.TIME);
+        } else {
+            statement.setTime(7, place.getOpeningTime());
+        }
+        if (place.getClosingTime() == null) {
+            statement.setNull(8, java.sql.Types.TIME);
+        } else {
+            statement.setTime(8, place.getClosingTime());
+        }
+        if (place.getLatitude() == null) {
+            statement.setNull(9, java.sql.Types.DECIMAL);
+        } else {
+            statement.setBigDecimal(9, place.getLatitude());
+        }
+        if (place.getLongitude() == null) {
+            statement.setNull(10, java.sql.Types.DECIMAL);
+        } else {
+            statement.setBigDecimal(10, place.getLongitude());
+        }
         statement.setString(11, place.getPlaceType());
     }
 
@@ -298,5 +316,143 @@ public class PlaceDAO {
         );
 
         return place;
+    }
+
+    public List<Place> findFiltered(
+            int categoryId, String city, String district) {
+
+        StringBuilder sql = new StringBuilder(
+                SELECT_BASE + "WHERE p.is_active = 1 "
+        );
+
+        List<Object> parameters = new ArrayList<>();
+
+        if (categoryId > 0) {
+            sql.append("AND p.category_id = ? ");
+            parameters.add(categoryId);
+        }
+
+        if (city != null && !city.trim().isEmpty()) {
+            sql.append("AND p.city_name = ? ");
+            parameters.add(city.trim());
+        }
+
+        if (district != null && !district.trim().isEmpty()) {
+            sql.append("AND p.district_name = ? ");
+            parameters.add(district.trim());
+        }
+
+        sql.append("ORDER BY p.place_name");
+
+        List<Place> places = new ArrayList<>();
+
+        try ( Connection connection = DBContext.getConnection();  PreparedStatement statement
+                = connection.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < parameters.size(); i++) {
+                Object value = parameters.get(i);
+
+                if (value instanceof Integer) {
+                    statement.setInt(i + 1, (Integer) value);
+                } else {
+                    statement.setString(i + 1, (String) value);
+                }
+            }
+
+            try ( ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    places.add(mapPlace(resultSet));
+                }
+            }
+
+            return places;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "Không thể lọc danh sách địa điểm.", e
+            );
+        }
+    }
+
+    public List<String> findCities() {
+        return findRegionValues("city_name", null);
+    }
+
+    public List<String> findDistricts(String city) {
+        return findRegionValues("district_name", city);
+    }
+
+    private List<String> findRegionValues(String column, String city) {
+        if (!"city_name".equals(column)
+                && !"district_name".equals(column)) {
+            throw new IllegalArgumentException("Cột khu vực không hợp lệ.");
+        }
+
+        String sql
+                = "SELECT DISTINCT " + column + " AS region_name "
+                + "FROM dbo.Places "
+                + "WHERE is_active = 1 "
+                + "AND NULLIF(LTRIM(RTRIM(" + column + ")), N'') "
+                + "IS NOT NULL ";
+
+        boolean filterCity
+                = city != null && !city.trim().isEmpty();
+
+        if (filterCity) {
+            sql += "AND city_name = ? ";
+        }
+
+        sql += "ORDER BY region_name";
+
+        List<String> regions = new ArrayList<>();
+
+        try ( Connection connection = DBContext.getConnection();  PreparedStatement statement
+                = connection.prepareStatement(sql)) {
+
+            if (filterCity) {
+                statement.setString(1, city.trim());
+            }
+
+            try ( ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    regions.add(resultSet.getString("region_name"));
+                }
+            }
+
+            return regions;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "Không thể tải danh sách khu vực.", e
+            );
+        }
+    }
+
+    public List<String> findTripAreas() {
+        String sql
+                = "SELECT DISTINCT "
+                + "district_name + N', ' + city_name AS area "
+                + "FROM dbo.Places "
+                + "WHERE is_active = 1 "
+                + "AND NULLIF(LTRIM(RTRIM(city_name)), N'') IS NOT NULL "
+                + "AND NULLIF(LTRIM(RTRIM(district_name)), N'') IS NOT NULL "
+                + "ORDER BY area";
+
+        List<String> areas = new ArrayList<>();
+
+        try ( Connection connection = DBContext.getConnection();  PreparedStatement statement
+                = connection.prepareStatement(sql);  ResultSet result = statement.executeQuery()) {
+
+            while (result.next()) {
+                areas.add(result.getString("area"));
+            }
+
+            return areas;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(
+                    "Không thể tải khu vực chuyến đi.", e
+            );
+        }
     }
 }

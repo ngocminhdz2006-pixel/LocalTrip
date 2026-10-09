@@ -20,7 +20,8 @@
         <div class="empty-state app-card">
             <div class="empty-icon">🤔</div>
             <p class="mb-1">Chưa có gợi ý nào.</p>
-            <p class="text-muted">Trip chưa có thành viên nào chọn Preferences. Hãy chọn Preferences trước.</p>
+            <p class="text-muted">Chưa tìm thấy địa điểm phù hợp với khu vực và sở thích của chuyến đi.
+                                  Hãy kiểm tra khu vực đã chọn và sở thích của các thành viên.</p>
             <a href="${pageContext.request.contextPath}/preferences?tripId=${trip.id}"
                class="btn btn-brand mt-2">Chọn Preferences</a>
         </div>
@@ -37,12 +38,12 @@
                         <p class="text-muted mb-1">${rec.place.categoryIcon} ${rec.place.categoryName} &nbsp;|&nbsp; ⭐ ${rec.place.rating}</p>
                         <p class="text-muted mb-2">💰 ~${rec.place.estimatedPrice} đ</p>
                         <p class="mb-3"><small class="text-muted">
-                            Lý do: ${rec.reason}
-                            (Preference match <fmt:formatNumber value="${rec.preferenceMatch}" maxFractionDigits="0"/>%,
-                            Rating ${rec.place.rating}/5,
-                            Budget match <fmt:formatNumber value="${rec.budgetMatch}" maxFractionDigits="0"/>%)
-                        </small></p>
-                        <c:if test="${trip.role == 'OWNER'}">
+                                Lý do: ${rec.reason}
+                                (Preference match <fmt:formatNumber value="${rec.preferenceMatch}" maxFractionDigits="0"/>%,
+                                Rating ${rec.place.rating}/5,
+                                Budget match <fmt:formatNumber value="${rec.budgetMatch}" maxFractionDigits="0"/>%)
+                            </small></p>
+                            <c:if test="${trip.role == 'OWNER'}">
                             <form method="post" action="${pageContext.request.contextPath}/itinerary">
                                 <input type="hidden" name="tripId" value="${trip.id}">
                                 <input type="hidden" name="placeId" value="${rec.place.id}">

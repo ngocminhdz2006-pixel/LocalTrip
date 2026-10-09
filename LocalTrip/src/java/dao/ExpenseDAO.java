@@ -248,21 +248,54 @@ public class ExpenseDAO {
             Set<Integer> participantIds
     ) throws SQLException {
 
-        int participantCount = participantIds.size();
+        if (participantIds == null || participantIds.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Phải chọn ít nhất một người chia chi phí."
+            );
+        }
 
-        BigDecimal shareAmount = totalAmount.divide(
-                BigDecimal.valueOf(participantCount),
-                1,
-                RoundingMode.HALF_UP
+        BigDecimal amount = totalAmount.setScale(
+                2, RoundingMode.UNNECESSARY
         );
+
+        if (amount.signum() <= 0) {
+            throw new IllegalArgumentException(
+                    "Số tiền phải lớn hơn 0."
+            );
+        }
+
+        // Sắp xếp để kết quả chia luôn nhất quán.
+        List<Integer> members = new ArrayList<>(participantIds);
+        java.util.Collections.sort(members);
+
+        int count = members.size();
+
+        BigDecimal baseShare = amount.divide(
+                BigDecimal.valueOf(count),
+                2,
+                RoundingMode.DOWN
+        );
+
+        BigDecimal remainder = amount.subtract(
+                baseShare.multiply(BigDecimal.valueOf(count))
+        );
+
+        int extraUnits = remainder.movePointRight(2).intValueExact();
+        BigDecimal smallestUnit = new BigDecimal("0.01");
 
         try ( PreparedStatement statement
                 = connection.prepareStatement(sql)) {
 
-            for (Integer userId : participantIds) {
+            for (int i = 0; i < count; i++) {
+                BigDecimal share = baseShare;
+
+                if (i < extraUnits) {
+                    share = share.add(smallestUnit);
+                }
+
                 statement.setInt(1, expenseId);
-                statement.setInt(2, userId);
-                statement.setBigDecimal(3, shareAmount);
+                statement.setInt(2, members.get(i));
+                statement.setBigDecimal(3, share);
                 statement.addBatch();
             }
 

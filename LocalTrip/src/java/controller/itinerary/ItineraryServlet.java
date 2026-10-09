@@ -213,6 +213,15 @@ public class ItineraryServlet extends HttpServlet {
             );
             return;
         }
+        if (!"PLANNING".equalsIgnoreCase(trip.getStatus())
+                && !"ONGOING".equalsIgnoreCase(trip.getStatus())) {
+
+            response.sendError(
+                    HttpServletResponse.SC_FORBIDDEN,
+                    "Không thể thay đổi lịch trình của chuyến đi đã hoàn thành hoặc đã hủy."
+            );
+            return;
+        }
 
         Place place = placeDAO.findById(placeId);
 
@@ -266,6 +275,15 @@ public class ItineraryServlet extends HttpServlet {
             );
             return;
         }
+        if (!"PLANNING".equalsIgnoreCase(trip.getStatus())
+                && !"ONGOING".equalsIgnoreCase(trip.getStatus())) {
+
+            response.sendError(
+                    HttpServletResponse.SC_FORBIDDEN,
+                    "Không thể thay đổi lịch trình của chuyến đi đã hoàn thành hoặc đã hủy."
+            );
+            return;
+        }
 
         Place place = placeDAO.findById(placeId);
 
@@ -315,7 +333,20 @@ public class ItineraryServlet extends HttpServlet {
         if (note != null) {
             note = note.trim();
         }
+        java.time.LocalDate today = java.time.LocalDate.now(
+                java.time.ZoneId.of("Asia/Ho_Chi_Minh")
+        );
 
+        if (visitDate.toLocalDate().isBefore(today)) {
+            forwardFormError(
+                    request,
+                    response,
+                    trip,
+                    place,
+                    "Không thể thêm hoạt động vào ngày đã qua."
+            );
+            return;
+        }
         if (visitDate.before(trip.getStartDate())
                 || visitDate.after(trip.getEndDate())) {
 
@@ -441,6 +472,15 @@ public class ItineraryServlet extends HttpServlet {
             response.sendError(
                     HttpServletResponse.SC_FORBIDDEN,
                     "Chỉ Owner mới có thể xóa lịch trình."
+            );
+            return;
+        }
+        if (!"PLANNING".equalsIgnoreCase(trip.getStatus())
+                && !"ONGOING".equalsIgnoreCase(trip.getStatus())) {
+
+            response.sendError(
+                    HttpServletResponse.SC_FORBIDDEN,
+                    "Không thể thay đổi lịch trình của chuyến đi đã hoàn thành hoặc đã hủy."
             );
             return;
         }

@@ -8,7 +8,13 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="mb-0">Expenses - ${trip.name}</h3>
     <div>
-        <a href="${pageContext.request.contextPath}/expenses/create?tripId=${trip.id}" class="btn btn-brand btn-sm">+ Thêm expense</a>
+        <c:if test="${trip.status == 'PLANNING'
+                      or trip.status == 'ONGOING'}">
+              <a href="${pageContext.request.contextPath}/expenses/create?tripId=${trip.id}"
+                 class="btn btn-brand btn-sm">
+                  + Thêm chi phí
+              </a>
+        </c:if>
         <a href="${pageContext.request.contextPath}/settlement?tripId=${trip.id}" class="btn btn-outline-secondary btn-sm">Xem Settlement</a>
     </div>
 </div>
