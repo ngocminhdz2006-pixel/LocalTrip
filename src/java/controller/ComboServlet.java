@@ -3,6 +3,9 @@ package controller;
 import dao.ItineraryDAO;
 import dao.PlaceDAO;
 import dao.TripDAO;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.UUID;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -44,15 +47,28 @@ public class ComboServlet extends HttpServlet {
                 return;
             }
             String profile = normalizeProfile(request.getParameter("profile"));
-            Date visitDate = parseDate(request.getParameter("date"), trip.getStartDate());
-            if (visitDate == null || visitDate.before(trip.getStartDate()) || visitDate.after(trip.getEndDate())) {
+            Date minimum = minimumDate(trip);
+            Date visitDate = parseDate(request.getParameter("date"), minimum);
+            if (visitDate == null || visitDate.before(minimum) || visitDate.after(trip.getEndDate())) {
                 request.setAttribute("error", "Ngày chọn phải nằm trong khoảng thời gian của chuyến đi.");
-                visitDate = trip.getStartDate();
+                visitDate = minimum;
             }
             request.setAttribute("trip", trip);
             request.setAttribute("profile", profile);
             request.setAttribute("visitDate", visitDate.toString());
-            request.setAttribute("comboPlaces", buildCombo(profile));
+            List<Place> candidates = placeDAO.findForDestination(trip.getDestination());
+            request.setAttribute("comboPlaces", buildCombo(profile, candidates));
+            request.setAttribute("comboCandidates", candidates);
+            request.setAttribute("comboMinimumDate", minimum.toString());
+            request.setAttribute("comboEditable", editable(trip) && !minimum.after(trip.getEndDate()));
+            String tokenKey = "comboToken:" + tripId;
+            if (request.getSession().getAttribute(tokenKey) == null) request.getSession().setAttribute(tokenKey, UUID.randomUUID().toString());
+            request.setAttribute("comboToken", request.getSession().getAttribute(tokenKey));
+            Object previousDraft = request.getSession().getAttribute("comboDraft:" + tripId);
+            if (previousDraft != null) {
+                request.setAttribute("comboDraft", previousDraft);
+                request.getSession().removeAttribute("comboDraft:" + tripId);
+            }
             request.getRequestDispatcher("/WEB-INF/views/combo/combo.jsp").forward(request, response);
         } catch (IllegalArgumentException ex) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Trip ID hoặc ngày không hợp lệ.");
@@ -74,80 +90,102 @@ public class ComboServlet extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy chuyến đi hoặc bạn không có quyền truy cập.");
                 return;
             }
+            if (!editable(trip)) { response.sendError(403, "Chỉ trưởng nhóm được xác nhận combo của chuyến đi đang lập kế hoạch hoặc đang diễn ra."); return; }
+            String tokenKey = "comboToken:" + tripId;
+            Object expected = request.getSession().getAttribute(tokenKey);
+            if (expected == null || !expected.equals(request.getParameter("comboToken"))) {
+                response.sendError(403, "Phiên xác nhận đã hết hạn. Hãy tải lại trang combo."); return;
+            }
             String profile = normalizeProfile(request.getParameter("profile"));
             Date visitDate = parseDate(request.getParameter("date"), null);
-            if (visitDate == null || visitDate.before(trip.getStartDate()) || visitDate.after(trip.getEndDate())) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Ngày chọn phải nằm trong khoảng thời gian của chuyến đi.");
-                return;
-            }
-            List<Place> places = buildCombo(profile);
-            Time[] starts = {Time.valueOf("08:00:00"), Time.valueOf("11:00:00"), Time.valueOf("15:00:00")};
-            Time[] ends = {Time.valueOf("10:00:00"), Time.valueOf("13:00:00"), Time.valueOf("17:00:00")};
-            List<ItineraryItem> existing = itineraryDAO.findByTrip(tripId);
-            Set<Integer> existingPlaceIds = new HashSet<Integer>();
-            for (ItineraryItem item : existing) {
-                if (visitDate.equals(item.getVisitDate())) existingPlaceIds.add(item.getPlaceId());
-            }
-            int added = 0;
-            for (int i = 0; i < places.size() && i < 3; i++) {
-                Place place = places.get(i);
-                if (existingPlaceIds.contains(place.getPlaceId())) continue;
-                if (itineraryDAO.hasTimeConflict(tripId, visitDate, starts[i], ends[i])) continue;
+            if (visitDate == null || visitDate.before(minimumDate(trip)) || visitDate.after(trip.getEndDate()))
+                throw new IllegalArgumentException("Ngày áp dụng phải nằm trong chuyến đi và không được là ngày quá khứ.");
+            List<Place> candidates = placeDAO.findForDestination(trip.getDestination());
+            List<ItineraryItem> draft = new ArrayList<ItineraryItem>();
+            Set<Integer> chosenIds = new HashSet<Integer>();
+            Time previousEnd = null;
+            for (int i = 0; i < 3; i++) {
+                int placeId = positiveInt(request.getParameter("placeId" + i));
+                Place place = null;
+                for (Place candidate : candidates) if (candidate.getPlaceId() == placeId) place = candidate;
+                if (place == null || !chosenIds.add(placeId) || !slotMatches(place, i))
+                    throw new IllegalArgumentException("Hãy chọn ba địa điểm khác nhau, đúng loại hoạt động và thuộc khu vực chuyến đi.");
+                Time from = parseTime(request.getParameter("start" + i));
+                Time to = parseTime(request.getParameter("end" + i));
+                if (!to.after(from) || (previousEnd != null && from.toLocalTime().isBefore(previousEnd.toLocalTime().plusMinutes(15))))
+                    throw new IllegalArgumentException("Giờ kết thúc phải sau giờ bắt đầu; cần ít nhất 15 phút nghỉ/di chuyển giữa các hoạt động.");
+                if (!withinOpeningHours(place, from, to)) throw new IllegalArgumentException("Khung giờ không nằm trong giờ mở cửa của " + place.getPlaceName() + ".");
                 ItineraryItem item = new ItineraryItem();
-                item.setTripId(tripId);
-                item.setPlaceId(place.getPlaceId());
-                item.setVisitDate(visitDate);
-                item.setStartTime(starts[i]);
-                item.setEndTime(ends[i]);
-                item.setNote("Combo " + profileLabel(profile) + " · được thêm từ Combo địa điểm");
+                item.setTripId(tripId); item.setPlaceId(placeId); item.setVisitDate(visitDate);
+                item.setStartTime(from); item.setEndTime(to);
                 item.setEstimatedCost(place.getEstimatedCost() == null ? BigDecimal.ZERO : place.getEstimatedCost());
-                if (itineraryDAO.add(item)) {
-                    added++;
-                    existingPlaceIds.add(place.getPlaceId());
-                }
+                item.setNote("Combo " + profileLabel(profile) + " · " + slotLabel(i));
+                draft.add(item); previousEnd = to;
             }
-            String message = added > 0
-                    ? "Đã thêm " + added + " địa điểm vào lịch trình. Các địa điểm trùng giờ hoặc đã có trong ngày được bỏ qua."
-                    : "Không có địa điểm mới được thêm. Có thể các địa điểm đã có trong ngày hoặc bị trùng giờ.";
-            response.sendRedirect(request.getContextPath() + "/combo?tripId=" + tripId
-                    + "&profile=" + profile + "&date=" + visitDate.toString()
-                    + "&message=" + java.net.URLEncoder.encode(message, "UTF-8"));
+            itineraryDAO.addComboAuthorized(tripId, user.getUserId(), draft);
+            request.getSession().removeAttribute(tokenKey);
+            request.getSession().setAttribute("successMessage", "Đã xác nhận combo. Bản đồ và thời tiết sẽ dùng lịch trình vừa lưu.");
+            response.sendRedirect(request.getContextPath() + "/itinerary?tripId=" + tripId);
         } catch (IllegalArgumentException ex) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Thông tin combo không hợp lệ.");
+            request.getSession().setAttribute("errorMessage", ex.getMessage());
+            java.util.Map<String, String> submitted = new java.util.HashMap<String, String>();
+            for (int i = 0; i < 3; i++) {
+                submitted.put("placeId" + i, safe(request.getParameter("placeId" + i)));
+                submitted.put("start" + i, safe(request.getParameter("start" + i)));
+                submitted.put("end" + i, safe(request.getParameter("end" + i)));
+            }
+            request.getSession().setAttribute("comboDraft:" + request.getParameter("tripId"), submitted);
+            response.sendRedirect(request.getContextPath() + "/combo?tripId=" + java.net.URLEncoder.encode(safe(request.getParameter("tripId")), "UTF-8")
+                    + "&profile=" + normalizeProfile(request.getParameter("profile"))
+                    + "&date=" + java.net.URLEncoder.encode(safe(request.getParameter("date")), "UTF-8"));
         } catch (RuntimeException ex) {
             throw new ServletException("Không thể thêm combo vào lịch trình.", ex);
         }
     }
 
-    private List<Place> buildCombo(final String profile) {
-        List<Place> all = placeDAO.findAll();
+    private List<Place> buildCombo(final String profile, List<Place> candidates) {
+        List<Place> all = new ArrayList<Place>(candidates);
         Collections.sort(all, new Comparator<Place>() {
             @Override public int compare(Place a, Place b) {
-                int score = score(b, profile) - score(a, profile);
-                if (score != 0) return score;
-                int rating = safeRating(b).compareTo(safeRating(a));
-                if (rating != 0) return rating;
-                return a.getPlaceName().compareToIgnoreCase(b.getPlaceName());
+                int result = Integer.compare(score(b, profile), score(a, profile));
+                return result != 0 ? result : safeRating(b).compareTo(safeRating(a));
             }
         });
         List<Place> selected = new ArrayList<Place>();
-        Set<Integer> categoryIds = new HashSet<Integer>();
-        for (Place place : all) {
-            if (selected.size() >= 3) break;
-            if (selected.isEmpty() || !categoryIds.contains(place.getCategoryId())) {
-                selected.add(place);
-                categoryIds.add(place.getCategoryId());
+        Set<Integer> used = new HashSet<Integer>();
+        for (int slot = 0; slot < 3; slot++) {
+            for (Place place : all) if (!used.contains(place.getPlaceId()) && slotMatches(place, slot)) {
+                selected.add(place); used.add(place.getPlaceId()); break;
             }
         }
-        if (selected.size() < 3) {
-            for (Place place : all) {
-                if (selected.size() >= 3) break;
-                boolean exists = false;
-                for (Place chosen : selected) if (chosen.getPlaceId() == place.getPlaceId()) exists = true;
-                if (!exists) selected.add(place);
-            }
-        }
-        return selected;
+        return selected.size() == 3 ? selected : Collections.<Place>emptyList();
+    }
+
+    private Date minimumDate(Trip trip) {
+        Date today = Date.valueOf(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+        return today.after(trip.getStartDate()) ? today : trip.getStartDate();
+    }
+    private boolean editable(Trip trip) {
+        return "OWNER".equals(trip.getRole()) && ("PLANNING".equals(trip.getStatus()) || "ONGOING".equals(trip.getStatus()));
+    }
+    public static boolean slotMatches(Place place, int slot) {
+        String code = place.getCategoryCode();
+        return code != null && (slot == 1 ? "FOOD".equals(code) : slot == 2 ? "CAFE".equals(code)
+                : ("SIGHTSEEING".equals(code) || "ENTERTAINMENT".equals(code) || "SHOPPING".equals(code)));
+    }
+    public static String slotLabel(int slot) {
+        return slot == 1 ? "Bữa ăn" : slot == 2 ? "Đồ uống và nghỉ ngơi" : "Tham quan và trải nghiệm";
+    }
+    private Time parseTime(String value) {
+        if (value == null || !value.matches("\\d{2}:\\d{2}")) throw new IllegalArgumentException("Giờ không hợp lệ.");
+        try { return Time.valueOf(java.time.LocalTime.parse(value)); }
+        catch (RuntimeException ex) { throw new IllegalArgumentException("Giờ không hợp lệ."); }
+    }
+    private boolean withinOpeningHours(Place place, Time from, Time to) {
+        Time open = place.getOpeningTime(), close = place.getClosingTime();
+        if (open != null && close != null && close.before(open))
+            return !from.before(open) || !to.after(close);
+        return (open == null || !from.before(open)) && (close == null || !to.after(close));
     }
 
     private int score(Place p, String profile) {

@@ -14,7 +14,7 @@ public class PlaceDAO {
     private static final String SELECT_BASE
             = "SELECT p.place_id, "
             + "p.category_id, "
-            + "c.category_name, "
+            + "c.category_name, c.category_code, "
             + "p.place_name, "
             + "p.address, "
             + "p.description, "
@@ -30,6 +30,20 @@ public class PlaceDAO {
             + "FROM Places p "
             + "JOIN Categories c "
             + "ON p.category_id = c.category_id ";
+
+    public List<Place> findForDestination(String destination) {
+        List<Place> result = new ArrayList<Place>();
+        String sql = SELECT_BASE + "WHERE p.is_active = 1 AND "
+                + "(p.district_name + N', ' + p.city_name) = ? ORDER BY p.place_name";
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, destination);
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) result.add(mapPlace(rs));
+            }
+        } catch (SQLException ex) { throw new RuntimeException("Không thể tải địa điểm trong khu vực chuyến đi.", ex); }
+        return result;
+    }
 
     public List<Place> findAll() {
         List<Place> places
@@ -266,6 +280,7 @@ public class PlaceDAO {
                 resultSet.getInt("category_id")
         );
 
+        place.setCategoryCode(resultSet.getString("category_code"));
         place.setCategoryName(
                 resultSet.getString("category_name")
         );

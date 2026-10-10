@@ -23,17 +23,17 @@
                 <a href="${pageContext.request.contextPath}/places" class="btn btn-outline-secondary">← Quay lại danh sách</a>
                 <c:if test="${not empty param.tripId}">
                     <a href="${pageContext.request.contextPath}/itinerary?tripId=${param.tripId}&placeId=${place.id}"
-                       class="btn btn-brand">+ Thêm vào Itinerary</a>
+                       class="btn btn-brand">+ Thêm vào Lịch trình</a>
                 </c:if>
                 <c:choose>
                     <c:when test="${not empty place.latitude and not empty place.longitude}">
                         <c:choose>
-                            <c:when test="${not empty param.tripId}"><a href="${pageContext.request.contextPath}/checkin?placeId=${place.id}&amp;tripId=${param.tripId}" class="btn btn-brand">📍 Check-in tại đây</a></c:when>
-                            <c:otherwise><a href="${pageContext.request.contextPath}/checkin?placeId=${place.id}" class="btn btn-brand">📍 Check-in tại đây</a></c:otherwise>
+                            <c:when test="${not empty param.tripId}"><a href="${pageContext.request.contextPath}/checkin?placeId=${place.id}&amp;tripId=${param.tripId}" class="btn btn-brand">📍 Ghi nhận ghé thăm tại đây</a></c:when>
+                            <c:otherwise><a href="${pageContext.request.contextPath}/checkin?placeId=${place.id}" class="btn btn-brand">📍 Ghi nhận ghé thăm tại đây</a></c:otherwise>
                         </c:choose>
                     </c:when>
                     <c:otherwise>
-                        <button type="button" class="btn btn-outline-secondary" disabled title="Địa điểm chưa có tọa độ GPS">📍 Chưa hỗ trợ Check-in GPS</button>
+                        <button type="button" class="btn btn-outline-secondary" disabled title="Địa điểm chưa có tọa độ GPS">📍 Chưa hỗ trợ Ghi nhận ghé thăm GPS</button>
                     </c:otherwise>
                 </c:choose>
             </div>

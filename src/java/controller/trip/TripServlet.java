@@ -241,10 +241,19 @@ public class TripServlet extends HttpServlet {
         }
 
         request.setAttribute("trip", trip);
-        request.setAttribute(
-                "members",
-                tripMemberDAO.findByTrip(tripId)
-        );
+        java.util.List<model.TripMember> viewMembers = tripMemberDAO.findByTrip(tripId);
+        request.setAttribute("members", viewMembers);
+
+        long viewDays = java.time.temporal.ChronoUnit.DAYS.between(trip.getStartDate().toLocalDate(), trip.getEndDate().toLocalDate()) + 1;
+        request.setAttribute("viewTripDays", viewDays);
+        request.setAttribute("viewTripNights", Math.max(0, viewDays - 1));
+        request.setAttribute("viewMemberCount", viewMembers.size());
+        if (!viewMembers.isEmpty()) request.setAttribute("viewBudgetPerMember", trip.getBudget().divide(java.math.BigDecimal.valueOf(viewMembers.size()), 0, java.math.RoundingMode.HALF_UP));
+        java.time.LocalDate viewToday = java.time.LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+        boolean viewInDates = !viewToday.isBefore(trip.getStartDate().toLocalDate()) && !viewToday.isAfter(trip.getEndDate().toLocalDate());
+        boolean viewHasItinerary = !new dao.ItineraryDAO().findByTrip(tripId).isEmpty();
+        request.setAttribute("viewCanStart", viewInDates && viewHasItinerary);
+        request.setAttribute("viewStartReason", !viewHasItinerary ? "Thêm hoặc xác nhận lịch trình trước khi bắt đầu." : !viewInDates ? "Chỉ có thể bắt đầu trong thời gian của chuyến đi." : "");
 
         request.getRequestDispatcher(DETAIL_VIEW)
                 .forward(request, response);
@@ -499,11 +508,7 @@ public class TripServlet extends HttpServlet {
                 "Tạo chuyến đi thành công."
         );
 
-        redirectToDetail(
-                request,
-                response,
-                createdTripId
-        );
+        response.sendRedirect(request.getContextPath() + "/combo?tripId=" + createdTripId);
 
     }
 

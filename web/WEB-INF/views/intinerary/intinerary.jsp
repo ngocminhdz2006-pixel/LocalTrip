@@ -164,14 +164,17 @@
 
                       <form method="post"
                             action="${pageContext.request.contextPath}/itinerary/auto"
-                            onsubmit="return confirm('Tự động xếp lịch theo sở thích nhóm?');">
+                            id="autoPreviewForm">
+                          <input type="hidden" name="autoToken" value="<c:out value='${sessionScope.autoItineraryToken}'/>">
+                          <input type="hidden" name="action" value="generate">
+                          <p class="small text-muted">Lịch đang lưu chỉ thay đổi khi bạn xác nhận bản xem trước.</p>
                           <input type="hidden"
                                  name="tripId"
                                  value="${trip.id}">
 
                           <button type="submit"
                                   class="btn btn-brand btn-sm">
-                              Tạo lịch trình tự động
+                              Tạo lịch mới để xem trước
                           </button>
                       </form>
                   </div>
@@ -350,6 +353,7 @@
                                           and (trip.status == 'PLANNING'
                                           or trip.status == 'ONGOING')}">
                                   <td>
+                                      <a class="btn btn-sm btn-outline-primary mb-2" href="${pageContext.request.contextPath}/itinerary/edit?tripId=${trip.id}&amp;itemId=${item.id}">Sửa</a>
                                       <form method="post"
                                             action="${pageContext.request.contextPath}/itinerary/delete"
                                             onsubmit="return confirm('Xóa địa điểm này khỏi lịch trình?');">
@@ -389,7 +393,6 @@
      class="d-none"
      aria-hidden="true">
     <c:forEach var="item" items="${items}">
-        <c:if test="${not empty item.latitude and not empty item.longitude}">
             <span class="itinerary-map-point"
                   data-id="${item.placeId}"
                   data-name="<c:out value='${item.placeName}'/>"
@@ -399,10 +402,10 @@
                   data-start="${item.startTime}"
                   data-end="${item.endTime}">
             </span>
-        </c:if>
     </c:forEach>
 </div>
 
+<script src="${pageContext.request.contextPath}/js/itinerary-data.js?v=1"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
@@ -424,19 +427,7 @@
                                                         return;
                                                     }
 
-                                                    const allPoints = Array.from(
-                                                            document.querySelectorAll('.itinerary-map-point')
-                                                            ).map(function (element) {
-                                                        return {
-                                                            id: Number(element.dataset.id),
-                                                            name: element.dataset.name || '',
-                                                            lat: Number(element.dataset.lat),
-                                                            lng: Number(element.dataset.lng),
-                                                            date: element.dataset.date || '',
-                                                            start: element.dataset.start || '',
-                                                            end: element.dataset.end || ''
-                                                        };
-                                                    });
+                                                    const allPoints = Array.from(document.querySelectorAll('.itinerary-map-point')).map(LocalTripSchedule.readPoint);
 
                                                     const map = L.map(mapElement)
                                                             .setView([10.8231, 106.6297], 11);
@@ -567,14 +558,7 @@
                                                     }
 
                                                     function pointsForDay(day) {
-                                                        return allPoints.filter(function (point) {
-                                                            return (day === 'ALL' || point.date === day)
-                                                                    && Number.isFinite(point.lat)
-                                                                    && Number.isFinite(point.lng);
-                                                        }).sort(function (first, second) {
-                                                            return (first.date + ' ' + first.start)
-                                                                    .localeCompare(second.date + ' ' + second.start);
-                                                        });
+                                                        return LocalTripSchedule.pointsForDay(allPoints, day);
                                                     }
 
                                                     function updateLegOptions(day) {
@@ -738,20 +722,9 @@
                                                             return;
                                                         }
 
-                                                        if (legFilter.value !== 'ALL') {
-                                                            const first = points[0];
-                                                            const last = points[points.length - 1];
-
-                                                            directionsLink.href =
-                                                                    'https://www.google.com/maps/dir/?api=1'
-                                                                    + '&origin='
-                                                                    + encodeURIComponent(first.lat + ',' + first.lng)
-                                                                    + '&destination='
-                                                                    + encodeURIComponent(last.lat + ',' + last.lng)
-                                                                    + '&travelmode=driving';
-
-                                                            directionsLink.classList.remove('d-none');
-                                                        }
+                                                        directionsLink.href = LocalTripSchedule.directionsUrl(points);
+                                                        directionsLink.textContent = legFilter.value === 'ALL' ? 'Mở chỉ đường cả ngày' : 'Mở chỉ đường chặng này';
+                                                        directionsLink.classList.remove('d-none');
 
                                                         const fallback = L.polyline(latLngs, {
                                                             weight: 4,
@@ -844,23 +817,7 @@
         if (!list || !status || !notice)
             return;
 
-        const points = Array.from(
-                document.querySelectorAll('.itinerary-map-point')
-                ).map(function (element) {
-            return {
-                name: element.dataset.name || 'Địa điểm',
-                lat: Number(element.dataset.lat),
-                lng: Number(element.dataset.lng),
-                date: element.dataset.date || '',
-                start: element.dataset.start || '',
-                end: element.dataset.end || ''
-            };
-        }).filter(function (point) {
-            return Number.isFinite(point.lat)
-                    && Number.isFinite(point.lng)
-                    && point.date
-                    && point.start;
-        });
+        const points = Array.from(document.querySelectorAll('.itinerary-map-point')).map(LocalTripSchedule.readPoint);
 
         function escapeHtml(value) {
             return String(value == null ? '' : value)
@@ -871,33 +828,8 @@
                     .replace(/'/g, '&#039;');
         }
 
-        function hourKey(start) {
-            const match = String(start).match(/^(\d{1,2}):(\d{2})/);
-
-            if (!match)
-                return null;
-
-            const hour = Number(match[1]);
-            const minute = Number(match[2]);
-
-            if (hour > 23 || minute > 59)
-                return null;
-
-            return String(hour).padStart(2, '0') + ':00';
-        }
-
-        function dateDiffDays(dateString) {
-            const target = new Date(dateString + 'T00:00:00');
-            const now = new Date();
-
-            const today = new Date(
-                    now.getFullYear(),
-                    now.getMonth(),
-                    now.getDate()
-                    );
-
-            return Math.floor((target - today) / 86400000);
-        }
+        function hourKey(start) { return LocalTripSchedule.hourKey(start); }
+        function dateDiffDays(dateString) { return LocalTripSchedule.dateDiffDays(dateString); }
 
         function addNotice(message) {
             notice.classList.remove('d-none');
@@ -915,7 +847,7 @@
                     + '</div>'
                     + '<div class="weather-info-row">'
                     + '<span>Ngày đi</span>'
-                    + '<strong>' + escapeHtml(point.date) + '</strong>'
+                    + '<strong>' + escapeHtml(formatWeatherDate(point.date)) + '</strong>'
                     + '</div>'
                     + '<div class="weather-info-row">'
                     + '<span>Khung giờ</span>'
@@ -942,6 +874,8 @@
         }
 
         async function fetchWeather(point) {
+            if (!LocalTripSchedule.hasCoordinates(point)) return {unavailable: true, reason: 'Địa điểm chưa có tọa độ hợp lệ nên chưa thể lấy thời tiết.'};
+            if (!Number.isFinite(dateDiffDays(point.date))) return {unavailable: true, reason: 'Ngày hoạt động không hợp lệ.'};
             const hour = hourKey(point.start);
 
             if (!hour) {
@@ -968,13 +902,20 @@
                     + '&start_date=' + encodeURIComponent(point.date)
                     + '&end_date=' + encodeURIComponent(point.date);
 
-            const response = await fetch(url);
+            const controller = new AbortController();
+            const timeout = setTimeout(function () { controller.abort(); }, 15000);
+            let response, data;
+            try {
+                response = await fetch(url, {signal: controller.signal});
+                if (!response.ok) throw new Error('Không lấy được dữ liệu thời tiết.');
+                data = await response.json();
+            } finally { clearTimeout(timeout); }
 
             if (!response.ok) {
                 throw new Error('Không lấy được dữ liệu thời tiết.');
             }
 
-            const data = await response.json();
+
             const hourly = data.hourly;
 
             if (!hourly || !Array.isArray(hourly.time)) {
@@ -982,7 +923,7 @@
             }
 
             const index = hourly.time.findIndex(function (value) {
-                return value.substring(11, 16) === hour;
+                return value === point.date + 'T' + hour;
             });
 
             if (index < 0) {
@@ -1131,7 +1072,7 @@
             if (unavailableCount > 0) {
                 messages.push(
                         unavailableCount
-                        + ' hoạt động nằm ngoài phạm vi dự báo.'
+                        + ' hoạt động chưa có dự báo; xem lý do ở từng hoạt động.'
                         );
             }
 

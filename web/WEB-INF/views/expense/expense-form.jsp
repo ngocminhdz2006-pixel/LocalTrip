@@ -6,7 +6,7 @@
         <c:set var="pageTitle" value="Chỉnh sửa khoản chi" scope="request"/>
     </c:when>
     <c:otherwise>
-        <c:set var="pageTitle" value="Thêm Expense" scope="request"/>
+        <c:set var="pageTitle" value="Thêm khoản chi" scope="request"/>
     </c:otherwise>
 </c:choose>
 
@@ -159,7 +159,7 @@
                     </div>
 
                     <div class="small text-muted ms-4 mt-1">
-                        Owner được chọn làm người trả mặc định. Bạn vẫn có thể đổi người trả.
+                        Trưởng nhóm được chọn làm người trả mặc định. Bạn vẫn có thể đổi người trả.
                     </div>
                 </div>
 
@@ -169,7 +169,7 @@
                             Lưu thay đổi
                         </c:when>
                         <c:otherwise>
-                            Lưu Expense
+                            Lưu khoản chi
                         </c:otherwise>
                     </c:choose>
                 </button>

@@ -5,13 +5,13 @@
     Category item = (Category) request.getAttribute("item");
     boolean editing = item != null;
     String errorMessage = (String) request.getAttribute("errorMessage");
-    request.setAttribute("pageTitle", editing ? "Sửa Category" : "Thêm Category");
+    request.setAttribute("pageTitle", editing ? "Sửa danh mục" : "Thêm danh mục");
 %>
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="fw-bold mb-1"><%= editing ? "Sửa Category" : "Thêm Category" %></h2>
+        <h2 class="fw-bold mb-1"><%= editing ? "Sửa danh mục" : "Thêm danh mục" %></h2>
         <p class="text-muted mb-0">Nhập thông tin danh mục địa điểm.</p>
     </div>
     <a href="<%= request.getContextPath()%>/admin/categories" class="btn btn-outline-secondary">Quay lại</a>
@@ -31,7 +31,7 @@
             <% } %>
 
             <div class="mb-3">
-                <label class="form-label">Mã Category <span class="text-danger">*</span></label>
+                <label class="form-label">Mã danh mục <span class="text-danger">*</span></label>
                 <input type="text" name="categoryCode" class="form-control"
                        maxlength="50" required
                        value="<%= HtmlUtil.escape(item == null ? "" : item.getCategoryCode()) %>"
@@ -40,7 +40,7 @@
             </div>
 
             <div class="mb-4">
-                <label class="form-label">Tên Category <span class="text-danger">*</span></label>
+                <label class="form-label">Tên danh mục <span class="text-danger">*</span></label>
                 <input type="text" name="categoryName" class="form-control"
                        maxlength="100" required
                        value="<%= HtmlUtil.escape(item == null ? "" : item.getCategoryName()) %>"
@@ -48,7 +48,7 @@
             </div>
 
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary"><%= editing ? "Lưu thay đổi" : "Thêm Category" %></button>
+                <button type="submit" class="btn btn-primary"><%= editing ? "Lưu thay đổi" : "Thêm danh mục" %></button>
                 <a href="<%= request.getContextPath()%>/admin/categories" class="btn btn-outline-secondary">Hủy</a>
             </div>
         </form>

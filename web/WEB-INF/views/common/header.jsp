@@ -78,9 +78,13 @@
           href="<%= request.getContextPath() %>/css/style.css">
     <link rel="stylesheet" href="<%= request.getContextPath() %>/css/localtrip.css?v=2">
     <link rel="stylesheet" href="<%= request.getContextPath() %>/css/travel-features.css?v=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/app-theme.css?v=1">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/css/site.css?v=1">
 </head>
 
-<body class="<%= headerUser == null ? "auth-page" : (headerIsAdmin ? "admin-page" : "user-page") %>">
+<body class="rd-page <%= headerUser == null ? "auth-page" : (headerIsAdmin ? "admin-page" : "user-page") %>">
 <a class="skip-link" href="#main-content">Đi đến nội dung</a>
 
 <nav class="navbar navbar-expand-lg app-navbar sticky-top">
@@ -135,7 +139,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<%= request.getContextPath() %>/dump">Dump</a>
+                        <a class="nav-link" href="<%= request.getContextPath() %>/dump">Nhật ký</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="<%= request.getContextPath() %>/passport">Hộ chiếu</a>
@@ -174,7 +178,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<%= request.getContextPath() %>/admin/dump-reports">Báo cáo Dump</a>
+                        <a class="nav-link" href="<%= request.getContextPath() %>/admin/dump-reports">Báo cáo Nhật ký</a>
                     </li>
                 </ul>
 
@@ -201,7 +205,7 @@
 
                         <span class="app-user-role">
                             <%= HtmlUtil.escape(
-                                    headerUser.getRole()
+                                    headerIsAdmin ? "Quản trị viên" : "Thành viên"
                             ) %>
                         </span>
                     </div>
@@ -236,11 +240,11 @@
 <%
     Object workspaceTripObject = request.getAttribute("currentTrip");
     if (workspaceTripObject == null) workspaceTripObject = request.getAttribute("trip");
-    if (headerIsUser && workspaceTripObject instanceof model.Trip) {
+    if (headerIsUser && !Boolean.TRUE.equals(request.getAttribute("tripRedesign")) && workspaceTripObject instanceof model.Trip) {
         model.Trip workspaceTrip = (model.Trip) workspaceTripObject;
         if (workspaceTrip.getTripId() > 0) {
 %>
-<div class="trip-workspace">
+<div class="trip-layout"><aside class="trip-workspace">
     <div class="trip-workspace-label">Không gian chuyến đi · <%= HtmlUtil.escape(workspaceTrip.getTripName()) %></div>
     <nav aria-label="Các chức năng chuyến đi">
         <a href="<%= request.getContextPath() %>/trip/detail?tripId=<%= workspaceTrip.getTripId() %>">Tổng quan</a>
@@ -253,8 +257,8 @@
         <a href="<%= request.getContextPath() %>/settlement?tripId=<%= workspaceTrip.getTripId() %>">Chia tiền</a>
         <a href="<%= request.getContextPath() %>/group-fund?tripId=<%= workspaceTrip.getTripId() %>">Quỹ nhóm</a>
     </nav>
-</div>
-<% } } %>
+</aside><div class="trip-content">
+<% request.setAttribute("hasTripLayout", Boolean.TRUE); } } %>
 
     <% if (headerError != null
             && !headerError.isEmpty()) { %>
@@ -281,4 +285,17 @@
         </div>
 
     <% } %>
+
+
+<% boolean redesignAuth = headerUser == null && java.util.Arrays.asList("Đăng nhập", "Đăng ký", "Quên mật khẩu", "Đặt lại mật khẩu").contains(pageTitleText);
+   if (redesignAuth) { request.setAttribute("hasAuthLayout", Boolean.TRUE); %>
+<div class="rd-auth-layout">
+    <section class="rd-auth-welcome" aria-label="Giới thiệu LocalTrip">
+        <span class="eyebrow">LOCALTRIP · CÙNG NHAU KHÁM PHÁ</span>
+        <h1>Chuyến đi đẹp hơn<br>khi có nhau.</h1>
+        <p>Lên kế hoạch cho những ngày đáng nhớ, tìm điểm đến yêu thích và chia sẻ hành trình cùng bạn bè.</p>
+        <div class="rd-auth-features"><span>Khám phá địa điểm</span><span>Lên lịch cùng nhóm</span><span>Chia sẻ chi phí</span></div>
+    </section>
+    <div class="rd-auth-form">
+<% } %>
 

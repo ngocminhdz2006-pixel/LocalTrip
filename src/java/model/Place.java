@@ -8,6 +8,9 @@ public class Place {
     private int placeId;
     private int categoryId;
     private String categoryName;
+    private String categoryCode;
+    public String getCategoryCode() { return categoryCode; }
+    public void setCategoryCode(String value) { categoryCode = value; }
     private String placeName;
     private String address;
     private String description;

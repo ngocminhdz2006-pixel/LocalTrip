@@ -264,3 +264,9 @@ h1, h2, h3, h4, h5, h6 {
     flex: 0 0 auto;
     white-space: nowrap;
 }
+/* Trip tools occupy a distinct sidebar; compact screens use a wrapping menu. */
+.trip-layout{display:grid;grid-template-columns:210px minmax(0,1fr);gap:26px;align-items:start}
+.trip-workspace{position:sticky;top:95px;border:1px solid var(--brand-border);border-radius:12px;padding:16px;background:var(--brand-surface)}
+.trip-workspace nav{flex-direction:column;padding-bottom:0}.trip-workspace-label{line-height:1.6}.trip-content{min-width:0}
+.itinerary-day-filter{flex-wrap:wrap}.itinerary-leg-filter{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.itinerary-leg-filter .form-select{width:auto;max-width:100%;flex:1 1 220px}
+@media(max-width:991px){.trip-layout{grid-template-columns:1fr}.trip-workspace{position:static}.trip-workspace nav{flex-direction:row;flex-wrap:wrap}}

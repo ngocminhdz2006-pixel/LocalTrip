@@ -168,6 +168,8 @@ public class ItineraryServlet extends HttpServlet {
             return;
         }
 
+        if (request.getSession().getAttribute("autoItineraryToken") == null)
+            request.getSession().setAttribute("autoItineraryToken", java.util.UUID.randomUUID().toString());
         request.setAttribute("trip", trip);
         request.setAttribute(
                 "items",

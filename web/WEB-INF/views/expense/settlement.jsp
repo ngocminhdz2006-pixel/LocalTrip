@@ -1,20 +1,20 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<c:set var="pageTitle" value="Settlement" scope="request"/>
+<c:set var="pageTitle" value="Chia tiền" scope="request"/>
 <c:set var="currentTrip" value="${trip}" scope="request"/>
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
-<h3 class="mb-3">Settlement - ${trip.name}</h3>
+<h3 class="mb-3">Chia tiền - ${trip.name}</h3>
 
 <div class="app-card p-0 mb-4">
     <table class="table mb-0 align-middle">
         <thead>
         <tr>
             <th>Thành viên</th>
-            <th>Paid</th>
-            <th>Owed</th>
-            <th>Balance</th>
+            <th>Đã trả</th>
+            <th>Phần phải trả</th>
+            <th>Chênh lệch</th>
         </tr>
         </thead>
         <tbody>
@@ -40,7 +40,7 @@
 </div>
 
 <div class="app-card">
-    <h5 class="mb-3">Suggested Transfers</h5>
+    <h5 class="mb-3">Gợi ý chuyển khoản</h5>
     <c:choose>
         <c:when test="${empty transfers}">
             <p class="text-muted mb-0">Mọi người đã cân bằng chi phí, không cần chuyển khoản.</p>

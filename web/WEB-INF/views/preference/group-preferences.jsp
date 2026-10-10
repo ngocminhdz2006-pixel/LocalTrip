@@ -1,25 +1,25 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<c:set var="pageTitle" value="Group Preferences" scope="request"/>
+<c:set var="pageTitle" value="Sở thích nhóm" scope="request"/>
 <c:set var="currentTrip" value="${trip}" scope="request"/>
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
 <div class="app-card">
-    <h4 class="mb-3">Group Preferences - ${trip.name}</h4>
+    <h4 class="mb-3">Sở thích nhóm - ${trip.name}</h4>
 
     <c:choose>
         <c:when test="${empty groupPreferences}">
             <div class="empty-state">
                 <div class="empty-icon">🗳️</div>
-                <p>Chưa có thành viên nào chọn preferences.</p>
+                <p>Chưa có thành viên nào chọn Sở thích.</p>
             </div>
         </c:when>
         <c:otherwise>
             <table class="table align-middle">
                 <thead>
                 <tr>
-                    <th>Category</th>
+                    <th>Danh mục</th>
                     <th>Số người chọn</th>
                     <th style="width:40%;">Tỷ lệ nhóm</th>
                 </tr>
@@ -45,7 +45,7 @@
     </c:choose>
 
     <a href="${pageContext.request.contextPath}/recommendations?tripId=${trip.id}"
-       class="btn btn-brand mt-2">Xem Recommendation</a>
+       class="btn btn-brand mt-2">Xem gợi ý địa điểm</a>
 </div>
 
 <%@ include file="/WEB-INF/views/common/footer.jsp" %>

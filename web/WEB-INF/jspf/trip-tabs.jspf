@@ -1,0 +1,10 @@
+<%@ page pageEncoding="UTF-8" %>
+<nav class="rd-tabs" aria-label="Các chức năng chuyến đi"><a class="on" aria-current="page" href="${pageContext.request.contextPath}/trip/detail?tripId=${trip.id}">Tổng quan</a>
+<a  href="${pageContext.request.contextPath}/preferences?tripId=${trip.id}">Sở thích của tôi</a>
+<a  href="${pageContext.request.contextPath}/preferences/group?tripId=${trip.id}">Sở thích nhóm</a>
+<a  href="${pageContext.request.contextPath}/recommendations?tripId=${trip.id}">Gợi ý địa điểm</a>
+<a  href="${pageContext.request.contextPath}/combo?tripId=${trip.id}">Combo địa điểm</a>
+<a  href="${pageContext.request.contextPath}/itinerary?tripId=${trip.id}">Lịch trình</a>
+<a  href="${pageContext.request.contextPath}/expenses?tripId=${trip.id}">Chi phí</a>
+<a  href="${pageContext.request.contextPath}/settlement?tripId=${trip.id}">Chia tiền</a>
+<a  href="${pageContext.request.contextPath}/group-fund?tripId=${trip.id}">Quỹ nhóm</a></nav>

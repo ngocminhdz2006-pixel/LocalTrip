@@ -64,7 +64,7 @@
 
         <a href="<%= request.getContextPath()%>/admin"
            class="btn btn-outline-secondary">
-            Về Admin Dashboard
+            Về Admin Tổng quan
         </a>
     </div>
 </div>

@@ -8,6 +8,7 @@
     List<Place> comboPlaces = (List<Place>) request.getAttribute("comboPlaces");
     String profileName = "summer".equals(profile) ? "Mùa hạ" : ("autumn".equals(profile) ? "Mùa thu" : ("winter".equals(profile) ? "Mùa đông" : "Mùa xuân"));
     String profileIcon = "summer".equals(profile) ? "☀️" : ("autumn".equals(profile) ? "🍂" : ("winter".equals(profile) ? "❄️" : "🌸"));
+    java.util.Map<String, String> savedDraft = (java.util.Map<String, String>) request.getAttribute("comboDraft");
     String message = request.getParameter("message");
     String error = (String) request.getAttribute("error");
 %>
@@ -17,7 +18,7 @@
 <div class="combo-wrap">
     <section class="combo-hero">
         <h1><%= profileIcon %> Combo địa điểm theo mùa</h1>
-        <p>Chọn một chủ đề theo mùa để nhận 3 địa điểm gợi ý tại TP.HCM và thêm nhanh vào lịch trình.</p>
+        <p>Chọn chủ đề, xem trước và chỉnh lịch trình trong khu vực chuyến đi trước khi xác nhận.</p>
         <div class="season-note">Lưu ý: TP.HCM có hai mùa khí hậu chính. Bốn mùa trong Combo là bốn chủ đề trải nghiệm để bạn dễ chọn phong cách khám phá thành phố.</div>
         <strong>Chuyến đi: <%= HtmlUtil.escape(comboTrip == null ? "" : comboTrip.getTripName()) %></strong>
     </section>
@@ -44,35 +45,50 @@
     <form class="combo-controls" method="get" action="<%= request.getContextPath() %>/combo">
         <input type="hidden" name="tripId" value="<%= comboTrip.getTripId() %>">
         <input type="hidden" name="profile" value="<%= profile %>">
-        <div><label for="date">Ngày áp dụng combo</label><input id="date" type="date" name="date" value="<%= visitDate %>" min="<%= comboTrip.getStartDate() %>" max="<%= comboTrip.getEndDate() %>" required></div>
+        <div><label for="date">Ngày áp dụng combo</label><input id="date" type="date" name="date" value="<%= visitDate %>" min="<%= request.getAttribute("comboMinimumDate") %>" max="<%= comboTrip.getEndDate() %>" required></div>
         <button class="combo-btn" type="submit">Tạo combo cho ngày này</button>
         <a class="combo-btn secondary" href="<%= request.getContextPath() %>/itinerary?tripId=<%= comboTrip.getTripId() %>">Xem lịch trình</a>
     </form>
     <h2>Combo <%= profileName %></h2>
+    <p>Khu vực: <strong><%= HtmlUtil.escape(comboTrip.getDestination()) %></strong>. Lịch trình có tham quan, bữa ăn, đồ uống và thời gian nghỉ/di chuyển.</p>
     <% if (comboPlaces == null || comboPlaces.isEmpty()) { %>
-        <div class="combo-warning">Chưa có địa điểm đang hoạt động. Hãy chạy script sql/10_seasonal_combos.sql rồi thử lại.</div>
+        <div class="combo-warning">Khu vực này chưa đủ địa điểm cho combo gồm tham quan, bữa ăn và đồ uống. Bạn có thể tự soạn lịch trình.</div>
     <% } else { %>
-        <div class="combo-list">
-        <% int idx = 0; for (Place p : comboPlaces) { idx++; %>
-            <article class="combo-card">
-                <span class="combo-number">Điểm dừng <%= idx %> · <%= idx == 1 ? "08:00–10:00" : (idx == 2 ? "11:00–13:00" : "15:00–17:00") %></span>
-                <h3><%= HtmlUtil.escape(p.getPlaceName() == null ? "Địa điểm" : p.getPlaceName()) %></h3>
-                <div class="combo-meta"><strong>Danh mục:</strong> <%= HtmlUtil.escape(p.getCategoryName() == null ? "Chưa phân loại" : p.getCategoryName()) %><br>
-                <strong>Địa chỉ:</strong> <%= HtmlUtil.escape(p.getAddress() == null ? "Chưa cập nhật" : p.getAddress()) %><br>
-                <strong>Chi phí dự kiến:</strong> <%= p.getEstimatedCost() == null ? "0" : p.getEstimatedCost().toPlainString() %> đ<br>
-                <strong>Đánh giá:</strong> <%= p.getRating() == null ? "Chưa có" : p.getRating().toPlainString() + "/5" %></div>
-                <% if (p.getDescription() != null && !p.getDescription().trim().isEmpty()) { %><p><%= HtmlUtil.escape(p.getDescription()) %></p><% } %>
-            </article>
-        <% } %>
-        </div>
-        <% if (comboPlaces.size() < 3) { %><div class="combo-warning">Dữ liệu hiện chỉ có <%= comboPlaces.size() %> địa điểm phù hợp/đang hoạt động; hãy bổ sung thêm địa điểm.</div><% } %>
-        <form class="combo-actions" method="post" action="<%= request.getContextPath() %>/combo">
+        <form method="post" action="<%= request.getContextPath() %>/combo">
             <input type="hidden" name="tripId" value="<%= comboTrip.getTripId() %>">
             <input type="hidden" name="profile" value="<%= profile %>">
             <input type="hidden" name="date" value="<%= visitDate %>">
-            <button class="combo-btn" type="submit">Thêm combo vào lịch trình</button>
-            <a class="combo-btn secondary" href="<%= request.getContextPath() %>/itinerary?tripId=<%= comboTrip.getTripId() %>">Mở lịch trình</a>
+            <input type="hidden" name="comboToken" value="<%= HtmlUtil.escape(String.valueOf(request.getAttribute("comboToken"))) %>">
+            <div class="combo-list">
+            <% int idx = 0; for (Place p : comboPlaces) {
+                String[] starts = {"08:00", "11:00", "15:00"};
+                String[] ends = {"10:00", "13:00", "17:00"};
+            %>
+                <article class="combo-card">
+                    <h3><%= controller.ComboServlet.slotLabel(idx) %></h3>
+                    <label for="comboPlace<%= idx %>" class="form-label">Địa điểm</label>
+                    <select id="comboPlace<%= idx %>" class="form-select" name="placeId<%= idx %>" required>
+                        <% for (Place option : (List<Place>) request.getAttribute("comboCandidates")) {
+                            if (!controller.ComboServlet.slotMatches(option, idx)) continue;
+                            String selectedId = savedDraft == null ? String.valueOf(p.getPlaceId()) : savedDraft.get("placeId" + idx);
+                        %>
+                        <option data-address="<%= HtmlUtil.escape(option.getAddress()) %>" data-cost="<%= option.getEstimatedCost() == null ? "0" : option.getEstimatedCost().toPlainString() %>" value="<%= option.getPlaceId() %>" <%= String.valueOf(option.getPlaceId()).equals(selectedId) ? "selected" : "" %>><%= HtmlUtil.escape(option.getPlaceName()) %> · <%= HtmlUtil.escape(option.getCategoryName()) %> · <%= HtmlUtil.escape(option.getOpenHours()) %></option>
+                        <% } %>
+                    </select>
+                    <div class="row mt-2">
+                        <div class="col-6"><label class="form-label" for="comboStart<%= idx %>">Bắt đầu</label><input id="comboStart<%= idx %>" class="form-control" type="time" name="start<%= idx %>" value="<%= HtmlUtil.escape(savedDraft == null ? starts[idx] : savedDraft.get("start" + idx)) %>" required></div>
+                        <div class="col-6"><label class="form-label" for="comboEnd<%= idx %>">Kết thúc</label><input id="comboEnd<%= idx %>" class="form-control" type="time" name="end<%= idx %>" value="<%= HtmlUtil.escape(savedDraft == null ? ends[idx] : savedDraft.get("end" + idx)) %>" required></div>
+                    </div>
+                    <p class="combo-meta mt-3 combo-selected-meta">Gợi ý: <%= HtmlUtil.escape(p.getAddress()) %><br>Chi phí tham khảo: <%= p.getEstimatedCost() == null ? "0" : p.getEstimatedCost().toPlainString() %> đ</p>
+                </article>
+            <% idx++; } %>
+            </div>
+            <p class="mt-3">Bạn có thể đổi địa điểm và giờ. Giữ ít nhất 15 phút giữa các hoạt động để nghỉ và di chuyển. Combo chỉ được lưu sau khi xác nhận.</p>
+            <% if (Boolean.TRUE.equals(request.getAttribute("comboEditable"))) { %>
+                <button class="combo-btn" type="submit">Xác nhận lịch trình ngày <%= visitDate %></button>
+            <% } else { %>
+                <div class="combo-warning">Chỉ trưởng nhóm được xác nhận combo; ngày áp dụng phải chưa qua và chuyến đi phải còn cho phép chỉnh sửa.</div>
+            <% } %>
+            <a class="combo-btn secondary" href="<%= request.getContextPath() %>/itinerary?tripId=<%= comboTrip.getTripId() %>">Xem lịch đã lưu</a>
         </form>
     <% } %>
-</div>
-<%@ include file="/WEB-INF/views/common/footer.jsp" %>

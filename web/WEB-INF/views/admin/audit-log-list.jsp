@@ -25,7 +25,7 @@
         </p>
     </div>
     <a href="<%= request.getContextPath() %>/admin" class="btn btn-outline-secondary">
-        Admin Dashboard
+        Admin Tổng quan
     </a>
 </div>
 

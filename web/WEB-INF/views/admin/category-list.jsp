@@ -17,12 +17,12 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="fw-bold mb-1">Quản lý Categories</h2>
+        <h2 class="fw-bold mb-1">Quản lý danh mục</h2>
         <p class="text-muted mb-0">Quản lý các danh mục địa điểm được sử dụng trong LocalTrip.</p>
     </div>
     <div class="d-flex gap-2">
-        <a href="<%= request.getContextPath()%>/admin/categories/create" class="btn btn-primary">+ Thêm Category</a>
-        <a href="<%= request.getContextPath()%>/admin" class="btn btn-outline-secondary">Về Admin Dashboard</a>
+        <a href="<%= request.getContextPath()%>/admin/categories/create" class="btn btn-primary">+ Thêm danh mục</a>
+        <a href="<%= request.getContextPath()%>/admin" class="btn btn-outline-secondary">Về Admin Tổng quan</a>
     </div>
 </div>
 
@@ -58,7 +58,7 @@
 <div class="card shadow-sm">
     <div class="card-body">
         <div class="d-flex justify-content-between mb-3">
-            <strong>Danh sách Categories</strong>
+            <strong>Danh sách danh mục</strong>
             <span class="text-muted"><%= categories == null ? 0 : categories.size() %> kết quả</span>
         </div>
 
@@ -71,7 +71,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Mã</th>
-                        <th>Tên Category</th>
+                        <th>Tên danh mục</th>
                         <th>Số Places</th>
                         <th>Thao tác</th>
                     </tr>

@@ -1,12 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<c:set var="pageTitle" value="Expenses" scope="request"/>
+<c:set var="pageTitle" value="Chi phí" scope="request"/>
 <c:set var="currentTrip" value="${trip}" scope="request"/>
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="mb-0">Expenses - ${trip.name}</h3>
+    <h3 class="mb-0">Chi phí - ${trip.name}</h3>
     <div>
         <c:if test="${trip.status == 'PLANNING'
                       or trip.status == 'ONGOING'}">
@@ -15,7 +15,7 @@
                   + Thêm chi phí
               </a>
         </c:if>
-        <a href="${pageContext.request.contextPath}/settlement?tripId=${trip.id}" class="btn btn-outline-secondary btn-sm">Xem Settlement</a>
+        <a href="${pageContext.request.contextPath}/settlement?tripId=${trip.id}" class="btn btn-outline-secondary btn-sm">Xem chia tiền</a>
     </div>
 </div>
 

@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<c:set var="pageTitle" value="Recommendation" scope="request"/>
+<c:set var="pageTitle" value="Gợi ý địa điểm" scope="request"/>
 <c:set var="currentTrip" value="${trip}" scope="request"/>
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
@@ -9,9 +9,9 @@
     <h3 class="mb-0">Gợi ý địa điểm cho "${trip.name}"</h3>
     <div class="d-flex gap-2">
         <a href="${pageContext.request.contextPath}/preferences/group?tripId=${trip.id}"
-           class="btn btn-outline-secondary btn-sm">Xem Group Preferences</a>
+           class="btn btn-outline-secondary btn-sm">Xem Sở thích nhóm</a>
         <a href="${pageContext.request.contextPath}/itinerary?tripId=${trip.id}"
-           class="btn btn-outline-secondary btn-sm">Xem Itinerary</a>
+           class="btn btn-outline-secondary btn-sm">Xem Lịch trình</a>
     </div>
 </div>
 
@@ -23,7 +23,7 @@
             <p class="text-muted">Chưa tìm thấy địa điểm phù hợp với khu vực và sở thích của chuyến đi.
                                   Hãy kiểm tra khu vực đã chọn và sở thích của các thành viên.</p>
             <a href="${pageContext.request.contextPath}/preferences?tripId=${trip.id}"
-               class="btn btn-brand mt-2">Chọn Preferences</a>
+               class="btn btn-brand mt-2">Chọn Sở thích</a>
         </div>
     </c:when>
     <c:otherwise>
@@ -39,7 +39,7 @@
                         <p class="text-muted mb-2">💰 ~${rec.place.estimatedPrice} đ</p>
                         <p class="mb-3"><small class="text-muted">
                                 Lý do: ${rec.reason}
-                                (Preference match <fmt:formatNumber value="${rec.preferenceMatch}" maxFractionDigits="0"/>%,
+                                (Mức phù hợp sở thích <fmt:formatNumber value="${rec.preferenceMatch}" maxFractionDigits="0"/>%,
                                 Rating ${rec.place.rating}/5,
                                 Budget match <fmt:formatNumber value="${rec.budgetMatch}" maxFractionDigits="0"/>%)
                             </small></p>
@@ -47,7 +47,7 @@
                             <form method="post" action="${pageContext.request.contextPath}/itinerary">
                                 <input type="hidden" name="tripId" value="${trip.id}">
                                 <input type="hidden" name="placeId" value="${rec.place.id}">
-                                <button type="submit" class="btn btn-brand btn-sm">+ Thêm vào Itinerary</button>
+                                <button type="submit" class="btn btn-brand btn-sm">+ Thêm vào Lịch trình</button>
                             </form>
                         </c:if>
                     </div>

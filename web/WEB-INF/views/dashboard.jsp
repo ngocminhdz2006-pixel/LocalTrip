@@ -29,16 +29,16 @@
     <% } %>
 
     <div class="row g-4 mb-4">
-        <div class="col-md-4"><div class="card shadow-sm h-100"><div class="card-body"><div class="text-muted">Tổng số Trip</div><div class="display-6 fw-bold"><%= tripCount == null ? 0 : tripCount %></div></div></div></div>
-        <div class="col-md-4"><div class="card shadow-sm h-100"><div class="card-body"><div class="text-muted">Trip bạn làm Owner</div><div class="display-6 fw-bold"><%= ownerCount == null ? 0 : ownerCount %></div></div></div></div>
-        <div class="col-md-4"><div class="card shadow-sm h-100"><div class="card-body"><div class="text-muted">Trip bạn là Member</div><div class="display-6 fw-bold"><%= memberCount == null ? 0 : memberCount %></div></div></div></div>
+        <div class="col-md-4"><div class="card shadow-sm h-100"><div class="card-body"><div class="text-muted">Tổng số Chuyến đi</div><div class="display-6 fw-bold"><%= tripCount == null ? 0 : tripCount %></div></div></div></div>
+        <div class="col-md-4"><div class="card shadow-sm h-100"><div class="card-body"><div class="text-muted">Chuyến đi bạn làm Trưởng nhóm</div><div class="display-6 fw-bold"><%= ownerCount == null ? 0 : ownerCount %></div></div></div></div>
+        <div class="col-md-4"><div class="card shadow-sm h-100"><div class="card-body"><div class="text-muted">Chuyến đi bạn là Thành viên</div><div class="display-6 fw-bold"><%= memberCount == null ? 0 : memberCount %></div></div></div></div>
     </div>
 
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0">Trip gần đây</h5>
-                <a class="btn btn-primary btn-sm" href="<%= request.getContextPath() %>/trip/create">+ Tạo Trip mới</a>
+                <h5 class="fw-bold mb-0">Chuyến đi gần đây</h5>
+                <a class="btn btn-primary btn-sm" href="<%= request.getContextPath() %>/trip/create">+ Tạo Chuyến đi mới</a>
             </div>
             <% if (trips == null || trips.isEmpty()) { %>
                 <div class="text-center py-5 text-muted">
@@ -60,7 +60,7 @@
                                 &nbsp;|&nbsp; <%= trip.getBudget() %> đ
                             </div>
                         </div>
-                        <span class="badge <%= owner ? "text-bg-primary" : "text-bg-secondary" %>"><%= owner ? "OWNER" : "MEMBER" %></span>
+                        <span class="badge <%= owner ? "text-bg-primary" : "text-bg-secondary" %>"><%= owner ? "Trưởng nhóm" : "Thành viên" %></span>
                     </div>
                 <% } %>
                 </div>
@@ -72,7 +72,7 @@
         <div class="card-body">
             <h5 class="fw-bold mb-3">Lối tắt</h5>
             <a href="<%= request.getContextPath() %>/places" class="btn btn-outline-secondary me-2">Khám phá địa điểm</a>
-            <a href="<%= request.getContextPath() %>/trips" class="btn btn-outline-secondary">My Trips</a>
+            <a href="<%= request.getContextPath() %>/trips" class="btn btn-outline-secondary">Chuyến đi của tôi</a>
         </div>
     </div>
 <%

@@ -25,6 +25,8 @@ import model.Place;
 import model.Recommendation;
 import model.Trip;
 import model.User;
+import model.ItineraryDraft;
+import java.util.UUID;
 
 /**
  * Tự động tạo lịch trình.
@@ -42,7 +44,7 @@ import model.User;
  * phương án. Conflict được kiểm tra trực tiếp trong RAM để tránh mở quá nhiều
  * DB connection.
  */
-@WebServlet(name = "AutoItineraryServlet", urlPatterns = {"/itinerary/auto"})
+@WebServlet(name = "AutoItineraryServlet", urlPatterns = {"/itinerary/auto", "/itinerary/auto/preview"})
 public class AutoItineraryServlet extends HttpServlet {
 
     private static final int FOOD_MINUTES = 60;
@@ -110,6 +112,32 @@ public class AutoItineraryServlet extends HttpServlet {
         int completeMilestones;
         int scheduledItems;
         double totalScore;
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        User user = session == null ? null : (User) session.getAttribute("user");
+        if (user == null) { response.sendRedirect(request.getContextPath() + "/login"); return; }
+        if (!"USER".equals(user.getRole())) { response.sendError(403); return; }
+        try {
+            int tripId = Integer.parseInt(request.getParameter("tripId"));
+            Trip trip = tripDAO.findByIdForUser(tripId, user.getUserId());
+            if (trip == null) { response.sendError(404); return; }
+            if (!"OWNER".equals(trip.getRole())) { response.sendError(403); return; }
+            ItineraryDraft draft = (ItineraryDraft) session.getAttribute("autoDraft:" + tripId);
+            if (draft == null || draft.getOwnerId() != user.getUserId() || draft.isExpired()) {
+                session.removeAttribute("autoDraft:" + tripId);
+                session.setAttribute("errorMessage", "Bản xem trước đã hết hạn hoặc chưa được tạo. Hãy tạo lịch mới.");
+                response.sendRedirect(request.getContextPath() + "/itinerary?tripId=" + tripId); return;
+            }
+            List<ItineraryItem> oldItems = new ArrayList<ItineraryItem>();
+            for (ItineraryItem item : itineraryDAO.findByTrip(tripId)) if (!item.getVisitDate().before(draft.getFromDate())) oldItems.add(item);
+            request.setAttribute("trip", trip); request.setAttribute("draft", draft); request.setAttribute("oldItems", oldItems);
+            request.setAttribute("draftTotal", draft.totalCost());
+            request.getRequestDispatcher("/WEB-INF/views/intinerary/auto-preview.jsp").forward(request, response);
+        } catch (IllegalArgumentException ex) { response.sendError(400, "Mã chuyến đi không hợp lệ."); }
+        catch (RuntimeException ex) { throw new ServletException("Không thể mở bản xem trước.", ex); }
     }
 
     @Override
@@ -197,6 +225,36 @@ public class AutoItineraryServlet extends HttpServlet {
                 return;
             }
 
+            String csrf = request.getParameter("autoToken");
+            if (csrf == null || !csrf.equals(session.getAttribute("autoItineraryToken"))) {
+                response.sendError(403, "Phiên biểu mẫu đã hết hạn. Hãy tải lại lịch trình."); return;
+            }
+            String action = request.getParameter("action");
+            if ("cancel".equals(action) || "confirm".equals(action)) {
+                ItineraryDraft draft = (ItineraryDraft) session.getAttribute("autoDraft:" + tripId);
+                if (draft == null || draft.getOwnerId() != currentUser.getUserId() || draft.isExpired()
+                        || !draft.getToken().equals(request.getParameter("draftToken"))) {
+                    session.setAttribute("errorMessage", "Bản xem trước đã hết hạn hoặc đã được thay thế. Hãy tạo lịch mới.");
+                    response.sendRedirect(request.getContextPath() + "/itinerary?tripId=" + tripId); return;
+                }
+                if ("confirm".equals(action)) {
+                    try {
+                        itineraryDAO.replaceFromDraft(tripId, currentUser.getUserId(), draft.getFromDate(), draft.getRevision(), draft.getItems());
+                        session.removeAttribute("autoDraft:" + tripId);
+                        session.setAttribute("successMessage", "Đã thay thế lịch trình bằng bản vừa xác nhận. Bản đồ và thời tiết sử dụng lịch mới.");
+                    } catch (IllegalArgumentException ex) {
+                        session.setAttribute("errorMessage", ex.getMessage());
+                        response.sendRedirect(request.getContextPath() + "/itinerary/auto/preview?tripId=" + tripId); return;
+                    }
+                } else {
+                    session.removeAttribute("autoDraft:" + tripId);
+                    session.setAttribute("successMessage", "Đã hủy bản xem trước. Lịch trình đang lưu được giữ nguyên.");
+                }
+                response.sendRedirect(request.getContextPath() + "/itinerary?tripId=" + tripId); return;
+            }
+            if (action != null && !"generate".equals(action)) { response.sendError(400); return; }
+            String revision = itineraryDAO.revisionForTrip(tripId);
+            List<ItineraryItem> draftItems = new ArrayList<ItineraryItem>();
             /*
              * =========================================================
              * 1. LẤY RECOMMENDATION
@@ -264,7 +322,7 @@ public class AutoItineraryServlet extends HttpServlet {
              * =========================================================
              */
             List<ItineraryItem> existing
-                    = itineraryDAO.findByTrip(tripId);
+                    = new ArrayList<ItineraryItem>();
 
             /*
              * =========================================================
@@ -274,6 +332,11 @@ public class AutoItineraryServlet extends HttpServlet {
             Set<Integer> scheduledPlaceIds
                     = new HashSet<Integer>();
 
+            Date fromDate = Date.valueOf(LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
+            if (trip.getStartDate().after(fromDate)) fromDate = trip.getStartDate();
+            for (ItineraryItem item : itineraryDAO.findByTrip(tripId)) {
+                if (item.getVisitDate().before(fromDate)) existing.add(item);
+            }
             for (ItineraryItem item : existing) {
 
                 if (item == null) {
@@ -362,7 +425,7 @@ public class AutoItineraryServlet extends HttpServlet {
                      */
                     if (plan.food != null
                             && addItem(
-                                    tripId,
+                                    draftItems, tripId,
                                     currentDate,
                                     plan.food,
                                     plan.foodStart,
@@ -381,7 +444,7 @@ public class AutoItineraryServlet extends HttpServlet {
                      */
                     if (plan.cafe != null
                             && addItem(
-                                    tripId,
+                                    draftItems, tripId,
                                     currentDate,
                                     plan.cafe,
                                     plan.cafeStart,
@@ -400,7 +463,7 @@ public class AutoItineraryServlet extends HttpServlet {
                      */
                     if (plan.activity != null
                             && addItem(
-                                    tripId,
+                                    draftItems, tripId,
                                     currentDate,
                                     plan.activity,
                                     plan.activityStart,
@@ -428,12 +491,13 @@ public class AutoItineraryServlet extends HttpServlet {
              * 8. THÔNG BÁO THÀNH CÔNG
              * =========================================================
              */
-            response.sendRedirect(
-                    request.getContextPath()
-                    + "/itinerary?tripId="
-                    + tripId
-                    + "&auto=success&count="
-                    + added);
+            if (draftItems.isEmpty()) {
+                session.setAttribute("errorMessage", "Không tạo được lịch mới phù hợp. Lịch cũ vẫn được giữ nguyên.");
+                response.sendRedirect(request.getContextPath() + "/itinerary?tripId=" + tripId); return;
+            }
+            Collections.sort(draftItems, Comparator.comparing(ItineraryItem::getVisitDate).thenComparing(ItineraryItem::getStartTime));
+            session.setAttribute("autoDraft:" + tripId, new ItineraryDraft(tripId, currentUser.getUserId(), fromDate, revision, draftItems));
+            response.sendRedirect(request.getContextPath() + "/itinerary/auto/preview?tripId=" + tripId);
 
         } catch (RuntimeException e) {
 
@@ -1273,7 +1337,7 @@ public class AutoItineraryServlet extends HttpServlet {
      * Lưu itinerary item.
      */
     private boolean addItem(
-            int tripId,
+            List<ItineraryItem> draftItems, int tripId,
             LocalDate date,
             Recommendation recommendation,
             LocalTime start,
@@ -1328,7 +1392,11 @@ public class AutoItineraryServlet extends HttpServlet {
                         recommendation.getScore())
                 + ".");
 
-        return itineraryDAO.add(item);
+        item.setPlaceName(recommendation.getPlace().getPlaceName());
+        item.setLatitude(recommendation.getPlace().getLatitude()); item.setLongitude(recommendation.getPlace().getLongitude());
+        if (item.getEstimatedCost() == null) item.setEstimatedCost(java.math.BigDecimal.ZERO);
+        draftItems.add(item);
+        return true;
     }
 
     /**

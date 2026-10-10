@@ -1,3 +1,5 @@
+<% if (Boolean.TRUE.equals(request.getAttribute("hasAuthLayout"))) { %></div></div><% } %>
+<% if (Boolean.TRUE.equals(request.getAttribute("hasTripLayout"))) { %></div></div><% } %>
 </main>
 <footer class="app-footer">
     <div class="container app-footer-content">

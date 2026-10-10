@@ -17,8 +17,8 @@
             <% } else if ("USER".equals(role)) { %><p>Đây là khu vực kiểm tra tài khoản USER.</p>
             <% } %>
             <p class="mt-3 text-muted">
-                TRIP_OWNER được xác định bằng <code>Trips.owner_id</code> và
-                MEMBER được xác định bằng <code>TripMembers</code> theo từng chuyến đi.
+                TRIP_OWNER được xác định bằng <code>Các chuyến đi.owner_id</code> và
+                Thành viên được xác định bằng <code>TripMembers</code> theo từng chuyến đi.
             </p>
             <a href="<%= request.getContextPath() %>/logout" class="btn btn-brand mt-3">Đăng xuất</a>
         </div>

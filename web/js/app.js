@@ -9,7 +9,20 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".app-nav-links a, .trip-workspace a").forEach(function (link) {
         var url = new URL(link.href, location.href);
 
-        if (url.pathname === location.pathname) {
+        var current = location.pathname;
+        var target = url.pathname;
+        var mainLink = link.closest(".app-nav-links");
+        var active = target === current;
+        if (mainLink) {
+            var base = document.querySelector(".app-brand").pathname.replace(/\/(?:user|admin|login)$/, "");
+            var route = current.slice(base.length);
+            var navRoute = target.slice(base.length);
+            if (navRoute === "/trips") active = /^\/(?:trips|trip(?:\/|$)|preferences(?:\/|$)|recommendations|combo|itinerary(?:\/|$)|expenses(?:\/|$)|settlement|group-fund)/.test(route);
+            if (navRoute === "/places") active = /^\/places(?:\/|$)/.test(route);
+            if (navRoute === "/dump") active = /^\/(?:dump|checkin)(?:\/|$)/.test(route);
+            if (navRoute.startsWith("/admin/")) active = route === navRoute || route.startsWith(navRoute + "/");
+        }
+        if (active) {
             link.classList.add("active");
             link.setAttribute("aria-current", "page");
         }
@@ -86,3 +99,9 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 }); 
+(function(){document.querySelectorAll('.trip-workspace nav a').forEach(function(link){if(new URL(link.href).pathname===window.location.pathname){link.classList.add('active');link.setAttribute('aria-current','page');}});})();
+
+// Reload server data when returning to an itinerary restored from browser history.
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted && document.getElementById('itineraryMapData')) window.location.reload();
+});

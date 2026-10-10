@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<c:set var="pageTitle" value="Preferences" scope="request"/>
+<c:set var="pageTitle" value="Sở thích của tôi" scope="request"/>
 <%-- selectedIds phai la mot List/Set<Integer> tu Servlet (vd Set<Integer>).
      EL 2.2+ ho tro goi method truc tiep nen dung selectedIds.contains(category.id),
      khong dung fn:contains vi ham do chi ap dung cho String. --%>
@@ -34,9 +34,9 @@
                     </c:forEach>
                 </div>
 
-                <button type="submit" class="btn btn-brand">Lưu Preferences</button>
+                <button type="submit" class="btn btn-brand">Lưu Sở thích</button>
                 <a href="${pageContext.request.contextPath}/preferences/group?tripId=${trip.id}"
-                   class="btn btn-outline-secondary">Xem Group Preferences</a>
+                   class="btn btn-outline-secondary">Xem Sở thích nhóm</a>
             </form>
         </div>
     </div>

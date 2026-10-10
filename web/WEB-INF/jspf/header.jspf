@@ -1,0 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
+<c:set var="tripRedesign" value="${true}" scope="request"/>
+<%@ include file="/WEB-INF/views/common/header.jsp" %>
+

@@ -8,7 +8,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h3 class="mb-1">Quỹ nhóm - ${trip.name}</h3>
-        <p class="text-muted mb-0">Tiền đóng vào quỹ trừ các Expense được đánh dấu <b>Chi từ quỹ nhóm</b>.</p>
+        <p class="text-muted mb-0">Tiền đóng vào quỹ trừ các khoản chi được đánh dấu <b>Chi từ quỹ nhóm</b>.</p>
     </div>
     <a href="${pageContext.request.contextPath}/expenses?tripId=${trip.id}" class="btn btn-outline-secondary btn-sm">Quản lý chi phí</a>
 </div>
@@ -22,7 +22,7 @@
 <c:if test="${trip.role == 'OWNER'}">
 <div class="app-card mb-4">
     <h5>Ghi nhận tiền thành viên đóng vào quỹ</h5>
-    <p class="text-muted">Owner ghi nhận hộ thành viên. Khoản tiền sẽ cộng ngay vào số dư quỹ.</p>
+    <p class="text-muted">Trưởng nhóm ghi nhận hộ thành viên. Khoản tiền sẽ cộng ngay vào số dư quỹ.</p>
     <form method="post" action="${pageContext.request.contextPath}/group-fund/contribute" class="row g-3">
         <input type="hidden" name="tripId" value="${trip.id}">
         <div class="col-md-4">
@@ -59,7 +59,7 @@
                     <tr>
                         <td>${st.count}</td>
                         <td><strong>${memberFund.memberName}</strong></td>
-                        <td><c:choose><c:when test="${memberFund.role == 'OWNER'}"><span class="badge bg-primary">Owner</span></c:when><c:otherwise><span class="badge bg-secondary">Member</span></c:otherwise></c:choose></td>
+                        <td><c:choose><c:when test="${memberFund.role == 'OWNER'}"><span class="badge bg-primary">Trưởng nhóm</span></c:when><c:otherwise><span class="badge bg-secondary">Thành viên</span></c:otherwise></c:choose></td>
                         <td class="text-center">${memberFund.contributionCount}</td>
                         <td><c:choose><c:when test="${not empty memberFund.lastContributionAt}"><fmt:formatDate value="${memberFund.lastContributionAt}" pattern="dd/MM/yyyy HH:mm"/></c:when><c:otherwise><span class="text-muted">Chưa nạp</span></c:otherwise></c:choose></td>
                         <td class="text-end"><strong><fmt:formatNumber value="${memberFund.contributed}" type="number"/> đ</strong></td>
