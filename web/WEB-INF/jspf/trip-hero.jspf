@@ -1,34 +1,65 @@
 <%@ page pageEncoding="UTF-8" %>
+<%
+    Object heroTripObject = request.getAttribute("trip");
+
+    if (request.getAttribute("viewTripDays") == null
+            && heroTripObject instanceof model.Trip) {
+
+        model.Trip heroTrip = (model.Trip) heroTripObject;
+
+        if (heroTrip.getStartDate() != null
+                && heroTrip.getEndDate() != null) {
+
+            long heroNights = java.time.temporal.ChronoUnit.DAYS.between(
+                    heroTrip.getStartDate().toLocalDate(),
+                    heroTrip.getEndDate().toLocalDate()
+            );
+
+            if (heroNights >= 0) {
+                request.setAttribute("viewTripDays", heroNights + 1);
+                request.setAttribute("viewTripNights", heroNights);
+            }
+        }
+    }
+%>
 <section class="rd-hero" aria-labelledby="trip-title">
-<div class="rd-hero-top"><div><div class="rd-chips">            <c:choose>
-                <c:when test="${trip.status == 'PLANNING'}">
-                    <span class="badge text-bg-secondary">
-                        Đang lên kế hoạch
-                    </span>
-                </c:when>
-                <c:when test="${trip.status == 'ONGOING'}">
-                    <span class="badge text-bg-primary">
-                        Đang diễn ra
-                    </span>
-                </c:when>
-                <c:when test="${trip.status == 'COMPLETED'}">
-                    <span class="badge text-bg-success">
-                        Đã hoàn thành
-                    </span>
-                </c:when>
-                <c:when test="${trip.status == 'CANCELLED'}">
-                    <span class="badge text-bg-danger">
-                        Đã hủy
-                    </span>
-                </c:when>
-                <c:otherwise>
-                    <span class="badge text-bg-secondary">
-                        Chưa xác định
-                    </span>
-                </c:otherwise>
-            </c:choose><c:choose><c:when test="${trip.role == 'OWNER'}"><span class="rd-chip rd-chip-lead">Trưởng nhóm</span></c:when><c:otherwise><span class="rd-chip rd-chip-member">Thành viên</span></c:otherwise></c:choose></div><h1 id="trip-title"><c:out value="${trip.name}"/></h1></div><a class="rd-back" href="${pageContext.request.contextPath}/trips"><span aria-hidden="true">‹</span> Danh sách chuyến đi</a></div>
-<div class="rd-stats">
-<div class="rd-stat"><span class="rd-stat-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span><div><small>Khu vực</small><strong><c:out value="${trip.area}"/></strong></div></div>
-<div class="rd-stat"><span class="rd-stat-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span><div><small>Thời gian · ${viewTripDays} ngày ${viewTripNights} đêm</small><strong><fmt:formatDate value="${trip.startDate}" pattern="dd/MM/yyyy"/> – <fmt:formatDate value="${trip.endDate}" pattern="dd/MM/yyyy"/></strong></div></div>
-<div class="rd-stat"><span class="rd-stat-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 14.5h2"/></svg></span><div><small>Ngân sách<c:if test="${viewMemberCount > 0}"> · khoảng <fmt:formatNumber value="${viewBudgetPerMember}" maxFractionDigits="0"/> đ/người</c:if></small><strong><fmt:formatNumber value="${trip.budget}" maxFractionDigits="2"/> đ</strong></div></div>
-</div></section>
+    <div class="rd-hero-top"><div><div class="rd-chips">            <c:choose>
+                    <c:when test="${trip.status == 'PLANNING'}">
+                        <span class="badge text-bg-secondary">
+                            Đang lên kế hoạch
+                        </span>
+                    </c:when>
+                    <c:when test="${trip.status == 'ONGOING'}">
+                        <span class="badge text-bg-primary">
+                            Đang diễn ra
+                        </span>
+                    </c:when>
+                    <c:when test="${trip.status == 'COMPLETED'}">
+                        <span class="badge text-bg-success">
+                            Đã hoàn thành
+                        </span>
+                    </c:when>
+                    <c:when test="${trip.status == 'CANCELLED'}">
+                        <span class="badge text-bg-danger">
+                            Đã hủy
+                        </span>
+                    </c:when>
+                    <c:otherwise>
+                        <span class="badge text-bg-secondary">
+                            Chưa xác định
+                        </span>
+                    </c:otherwise>
+                </c:choose><c:choose><c:when test="${trip.role == 'OWNER'}"><span class="rd-chip rd-chip-lead">Trưởng nhóm</span></c:when><c:otherwise><span class="rd-chip rd-chip-member">Thành viên</span></c:otherwise></c:choose></div><h1 id="trip-title"><c:out value="${trip.name}"/></h1></div><a class="rd-back" href="${pageContext.request.contextPath}/trips"><span aria-hidden="true">‹</span> Danh sách chuyến đi</a></div>
+    <div class="rd-stats">
+        <div class="rd-stat">
+            <span class="rd-stat-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span><div><small>Khu vực</small><strong><c:out value="${trip.area}"/></strong></div></div>
+        <div class="rd-stat"><span class="rd-stat-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span><div><small>
+                    Thời gian
+                    <c:if test="${not empty viewTripDays and not empty viewTripNights}">
+                        · ${viewTripDays} ngày ${viewTripNights} đêm
+                    </c:if>
+                </small><strong><fmt:formatDate value="${trip.startDate}" pattern="dd/MM/yyyy"/> – <fmt:formatDate value="${trip.endDate}" pattern="dd/MM/yyyy"/></strong></div></div>
+        <div class="rd-stat"><span class="rd-stat-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 14.5h2"/></svg></span><div><small>Ngân sách<c:if test="${viewMemberCount > 0 and not empty viewBudgetPerMember}"> · khoảng <fmt:formatNumber value="${viewBudgetPerMember}" maxFractionDigits="0"/> đ/người</c:if></small><strong><fmt:formatNumber value="${trip.budget}" maxFractionDigits="2"/> đ</strong></div></div>
+    </div></section>

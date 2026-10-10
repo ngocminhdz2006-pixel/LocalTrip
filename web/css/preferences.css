@@ -1,0 +1,173 @@
+.rd-preferences {
+    margin-bottom: 24px;
+}
+
+.rd-preference-fieldset {
+    border: 0;
+    margin: 22px 0 0;
+    padding: 0;
+    min-width: 0;
+}
+
+.rd-preference-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.rd-preference-option {
+    position: relative;
+    min-width: 0;
+}
+
+.rd-preference-option input {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 19px;
+    height: 19px;
+    margin: 0;
+    accent-color: var(--green);
+    z-index: 1;
+    cursor: pointer;
+}
+
+.rd-preference-option label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 88px;
+    padding: 18px 48px 18px 16px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #fff;
+    cursor: pointer;
+    color: var(--ink2);
+    transition: background .15s, border-color .15s;
+}
+
+.rd-preference-option input:checked + label {
+    border-color: var(--green);
+    background: var(--mint);
+    color: var(--green);
+}
+
+.rd-preference-option input:focus-visible + label {
+    outline: 3px solid var(--sun);
+    outline-offset: 3px;
+}
+
+.rd-preference-option label:hover {
+    border-color: var(--green2);
+    background: #F3F8F5;
+}
+
+.rd-preference-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    border-radius: 11px;
+    background: #F0F5F1;
+    font-size: 22px;
+}
+
+.rd-preference-option input:checked + label .rd-preference-icon {
+    background: #fff;
+}
+
+.rd-preference-name {
+    font-size: 14px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+    line-height: 1.5;
+}
+
+.rd-preference-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    border-top: 1px solid var(--line);
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+.rd-preference-guide h2 {
+    margin-top: 16px;
+}
+
+.rd-preference-guide ol {
+    margin: 20px 0;
+    padding-left: 22px;
+    color: var(--ink2);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.rd-preference-guide li + li {
+    margin-top: 12px;
+}
+
+.rd-preference-empty {
+    margin-top: 22px;
+    padding: 26px 20px;
+    background: #F6F9F7;
+    border: 1px dashed var(--line);
+    border-radius: 14px;
+}
+
+.rd-page .rd-preference-empty h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.rd-preference-empty p {
+    font-size: 14px;
+    color: var(--ink2);
+}
+
+.rd-page .rd-tabs a.on {
+    background: var(--mint);
+    color: var(--green);
+    font-weight: 600;
+    border-bottom-color: var(--green);
+    border-radius: 9px 9px 0 0;
+}
+
+@media (max-width: 1100px) {
+    .rd-preference-options {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 850px) {
+    .rd-preference-options {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+    .rd-preference-options {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .rd-preference-actions .btn {
+        width: 100%;
+    }
+
+    .rd-preference-option label {
+        min-height: 76px;
+    }
+
+    .rd-preference-guide {
+        padding: 20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rd-preference-option label {
+        transition: none;
+    }
+}

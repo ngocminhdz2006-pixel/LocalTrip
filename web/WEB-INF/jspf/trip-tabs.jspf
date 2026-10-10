@@ -1,10 +1,65 @@
 <%@ page pageEncoding="UTF-8" %>
-<nav class="rd-tabs" aria-label="Các chức năng chuyến đi"><a class="on" aria-current="page" href="${pageContext.request.contextPath}/trip/detail?tripId=${trip.id}">Tổng quan</a>
-<a  href="${pageContext.request.contextPath}/preferences?tripId=${trip.id}">Sở thích của tôi</a>
-<a  href="${pageContext.request.contextPath}/preferences/group?tripId=${trip.id}">Sở thích nhóm</a>
-<a  href="${pageContext.request.contextPath}/recommendations?tripId=${trip.id}">Gợi ý địa điểm</a>
-<a  href="${pageContext.request.contextPath}/combo?tripId=${trip.id}">Combo địa điểm</a>
-<a  href="${pageContext.request.contextPath}/itinerary?tripId=${trip.id}">Lịch trình</a>
-<a  href="${pageContext.request.contextPath}/expenses?tripId=${trip.id}">Chi phí</a>
-<a  href="${pageContext.request.contextPath}/settlement?tripId=${trip.id}">Chia tiền</a>
-<a  href="${pageContext.request.contextPath}/group-fund?tripId=${trip.id}">Quỹ nhóm</a></nav>
+
+<c:set var="activeTripPath"
+       value="${requestScope['javax.servlet.forward.servlet_path']}"/>
+
+<c:if test="${empty activeTripPath}">
+    <c:set var="activeTripPath"
+           value="${pageContext.request.servletPath}"/>
+</c:if>
+
+<nav class="rd-tabs" aria-label="Các chức năng chuyến đi">
+    <a class="${activeTripPath == '/trip/detail' ? 'on' : ''}"
+       aria-current="${activeTripPath == '/trip/detail' ? 'page' : 'false'}"
+       href="${pageContext.request.contextPath}/trip/detail?tripId=${trip.id}">
+        Tổng quan
+    </a>
+
+    <a class="${activeTripPath == '/preferences' ? 'on' : ''}"
+       aria-current="${activeTripPath == '/preferences' ? 'page' : 'false'}"
+       href="${pageContext.request.contextPath}/preferences?tripId=${trip.id}">
+        Sở thích của tôi
+    </a>
+
+    <a class="${activeTripPath == '/preferences/group' ? 'on' : ''}"
+       aria-current="${activeTripPath == '/preferences/group' ? 'page' : 'false'}"
+       href="${pageContext.request.contextPath}/preferences/group?tripId=${trip.id}">
+        Sở thích nhóm
+    </a>
+
+    <a class="${activeTripPath == '/recommendations' ? 'on' : ''}"
+       aria-current="${activeTripPath == '/recommendations' ? 'page' : 'false'}"
+       href="${pageContext.request.contextPath}/recommendations?tripId=${trip.id}">
+        Gợi ý địa điểm
+    </a>
+
+    <a class="${activeTripPath == '/combo' ? 'on' : ''}"
+       aria-current="${activeTripPath == '/combo' ? 'page' : 'false'}"
+       href="${pageContext.request.contextPath}/combo?tripId=${trip.id}">
+        Combo địa điểm
+    </a>
+
+    <a class="${activeTripPath == '/itinerary' ? 'on' : ''}"
+       aria-current="${activeTripPath == '/itinerary' ? 'page' : 'false'}"
+       href="${pageContext.request.contextPath}/itinerary?tripId=${trip.id}">
+        Lịch trình
+    </a>
+
+    <a class="${activeTripPath == '/expenses' ? 'on' : ''}"
+       aria-current="${activeTripPath == '/expenses' ? 'page' : 'false'}"
+       href="${pageContext.request.contextPath}/expenses?tripId=${trip.id}">
+        Chi phí
+    </a>
+
+    <a class="${activeTripPath == '/settlement' ? 'on' : ''}"
+       aria-current="${activeTripPath == '/settlement' ? 'page' : 'false'}"
+       href="${pageContext.request.contextPath}/settlement?tripId=${trip.id}">
+        Chia tiền
+    </a>
+
+    <a class="${activeTripPath == '/group-fund' ? 'on' : ''}"
+       aria-current="${activeTripPath == '/group-fund' ? 'page' : 'false'}"
+       href="${pageContext.request.contextPath}/group-fund?tripId=${trip.id}">
+        Quỹ nhóm
+    </a>
+</nav>

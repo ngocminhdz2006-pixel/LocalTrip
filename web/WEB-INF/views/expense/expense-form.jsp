@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <c:choose>
     <c:when test="${not empty expense}">
@@ -12,7 +13,113 @@
 
 <c:set var="currentTrip" value="${trip}" scope="request"/>
 
-<%@ include file="/WEB-INF/views/common/header.jsp" %>
+<fmt:setLocale value="vi_VN" scope="page"/>
+
+<%@ include file="/WEB-INF/jspf/header.jspf" %>
+<%@ include file="/WEB-INF/jspf/trip-hero.jspf" %>
+<%@ include file="/WEB-INF/jspf/trip-tabs.jspf" %>
+
+<style>
+    .rd-expense-form {
+        max-width: 860px;
+        margin: 0 auto;
+    }
+
+    .rd-expense-form-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .rd-expense-form-heading h2 {
+        margin: 0 0 8px;
+        color: var(--ink);
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .rd-expense-form .form-label {
+        color: var(--ink);
+        font-weight: 600;
+    }
+
+    .rd-expense-form .form-control,
+    .rd-expense-form .form-select {
+        min-height: 46px;
+        border-radius: 10px;
+    }
+
+    .rd-expense-participants {
+        padding: 20px;
+        margin-bottom: 24px;
+        background: #F6F9F7;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+    }
+
+    .rd-expense-participant-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .rd-expense-participant-heading h3 {
+        margin: 0;
+        color: var(--ink);
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .rd-expense-participant-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .rd-expense-participant-list .form-check {
+        margin: 0;
+        padding: 12px 14px 12px 38px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        overflow-wrap: anywhere;
+    }
+
+    .rd-expense-form .group-fund-option {
+        padding: 18px 20px;
+        background: var(--mint);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+    }
+
+    .rd-expense-form-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line);
+    }
+
+    @media (max-width: 600px) {
+        .rd-expense-form-heading h2 {
+            font-size: 21px;
+        }
+
+        .rd-expense-participant-list {
+            grid-template-columns: 1fr;
+        }
+
+        .rd-expense-form-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
 
 <div class="row justify-content-center">
     <div class="col-md-7">
