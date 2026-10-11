@@ -39,14 +39,27 @@
         Combo địa điểm
     </a>
 
-    <a class="${activeTripPath == '/itinerary' ? 'on' : ''}"
-       aria-current="${activeTripPath == '/itinerary' ? 'page' : 'false'}"
+    <c:set var="itineraryTabActive"
+           value="${activeTripPath == '/itinerary'
+                    or activeTripPath == '/itinerary/add'
+                    or activeTripPath == '/itinerary/edit'
+                    or activeTripPath == '/itinerary/auto'
+                    or activeTripPath == '/itinerary/delete'}"/>
+
+    <a class="${itineraryTabActive ? 'on' : ''}"
+       aria-current="${itineraryTabActive ? 'page' : 'false'}"
        href="${pageContext.request.contextPath}/itinerary?tripId=${trip.id}">
         Lịch trình
     </a>
 
-    <a class="${activeTripPath == '/expenses' ? 'on' : ''}"
-       aria-current="${activeTripPath == '/expenses' ? 'page' : 'false'}"
+    <c:set var="expenseTabActive"
+           value="${activeTripPath == '/expenses'
+                    or activeTripPath == '/expenses/create'
+                    or activeTripPath == '/expenses/edit'
+                    or activeTripPath == '/expenses/delete'}"/>
+
+    <a class="${expenseTabActive ? 'on' : ''}"
+       aria-current="${expenseTabActive ? 'page' : 'false'}"
        href="${pageContext.request.contextPath}/expenses?tripId=${trip.id}">
         Chi phí
     </a>

@@ -9,16 +9,29 @@
 <link rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-<div class="page-intro">
-    <span class="eyebrow">ĐI &amp; KHÁM PHÁ</span>
-    <h3>Điểm đến cho hành trình tiếp theo</h3>
-    <p class="text-muted">
-        Tìm địa điểm theo khu vực và sở thích,
-        xem thông tin và lên kế hoạch cùng nhóm.
-    </p>
-</div>
+<section class="rd-hero mb-4">
+    <div class="rd-hero-top">
+        <div>
+            <div class="small text-white-50 mb-2">
+                LOCALTRIP · ĐI VÀ KHÁM PHÁ
+            </div>
 
-<div class="app-card mb-4">
+            <h1 class="mb-2">Khám phá địa điểm</h1>
+
+            <p class="mb-0 text-white">
+                Tìm điểm đến phù hợp, khám phá bản đồ
+                và chuẩn bị hành trình cùng nhóm.
+            </p>
+        </div>
+
+        <a class="rd-back"
+           href="${pageContext.request.contextPath}/trips">
+            Danh sách chuyến đi →
+        </a>
+    </div>
+</section>
+
+<div class="rd-card mb-4">
     <h5 class="mb-3">Lọc địa điểm</h5>
 
     <form id="placeFilterForm"
@@ -38,7 +51,7 @@
 
                     <c:forEach var="city" items="${cities}">
                         <option value="<c:out value='${city}'/>"
-                            ${selectedCity == city ? 'selected' : ''}>
+                                ${selectedCity == city ? 'selected' : ''}>
                             <c:out value="${city}"/>
                         </option>
                     </c:forEach>
@@ -57,7 +70,7 @@
 
                     <c:forEach var="district" items="${districts}">
                         <option value="<c:out value='${district}'/>"
-                            ${selectedDistrict == district ? 'selected' : ''}>
+                                ${selectedDistrict == district ? 'selected' : ''}>
                             <c:out value="${district}"/>
                         </option>
                     </c:forEach>
@@ -76,7 +89,7 @@
 
                     <c:forEach var="category" items="${categories}">
                         <option value="${category.id}"
-                            ${selectedCategoryId == category.id ? 'selected' : ''}>
+                                ${selectedCategoryId == category.id ? 'selected' : ''}>
                             <c:out value="${category.name}"/>
                         </option>
                     </c:forEach>
@@ -85,7 +98,7 @@
         </div>
 
         <div class="d-flex flex-wrap gap-2 mt-3">
-            <button type="submit" class="btn btn-brand">
+            <button type="submit" class="btn btn-primary px-4">
                 Lọc địa điểm
             </button>
 
@@ -97,7 +110,7 @@
     </form>
 </div>
 
-<div class="app-card mb-4">
+<div class="rd-card mb-4">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
         <div>
             <h5 class="mb-1">Bản đồ địa điểm</h5>
@@ -106,7 +119,7 @@
             </small>
         </div>
 
-        <span class="badge bg-secondary" id="placeMapCount">
+        <span class="rd-count" id="placeMapCount">
             0 điểm
         </span>
     </div>
@@ -141,64 +154,97 @@
 
 <c:choose>
     <c:when test="${empty places}">
-        <div class="empty-state app-card">
-            <h5>Chưa tìm thấy địa điểm</h5>
-            <p class="text-muted">
+        <div class="rd-card text-center py-5">
+            <h2 class="h4 mb-2">Chưa tìm thấy địa điểm</h2>
+
+            <p class="text-muted mb-4">
                 Không có địa điểm phù hợp với bộ lọc.
                 Bạn có thể đổi khu vực hoặc danh mục.
             </p>
 
             <a href="${pageContext.request.contextPath}/places"
-               class="btn btn-outline-secondary">
+               class="btn btn-outline-secondary px-4">
                 Xem tất cả địa điểm
             </a>
         </div>
     </c:when>
 
     <c:otherwise>
+        <div class="mb-3">
+            <h2 class="h4 mb-1">Địa điểm phù hợp</h2>
+            <p class="text-muted mb-0">
+                Xem thông tin từng địa điểm trước khi thêm vào hành trình.
+            </p>
+        </div>
+
         <div class="row g-4">
             <c:forEach var="place" items="${places}">
-                <div class="col-md-6 col-lg-4">
-                    <div class="app-card h-100 d-flex flex-column mb-0">
-                        <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
-                            <h5 class="mb-0">
-                                <c:out value="${place.name}"/>
-                            </h5>
+                <div class="col-12 col-md-6 col-xl-4">
+                    <article class="rd-card h-100 d-flex flex-column">
+                        <div class="d-flex justify-content-between
+                             align-items-start gap-3 mb-3">
+                            <span class="rd-count">
+                                <c:out value="${place.categoryName}" />
+                            </span>
 
-                            <span class="badge bg-secondary flex-shrink-0">
-                                ★ <c:out value="${place.rating}"/>
+                            <span class="rd-role rd-role-lead flex-shrink-0">
+                                ★ <c:out value="${place.rating}" />
                             </span>
                         </div>
 
-                        <p class="text-muted mb-2">
-                            <strong>Danh mục:</strong>
-                            <c:out value="${place.categoryName}"/>
-                        </p>
+                        <h3 class="h5 mb-3">
+                            <c:out value="${place.name}" />
+                        </h3>
 
-                        <p class="text-muted mb-2">
-                            <strong>Địa chỉ:</strong>
-                            <c:out value="${place.address}"/>
-                        </p>
+                        <div class="mb-3">
+                            <div class="small text-muted mb-1">
+                                Địa chỉ
+                            </div>
 
-                        <p class="text-muted mb-2">
-                            <strong>Giờ hoạt động:</strong>
-                            <c:out value="${place.openHours}"/>
-                        </p>
+                            <div>
+                                <c:out value="${place.address}" />
+                            </div>
+                        </div>
 
-                        <p class="mb-4">
-                            <strong>Chi phí dự kiến:</strong>
-                            <fmt:formatNumber
-                                value="${place.estimatedPrice}"
-                                type="number"
-                                maxFractionDigits="2"/>
-                            đ
-                        </p>
+                        <div class="mb-4">
+                            <div class="small text-muted mb-1">
+                                Giờ hoạt động
+                            </div>
 
-                        <a href="${pageContext.request.contextPath}/places/detail?placeId=${place.id}"
-                           class="btn btn-outline-secondary btn-sm w-100 mt-auto">
-                            Xem chi tiết
-                        </a>
-                    </div>
+                            <div>
+                                <c:choose>
+                                    <c:when test="${not empty place.openHours}">
+                                        <c:out value="${place.openHours}" />
+                                    </c:when>
+                                    <c:otherwise>
+                                        Chưa cập nhật
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                        </div>
+
+                        <div class="border-top pt-3 mt-auto">
+                            <div class="d-flex justify-content-between
+                                 align-items-center gap-2 mb-3">
+                                <span class="small text-muted">
+                                    Chi phí dự kiến
+                                </span>
+
+                                <strong>
+                                    <fmt:formatNumber
+                                        value="${place.estimatedPrice}"
+                                        type="number"
+                                        maxFractionDigits="2" />
+                                    đ
+                                </strong>
+                            </div>
+
+                            <a href="${pageContext.request.contextPath}/places/detail?placeId=${place.id}"
+                               class="btn btn-outline-secondary w-100">
+                                Xem chi tiết →
+                            </a>
+                        </div>
+                    </article>
                 </div>
             </c:forEach>
         </div>
@@ -206,206 +252,210 @@
 </c:choose>
 
 <script>
-(function () {
-    const form = document.getElementById('placeFilterForm');
-    const city = document.getElementById('filterCity');
-    const district = document.getElementById('filterDistrict');
+    (function () {
+        const form = document.getElementById('placeFilterForm');
+        const city = document.getElementById('filterCity');
+        const district = document.getElementById('filterDistrict');
 
-    if (!form || !city || !district) return;
+        if (!form || !city || !district)
+            return;
 
-    city.addEventListener('change', function () {
-        district.value = '';
-        form.submit();
-    });
-})();
+        city.addEventListener('change', function () {
+            district.value = '';
+            form.submit();
+        });
+    })();
 </script>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-(function () {
-    const mapElement = document.getElementById('placeMap');
-    const emptyState = document.getElementById('placeMapEmpty');
-    const countElement = document.getElementById('placeMapCount');
+    (function () {
+        const mapElement = document.getElementById('placeMap');
+        const emptyState = document.getElementById('placeMapEmpty');
+        const countElement = document.getElementById('placeMapCount');
 
-    if (!mapElement) return;
+        if (!mapElement)
+            return;
 
-    if (typeof L === 'undefined') {
-        emptyState.textContent =
-            'Không thể tải bản đồ. Hãy kiểm tra kết nối Internet.';
-        emptyState.classList.remove('d-none');
-        return;
-    }
-
-    const points = Array.from(
-        document.querySelectorAll('.place-map-point')
-    ).map(function (element) {
-        return {
-            id: Number(element.dataset.id),
-            name: element.dataset.name || '',
-            address: element.dataset.address || '',
-            category: element.dataset.category || '',
-            lat: Number(element.dataset.lat),
-            lng: Number(element.dataset.lng)
-        };
-    }).filter(function (point) {
-        return Number.isFinite(point.lat)
-            && Number.isFinite(point.lng)
-            && point.lat >= -90
-            && point.lat <= 90
-            && point.lng >= -180
-            && point.lng <= 180;
-    });
-
-    countElement.textContent = points.length + ' điểm';
-
-    const map = L.map(mapElement)
-        .setView([10.8231, 106.6297], 11);
-
-    const tileStatus = document.createElement('div');
-    tileStatus.className = 'map-tile-status';
-    tileStatus.textContent = 'Đang tải bản đồ...';
-    mapElement.parentElement.appendChild(tileStatus);
-
-    let activeTiles = null;
-
-    const tileProviders = [
-        {
-            name: 'Esri',
-            url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
-            options: {
-                maxZoom: 19,
-                attribution: 'Tiles &copy; Esri'
-            }
-        },
-        {
-            name: 'OpenStreetMap',
-            url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            options: {
-                maxZoom: 19,
-                attribution: '&copy; OpenStreetMap contributors'
-            }
-        },
-        {
-            name: 'CARTO',
-            url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-            options: {
-                maxZoom: 19,
-                subdomains: 'abcd',
-                attribution:
-                    '&copy; OpenStreetMap contributors &copy; CARTO'
-            }
-        }
-    ];
-
-    function loadTileProvider(index) {
-        if (index >= tileProviders.length) {
-            tileStatus.textContent =
-                'Không thể tải dữ liệu bản đồ. Hãy kiểm tra Internet.';
-            tileStatus.classList.add('map-tile-status-error');
+        if (typeof L === 'undefined') {
+            emptyState.textContent =
+                    'Không thể tải bản đồ. Hãy kiểm tra kết nối Internet.';
+            emptyState.classList.remove('d-none');
             return;
         }
 
-        if (activeTiles) {
-            map.removeLayer(activeTiles);
+        const points = Array.from(
+                document.querySelectorAll('.place-map-point')
+                ).map(function (element) {
+            return {
+                id: Number(element.dataset.id),
+                name: element.dataset.name || '',
+                address: element.dataset.address || '',
+                category: element.dataset.category || '',
+                lat: Number(element.dataset.lat),
+                lng: Number(element.dataset.lng)
+            };
+        }).filter(function (point) {
+            return Number.isFinite(point.lat)
+                    && Number.isFinite(point.lng)
+                    && point.lat >= -90
+                    && point.lat <= 90
+                    && point.lng >= -180
+                    && point.lng <= 180;
+        });
+
+        countElement.textContent = points.length + ' điểm';
+
+        const map = L.map(mapElement)
+                .setView([10.8231, 106.6297], 11);
+
+        const tileStatus = document.createElement('div');
+        tileStatus.className = 'map-tile-status';
+        tileStatus.textContent = 'Đang tải bản đồ...';
+        mapElement.parentElement.appendChild(tileStatus);
+
+        let activeTiles = null;
+
+        const tileProviders = [
+            {
+                name: 'Esri',
+                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+                options: {
+                    maxZoom: 19,
+                    attribution: 'Tiles &copy; Esri'
+                }
+            },
+            {
+                name: 'OpenStreetMap',
+                url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                options: {
+                    maxZoom: 19,
+                    attribution: '&copy; OpenStreetMap contributors'
+                }
+            },
+            {
+                name: 'CARTO',
+                url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+                options: {
+                    maxZoom: 19,
+                    subdomains: 'abcd',
+                    attribution:
+                            '&copy; OpenStreetMap contributors &copy; CARTO'
+                }
+            }
+        ];
+
+        function loadTileProvider(index) {
+            if (index >= tileProviders.length) {
+                tileStatus.textContent =
+                        'Không thể tải dữ liệu bản đồ. Hãy kiểm tra Internet.';
+                tileStatus.classList.add('map-tile-status-error');
+                return;
+            }
+
+            if (activeTiles) {
+                map.removeLayer(activeTiles);
+            }
+
+            const provider = tileProviders[index];
+            const layer = L.tileLayer(provider.url, provider.options);
+            let failed = false;
+
+            activeTiles = layer;
+            tileStatus.textContent =
+                    'Đang tải bản đồ ' + provider.name + '...';
+
+            layer.on('tileerror', function () {
+                if (failed || activeTiles !== layer)
+                    return;
+
+                failed = true;
+                loadTileProvider(index + 1);
+            });
+
+            layer.on('load', function () {
+                if (failed || activeTiles !== layer)
+                    return;
+
+                tileStatus.textContent = 'Bản đồ: ' + provider.name;
+
+                setTimeout(function () {
+                    if (tileStatus.parentNode && activeTiles === layer) {
+                        tileStatus.remove();
+                    }
+                }, 2200);
+            });
+
+            layer.addTo(map);
         }
 
-        const provider = tileProviders[index];
-        const layer = L.tileLayer(provider.url, provider.options);
-        let failed = false;
+        loadTileProvider(0);
+        L.control.scale({imperial: false}).addTo(map);
 
-        activeTiles = layer;
-        tileStatus.textContent =
-            'Đang tải bản đồ ' + provider.name + '...';
+        if (!points.length) {
+            emptyState.classList.remove('d-none');
+            return;
+        }
 
-        layer.on('tileerror', function () {
-            if (failed || activeTiles !== layer) return;
+        const bounds = [];
 
-            failed = true;
-            loadTileProvider(index + 1);
+        points.forEach(function (point) {
+            const latLng = [point.lat, point.lng];
+            bounds.push(latLng);
+
+            const detailUrl =
+                    '${pageContext.request.contextPath}/places/detail?placeId='
+                    + encodeURIComponent(point.id);
+
+            const directionsUrl =
+                    'https://www.google.com/maps/dir/?api=1'
+                    + '&destination='
+                    + encodeURIComponent(point.lat + ',' + point.lng)
+                    + '&travelmode=driving';
+
+            const markerIcon = L.divIcon({
+                className: 'localtrip-map-pin-wrap',
+                html:
+                        '<div class="localtrip-map-pin">'
+                        + '<span>●</span></div>',
+                iconSize: [34, 42],
+                iconAnchor: [17, 40],
+                popupAnchor: [0, -36]
+            });
+
+            const popup =
+                    '<strong>' + escapeHtml(point.name) + '</strong>'
+                    + '<br>' + escapeHtml(point.category)
+                    + '<br>' + escapeHtml(point.address)
+                    + '<div style="display:flex;flex-direction:column;'
+                    + 'gap:8px;margin-top:12px;">'
+                    + '<a href="' + detailUrl + '">'
+                    + 'Xem chi tiết địa điểm</a>'
+                    + '<a href="' + directionsUrl + '"'
+                    + ' target="_blank" rel="noopener noreferrer">'
+                    + 'Chỉ đường từ vị trí hiện tại ↗</a>'
+                    + '</div>';
+
+            L.marker(latLng, {icon: markerIcon})
+                    .addTo(map)
+                    .bindPopup(popup);
         });
 
-        layer.on('load', function () {
-            if (failed || activeTiles !== layer) return;
-
-            tileStatus.textContent = 'Bản đồ: ' + provider.name;
-
-            setTimeout(function () {
-                if (tileStatus.parentNode && activeTiles === layer) {
-                    tileStatus.remove();
-                }
-            }, 2200);
+        map.fitBounds(L.latLngBounds(bounds), {
+            padding: [30, 30],
+            maxZoom: 16
         });
 
-        layer.addTo(map);
-    }
-
-    loadTileProvider(0);
-    L.control.scale({imperial: false}).addTo(map);
-
-    if (!points.length) {
-        emptyState.classList.remove('d-none');
-        return;
-    }
-
-    const bounds = [];
-
-    points.forEach(function (point) {
-        const latLng = [point.lat, point.lng];
-        bounds.push(latLng);
-
-        const detailUrl =
-            '${pageContext.request.contextPath}/places/detail?placeId='
-            + encodeURIComponent(point.id);
-
-        const directionsUrl =
-            'https://www.google.com/maps/dir/?api=1'
-            + '&destination='
-            + encodeURIComponent(point.lat + ',' + point.lng)
-            + '&travelmode=driving';
-
-        const markerIcon = L.divIcon({
-            className: 'localtrip-map-pin-wrap',
-            html:
-                '<div class="localtrip-map-pin">'
-                + '<span>●</span></div>',
-            iconSize: [34, 42],
-            iconAnchor: [17, 40],
-            popupAnchor: [0, -36]
-        });
-
-        const popup =
-            '<strong>' + escapeHtml(point.name) + '</strong>'
-            + '<br>' + escapeHtml(point.category)
-            + '<br>' + escapeHtml(point.address)
-            + '<div style="display:flex;flex-direction:column;'
-            + 'gap:8px;margin-top:12px;">'
-            + '<a href="' + detailUrl + '">'
-            + 'Xem chi tiết địa điểm</a>'
-            + '<a href="' + directionsUrl + '"'
-            + ' target="_blank" rel="noopener noreferrer">'
-            + 'Chỉ đường từ vị trí hiện tại ↗</a>'
-            + '</div>';
-
-        L.marker(latLng, {icon: markerIcon})
-            .addTo(map)
-            .bindPopup(popup);
-    });
-
-    map.fitBounds(L.latLngBounds(bounds), {
-        padding: [30, 30],
-        maxZoom: 16
-    });
-
-    function escapeHtml(value) {
-        return String(value == null ? '' : value)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-    }
-})();
+        function escapeHtml(value) {
+            return String(value == null ? '' : value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+        }
+    })();
 </script>
 
 <%@ include file="/WEB-INF/views/common/footer.jsp" %>

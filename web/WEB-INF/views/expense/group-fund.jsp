@@ -1,97 +1,321 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8"
+         pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<fmt:setLocale value="vi_VN"/>
 <c:set var="pageTitle" value="Quỹ nhóm" scope="request"/>
 <c:set var="currentTrip" value="${trip}" scope="request"/>
-<%@ include file="/WEB-INF/views/common/header.jsp" %>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-        <h3 class="mb-1">Quỹ nhóm - ${trip.name}</h3>
-        <p class="text-muted mb-0">Tiền đóng vào quỹ trừ các khoản chi được đánh dấu <b>Chi từ quỹ nhóm</b>.</p>
+<%@ include file="/WEB-INF/jspf/header.jspf" %>
+<%@ include file="/WEB-INF/jspf/trip-hero.jspf" %>
+<%@ include file="/WEB-INF/jspf/trip-tabs.jspf" %>
+
+<section class="rd-card mb-4">
+    <div class="rd-card-heading">
+        <div>
+            <h2>Quỹ chung của chuyến đi</h2>
+            <p class="rd-sub">
+                Theo dõi tiền thành viên đóng góp và các khoản chi từ quỹ.
+            </p>
+        </div>
+
+        <a href="${pageContext.request.contextPath}/expenses?tripId=${trip.id}"
+           class="btn btn-outline-secondary">
+            Quản lý chi phí
+        </a>
     </div>
-    <a href="${pageContext.request.contextPath}/expenses?tripId=${trip.id}" class="btn btn-outline-secondary btn-sm">Quản lý chi phí</a>
-</div>
+
+    <p class="rd-sub">
+        Số dư = Tổng tiền đã đóng − Tổng chi từ quỹ.
+        Chỉ các khoản chi được đánh dấu “Chi từ quỹ nhóm”
+        mới được trừ vào số dư.
+    </p>
+</section>
 
 <div class="row g-3 mb-4">
-    <div class="col-md-4"><div class="app-card h-100"><div class="text-muted">Tổng tiền đã đóng</div><h3 class="mt-2"><fmt:formatNumber value="${fundSummary.totalContributed}" type="number"/> đ</h3></div></div>
-    <div class="col-md-4"><div class="app-card h-100"><div class="text-muted">Tổng chi từ quỹ</div><h3 class="mt-2"><fmt:formatNumber value="${fundSummary.totalSpent}" type="number"/> đ</h3></div></div>
-    <div class="col-md-4"><div class="app-card h-100"><div class="text-muted">Số dư thực tế</div><h3 class="mt-2 <c:if test='${fundSummary.balance < 0}'>text-danger</c:if>"><fmt:formatNumber value="${fundSummary.balance}" type="number"/> đ</h3><c:if test="${fundSummary.balance < 0}"><small class="text-danger">Quỹ đang âm.</small></c:if></div></div>
+    <div class="col-12 col-md-4">
+        <section class="rd-card h-100">
+            <p class="rd-sub">Tổng tiền đã đóng</p>
+            <h2 class="mt-2 text-success">
+                <fmt:formatNumber value="${fundSummary.totalContributed}"
+                                  type="number"
+                                  maxFractionDigits="2"/> đ
+            </h2>
+        </section>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <section class="rd-card h-100">
+            <p class="rd-sub">Tổng chi từ quỹ</p>
+            <h2 class="mt-2">
+                <fmt:formatNumber value="${fundSummary.totalSpent}"
+                                  type="number"
+                                  maxFractionDigits="2"/> đ
+            </h2>
+        </section>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <section class="rd-card h-100">
+            <p class="rd-sub">Số dư quỹ</p>
+            <h2 class="mt-2 ${fundSummary.balance < 0 ? 'text-danger' : 'text-success'}">
+                <fmt:formatNumber value="${fundSummary.balance}"
+                                  type="number"
+                                  maxFractionDigits="2"/> đ
+            </h2>
+
+            <c:if test="${fundSummary.balance < 0}">
+                <p class="small text-danger mt-2 mb-0">
+                    Tổng chi đang vượt số tiền đã đóng.
+                </p>
+            </c:if>
+        </section>
+    </div>
 </div>
 
 <c:if test="${trip.role == 'OWNER'}">
-<div class="app-card mb-4">
-    <h5>Ghi nhận tiền thành viên đóng vào quỹ</h5>
-    <p class="text-muted">Trưởng nhóm ghi nhận hộ thành viên. Khoản tiền sẽ cộng ngay vào số dư quỹ.</p>
-    <form method="post" action="${pageContext.request.contextPath}/group-fund/contribute" class="row g-3">
-        <input type="hidden" name="tripId" value="${trip.id}">
-        <div class="col-md-4">
-            <label class="form-label">Thành viên</label>
-            <select name="memberId" class="form-select" required>
-                <c:forEach var="memberFund" items="${memberFundSummaries}"><option value="${memberFund.userId}">${memberFund.memberName} (${memberFund.role})</option></c:forEach>
-            </select>
+    <section class="rd-card mb-4">
+        <div class="rd-card-heading">
+            <div>
+                <h2>Ghi nhận đóng quỹ</h2>
+                <p class="rd-sub">
+                    Trưởng nhóm ghi nhận tiền đã nhận từ thành viên.
+                    Khoản đóng sẽ được cộng vào số dư quỹ.
+                </p>
+            </div>
         </div>
-        <div class="col-md-3">
-            <label class="form-label">Số tiền (đ)</label>
-            <input type="number" name="amount" class="form-control" min="1" step="1" required>
-        </div>
-        <div class="col-md-3">
-            <label class="form-label">Ghi chú</label>
-            <input type="text" name="note" maxlength="255" class="form-control" placeholder="VD: Đóng quỹ lần 1">
-        </div>
-        <div class="col-md-2 d-flex align-items-end"><button class="btn btn-brand w-100" type="submit">Ghi nhận</button></div>
-    </form>
-</div>
+
+        <c:choose>
+            <c:when test="${empty memberFundSummaries}">
+                <div class="alert alert-info mb-0">
+                    Chưa có thành viên để ghi nhận đóng quỹ.
+                </div>
+            </c:when>
+
+            <c:otherwise>
+                <form method="post"
+                      action="${pageContext.request.contextPath}/group-fund/contribute"
+                      class="row g-3">
+
+                    <input type="hidden" name="tripId" value="${trip.id}">
+
+                    <div class="col-12 col-md-6">
+                        <label for="fundMember" class="form-label">
+                            Thành viên đóng tiền
+                        </label>
+
+                        <select id="fundMember" name="memberId"
+                                class="form-select" required>
+                            <option value="">Chọn thành viên</option>
+
+                            <c:forEach var="memberFund"
+                                       items="${memberFundSummaries}">
+                                <option value="${memberFund.userId}">
+                                    <c:out value="${memberFund.memberName}"/>
+                                    — ${memberFund.role == 'OWNER' ? 'Trưởng nhóm' : 'Thành viên'}
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label for="fundAmount" class="form-label">
+                            Số tiền (đồng)
+                        </label>
+
+                        <input id="fundAmount" type="number"
+                               name="amount" class="form-control"
+                               min="1" step="1" required>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="fundNote" class="form-label">
+                            Ghi chú
+                        </label>
+
+                        <input id="fundNote" type="text" name="note"
+                               maxlength="255" class="form-control"
+                               placeholder="Ví dụ: Đóng quỹ lần 1">
+                    </div>
+
+                    <div class="col-12">
+                        <button class="btn btn-brand" type="submit">
+                            Ghi nhận đóng quỹ
+                        </button>
+                    </div>
+                </form>
+            </c:otherwise>
+        </c:choose>
+    </section>
 </c:if>
 
-<div class="app-card mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+<section class="rd-card mb-4">
+    <div class="rd-card-heading">
         <div>
-            <h5 class="mb-1">Đóng góp của từng thành viên</h5>
-            <p class="text-muted mb-0">Theo dõi số tiền, số lần nạp và lần đóng gần nhất của từng thành viên.</p>
+            <h2>Đóng góp của thành viên</h2>
+            <p class="rd-sub">
+                Tổng tiền đóng, số lần đóng và thời điểm gần nhất.
+            </p>
         </div>
     </div>
-    <div class="table-responsive">
-        <table class="table align-middle mb-0">
-            <thead><tr><th>#</th><th>Thành viên</th><th>Vai trò</th><th class="text-center">Số lần nạp</th><th>Lần nạp gần nhất</th><th class="text-end">Đã nạp vào quỹ</th></tr></thead>
-            <tbody>
-                <c:forEach var="memberFund" items="${memberFundSummaries}" varStatus="st">
-                    <tr>
-                        <td>${st.count}</td>
-                        <td><strong>${memberFund.memberName}</strong></td>
-                        <td><c:choose><c:when test="${memberFund.role == 'OWNER'}"><span class="badge bg-primary">Trưởng nhóm</span></c:when><c:otherwise><span class="badge bg-secondary">Thành viên</span></c:otherwise></c:choose></td>
-                        <td class="text-center">${memberFund.contributionCount}</td>
-                        <td><c:choose><c:when test="${not empty memberFund.lastContributionAt}"><fmt:formatDate value="${memberFund.lastContributionAt}" pattern="dd/MM/yyyy HH:mm"/></c:when><c:otherwise><span class="text-muted">Chưa nạp</span></c:otherwise></c:choose></td>
-                        <td class="text-end"><strong><fmt:formatNumber value="${memberFund.contributed}" type="number"/> đ</strong></td>
-                    </tr>
-                </c:forEach>
-                <c:if test="${empty memberFundSummaries}"><tr><td colspan="6" class="text-muted text-center">Chưa có thành viên trong quỹ.</td></tr></c:if>
-            </tbody>
-        </table>
-    </div>
-</div>
 
-<div class="app-card">
-    <h5 class="mb-3">Lịch sử giao dịch quỹ</h5>
     <c:choose>
-        <c:when test="${empty fundTransactions}"><p class="text-muted mb-0">Chưa có giao dịch quỹ.</p></c:when>
+        <c:when test="${empty memberFundSummaries}">
+            <div class="alert alert-info mb-0">
+                Chưa có dữ liệu đóng góp của thành viên.
+            </div>
+        </c:when>
+
         <c:otherwise>
-            <div class="table-responsive"><table class="table align-middle mb-0">
-                <thead><tr><th>Thời gian</th><th>Loại</th><th>Người</th><th>Mô tả</th><th class="text-end">Số tiền</th></tr></thead>
-                <tbody>
-                    <c:forEach var="tx" items="${fundTransactions}">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <caption class="visually-hidden">
+                        Đóng góp vào quỹ của từng thành viên.
+                    </caption>
+                    <thead>
                         <tr>
-                            <td><fmt:formatDate value="${tx.createdAt}" pattern="dd/MM/yyyy HH:mm"/></td>
-                            <td><c:choose><c:when test="${tx.type == 'CONTRIBUTION'}"><span class="badge bg-success">Đóng quỹ</span></c:when><c:otherwise><span class="badge bg-danger">Chi từ quỹ</span></c:otherwise></c:choose></td>
-                            <td>${tx.memberName}</td>
-                            <td>${tx.description}</td>
-                            <td class="text-end <c:if test='${tx.amount < 0}'>text-danger</c:if>"><fmt:formatNumber value="${tx.amount}" type="number"/> đ</td>
+                            <th scope="col">Thành viên</th>
+                            <th scope="col">Vai trò</th>
+                            <th scope="col" class="text-center text-nowrap">
+                                Số lần đóng
+                            </th>
+                            <th scope="col" class="text-nowrap">
+                                Lần đóng gần nhất
+                            </th>
+                            <th scope="col" class="text-end text-nowrap">
+                                Tổng đã đóng
+                            </th>
                         </tr>
-                    </c:forEach>
-                </tbody>
-            </table></div>
+                    </thead>
+                    <tbody>
+                        <c:forEach var="memberFund"
+                                   items="${memberFundSummaries}">
+                            <tr>
+                                <th scope="row">
+                                    <c:out value="${memberFund.memberName}"/>
+                                </th>
+
+                                <td>
+                                    <span class="rd-role ${memberFund.role == 'OWNER' ? 'rd-role-lead' : ''}">
+                                        ${memberFund.role == 'OWNER' ? 'Trưởng nhóm' : 'Thành viên'}
+                                    </span>
+                                </td>
+
+                                <td class="text-center">
+                                    ${memberFund.contributionCount}
+                                </td>
+
+                                <td class="text-nowrap">
+                                    <c:choose>
+                                        <c:when test="${not empty memberFund.lastContributionAt}">
+                                            <fmt:formatDate
+                                                value="${memberFund.lastContributionAt}"
+                                                pattern="dd/MM/yyyy HH:mm"/>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="text-muted">
+                                                Chưa đóng quỹ
+                                            </span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
+
+                                <td class="text-end text-nowrap">
+                                    <strong class="text-success">
+                                        <fmt:formatNumber
+                                            value="${memberFund.contributed}"
+                                            type="number"
+                                            maxFractionDigits="2"/> đ
+                                    </strong>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                    </tbody>
+                </table>
+            </div>
         </c:otherwise>
     </c:choose>
-</div>
+</section>
 
-<%@ include file="/WEB-INF/views/common/footer.jsp" %>
+<section class="rd-card">
+    <div class="rd-card-heading">
+        <div>
+            <h2>Lịch sử giao dịch quỹ</h2>
+            <p class="rd-sub">
+                Các khoản đóng góp và khoản chi từ quỹ nhóm.
+            </p>
+        </div>
+    </div>
+
+    <c:choose>
+        <c:when test="${empty fundTransactions}">
+            <div class="alert alert-info mb-0">
+                Chưa có giao dịch quỹ.
+            </div>
+        </c:when>
+
+        <c:otherwise>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <caption class="visually-hidden">
+                        Lịch sử đóng góp và chi từ quỹ.
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Thời gian</th>
+                            <th scope="col">Loại giao dịch</th>
+                            <th scope="col">Thành viên</th>
+                            <th scope="col">Mô tả</th>
+                            <th scope="col" class="text-end">Số tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:forEach var="tx" items="${fundTransactions}">
+                            <tr>
+                                <td class="text-nowrap">
+                                    <fmt:formatDate value="${tx.createdAt}"
+                                                    pattern="dd/MM/yyyy HH:mm"/>
+                                </td>
+
+                                <td class="text-nowrap">
+                                    <c:choose>
+                                        <c:when test="${tx.type == 'CONTRIBUTION'}">
+                                            <span class="badge text-bg-success">
+                                                Đóng quỹ
+                                            </span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="badge text-bg-danger">
+                                                Chi từ quỹ
+                                            </span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
+
+                                <td>
+                                    <c:out value="${tx.memberName}"/>
+                                </td>
+
+                                <td>
+                                    <c:out value="${tx.description}"/>
+                                </td>
+
+                                <td class="text-end text-nowrap">
+                                    <strong class="${tx.amount < 0 ? 'text-danger' : 'text-success'}">
+                                        <c:if test="${tx.amount > 0}">+</c:if>
+                                        <fmt:formatNumber value="${tx.amount}"
+                                                          type="number"
+                                                          maxFractionDigits="2"/> đ
+                                    </strong>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                    </tbody>
+                </table>
+            </div>
+        </c:otherwise>
+    </c:choose>
+</section>
+
+<%@ include file="/WEB-INF/views/common/footer.jsp" %>  

@@ -1,47 +1,165 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ page import="utils.HtmlUtil" %>
+
 <%
-    model.User currentUser = (model.User) session.getAttribute("user");
-    Integer userCount = (Integer) request.getAttribute("userCount");
-    Integer activeUserCount = (Integer) request.getAttribute("activeUserCount");
-    Integer tripCount = (Integer) request.getAttribute("tripCount");
-    Integer placeCount = (Integer) request.getAttribute("placeCount");
-    Integer categoryCount = (Integer) request.getAttribute("categoryCount");
-    String dashboardError = (String) request.getAttribute("dashboardError");
+    model.User currentUser =
+        (model.User) session.getAttribute("user");
+
+    Integer userCount =
+        (Integer) request.getAttribute("userCount");
+
+    Integer activeUserCount =
+        (Integer) request.getAttribute("activeUserCount");
+
+    Integer tripCount =
+        (Integer) request.getAttribute("tripCount");
+
+    Integer placeCount =
+        (Integer) request.getAttribute("placeCount");
+
+    Integer categoryCount =
+        (Integer) request.getAttribute("categoryCount");
+
+    String dashboardError =
+        (String) request.getAttribute("dashboardError");
+
+    request.setAttribute("pageTitle", "Tổng quan quản trị");
+    request.setAttribute("tripRedesign", Boolean.TRUE);
 %>
-<% request.setAttribute("pageTitle", "Tổng quan quản trị"); %>
+
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
-            <div class="page-intro">
-                <span class="eyebrow">LOCALTRIP / KHÔNG GIAN QUẢN TRỊ</span>
-                <h2 class="fw-bold">Xin chào, <%= HtmlUtil.escape(currentUser.getFullName())%> 👋</h2>
-                <p class="text-muted">Tổng quan dữ liệu hệ thống LocalTrip.</p>
+
+<section class="rd-hero mb-4">
+    <div class="rd-hero-top">
+        <div>
+            <div class="small text-white-50 mb-2">
+                LOCALTRIP · KHÔNG GIAN QUẢN TRỊ
             </div>
 
-            <% if (dashboardError != null) {%>
-            <div class="alert alert-warning"><%= HtmlUtil.escape(dashboardError)%></div>
-            <% }%>
+            <h1 class="mb-3">Tổng quan hệ thống</h1>
 
-            <div class="row g-4 mb-4">
-                <div class="col-md-4"><div class="card shadow-sm h-100"><div class="card-body"><div class="text-muted">Tổng người dùng</div><div class="display-6 fw-bold"><%= userCount == null ? 0 : userCount%></div></div></div></div>
-                <div class="col-md-4"><div class="card shadow-sm h-100"><div class="card-body"><div class="text-muted">Người dùng đang hoạt động</div><div class="display-6 fw-bold"><%= activeUserCount == null ? 0 : activeUserCount%></div></div></div></div>
-                <div class="col-md-4"><div class="card shadow-sm h-100"><div class="card-body"><div class="text-muted">Tổng chuyến đi</div><div class="display-6 fw-bold"><%= tripCount == null ? 0 : tripCount%></div></div></div></div>
-                <div class="col-md-6"><div class="card shadow-sm h-100"><div class="card-body"><div class="text-muted">Địa điểm đang hoạt động</div><div class="display-6 fw-bold"><%= placeCount == null ? 0 : placeCount%></div></div></div></div>
-                <div class="col-md-6"><div class="card shadow-sm h-100"><div class="card-body"><div class="text-muted">Danh mục</div><div class="display-6 fw-bold"><%= categoryCount == null ? 0 : categoryCount%></div></div></div></div>
-            </div>
+            <p class="text-white mb-0">
+                Xin chào,
+                <strong><%= HtmlUtil.escape(currentUser.getFullName()) %></strong>.
+                <br>
+                Quản lý dữ liệu và theo dõi hoạt động của LocalTrip.
+            </p>
+        </div>
 
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3">Quản trị</h5>
-                    <div class="d-flex flex-wrap gap-2">
-                        <a href="<%= request.getContextPath()%>/admin/users" class="btn btn-outline-primary">Quản lý người dùng</a>
-                        <a href="<%= request.getContextPath()%>/admin/places" class="btn btn-outline-primary">Quản lý địa điểm</a>
-                        <a href="<%= request.getContextPath()%>/admin/categories" class="btn btn-outline-primary">Quản lý danh mục</a>
-                        <a href="<%= request.getContextPath()%>/admin/audit-logs" class="btn btn-outline-dark"> Nhật ký quản trị </a>
-                        <a href="${pageContext.request.contextPath}/admin/login-logs" class="btn btn-outline-dark"> Lịch sử đăng nhập </a>
-                    </div>
-                    <div class="alert alert-info mt-4 mb-0">
-                        Quản lý người dùng, địa điểm và danh mục; theo dõi hoạt động của hệ thống.
-                    </div>
-                </div>
+        <a class="rd-back"
+           href="<%= request.getContextPath() %>/admin/audit-logs">
+            Nhật ký quản trị →
+        </a>
+    </div>
+</section>
+
+<% if (dashboardError != null) { %>
+    <div class="alert alert-warning" role="alert">
+        <%= HtmlUtil.escape(dashboardError) %>
+    </div>
+<% } %>
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+        <section class="rd-card h-100">
+            <div class="small text-muted mb-2">
+                Tổng người dùng
             </div>
-<%@ include file="/WEB-INF/views/common/footer.jsp" %>
+            <strong class="h2 d-block mb-0">
+                <%= userCount == null ? 0 : userCount %>
+            </strong>
+        </section>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <section class="rd-card h-100">
+            <div class="small text-muted mb-2">
+                Người dùng đang hoạt động
+            </div>
+            <strong class="h2 d-block mb-0">
+                <%= activeUserCount == null ? 0 : activeUserCount %>
+            </strong>
+        </section>
+    </div>
+
+    <div class="col-12 col-md-4">
+        <section class="rd-card h-100">
+            <div class="small text-muted mb-2">
+                Tổng chuyến đi
+            </div>
+            <strong class="h2 d-block mb-0">
+                <%= tripCount == null ? 0 : tripCount %>
+            </strong>
+        </section>
+    </div>
+
+    <div class="col-12 col-md-6">
+        <section class="rd-card h-100">
+            <div class="small text-muted mb-2">
+                Địa điểm đang hoạt động
+            </div>
+            <strong class="h2 d-block mb-0">
+                <%= placeCount == null ? 0 : placeCount %>
+            </strong>
+        </section>
+    </div>
+
+    <div class="col-12 col-md-6">
+        <section class="rd-card h-100">
+            <div class="small text-muted mb-2">
+                Danh mục địa điểm
+            </div>
+            <strong class="h2 d-block mb-0">
+                <%= categoryCount == null ? 0 : categoryCount %>
+            </strong>
+        </section>
+    </div>
+</div>
+
+<section class="rd-card">
+    <h2 class="h4 mb-2">Chức năng quản trị</h2>
+
+    <p class="text-muted mb-4">
+        Quản lý người dùng, địa điểm và danh mục;
+        kiểm tra lịch sử hoạt động của hệ thống.
+    </p>
+
+    <div class="row g-3">
+        <div class="col-12 col-md-6 col-lg-4">
+            <a class="btn btn-outline-secondary w-100 py-3"
+               href="<%= request.getContextPath() %>/admin/users">
+                Quản lý người dùng
+            </a>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4">
+            <a class="btn btn-outline-secondary w-100 py-3"
+               href="<%= request.getContextPath() %>/admin/places">
+                Quản lý địa điểm
+            </a>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4">
+            <a class="btn btn-outline-secondary w-100 py-3"
+               href="<%= request.getContextPath() %>/admin/categories">
+                Quản lý danh mục
+            </a>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <a class="btn btn-outline-secondary w-100 py-3"
+               href="<%= request.getContextPath() %>/admin/audit-logs">
+                Nhật ký quản trị
+            </a>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <a class="btn btn-outline-secondary w-100 py-3"
+               href="<%= request.getContextPath() %>/admin/login-logs">
+                Lịch sử đăng nhập
+            </a>
+        </div>
+    </div>
+</section>
+
+<%@ include file="/WEB-INF/views/common/footer.jsp" %>  
