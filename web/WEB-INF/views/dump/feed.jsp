@@ -2,18 +2,364 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <c:set var="pageTitle" value="Nhật ký - Cộng đồng du lịch" scope="request"/>
+<c:set var="tripRedesign" value="${true}" scope="request"/>
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
+<style>
+    .rd-page .dump-page {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    .rd-page .dump-layout {
+        display: grid;
+        grid-template-columns: 250px minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+    }
+
+    .rd-page .dump-sidebar {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 18px;
+        min-width: 0;
+    }
+
+    .rd-page .dump-side-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 14px;
+        margin-bottom: 6px;
+        border-radius: 11px;
+        color: var(--ink2);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .rd-page .dump-side-link:hover {
+        background: var(--bg);
+        color: var(--green);
+    }
+
+    .rd-page .dump-side-link.active {
+        background: var(--mint);
+        color: var(--green);
+        font-weight: 600;
+    }
+
+    .rd-page .dump-privacy-note {
+        margin-top: 20px;
+        padding: 16px;
+        border-radius: 12px;
+        background: var(--bg);
+        color: var(--ink2);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .rd-page .dump-privacy-note strong {
+        display: block;
+        color: var(--ink);
+        margin-bottom: 8px;
+    }
+
+    .rd-page .dump-privacy-note p {
+        margin: 0;
+    }
+
+    .rd-page .dump-main {
+        min-width: 0;
+    }
+
+    .rd-page .dump-card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 26px;
+        margin-bottom: 24px;
+        box-shadow: none;
+    }
+
+    .rd-page .dump-card h2 {
+        font-size: 22px;
+        color: var(--ink);
+        margin-bottom: 20px;
+    }
+
+    .rd-page .dump-form-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line);
+    }
+
+    .rd-page .dump-form-bottom > div {
+        flex: 1 1 200px;
+    }
+
+    .rd-page .dump-form-hint {
+        color: var(--ink2);
+        font-size: 13px;
+        margin: 14px 0 0;
+    }
+
+    .rd-page .dump-post-head {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .rd-page .dump-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background: var(--green);
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .rd-page .dump-post-author {
+        flex: 1;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .rd-page .dump-post-author strong,
+    .rd-page .dump-post-author small {
+        display: block;
+    }
+
+    .rd-page .dump-post-author small {
+        color: var(--ink2);
+        margin-top: 3px;
+    }
+
+    .rd-page .dump-post-content {
+        white-space: pre-line;
+        overflow-wrap: anywhere;
+        line-height: 1.75;
+        color: var(--ink);
+    }
+
+    .rd-page .dump-place-tag {
+        color: var(--green);
+        font-weight: 500;
+    }
+
+    .rd-page .dump-rating {
+        color: #996400;
+    }
+
+    .rd-page .dump-rating span {
+        color: var(--ink2);
+        font-size: 13px;
+    }
+
+    .rd-page .dump-image-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin: 16px 0;
+    }
+
+    .rd-page .dump-image-grid.count-1 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .rd-page .dump-image-grid a {
+        min-width: 0;
+        overflow: hidden;
+        border-radius: 12px;
+    }
+
+    .rd-page .dump-image-grid img {
+        display: block;
+        width: 100%;
+        height: 240px;
+        object-fit: cover;
+    }
+
+    .rd-page .dump-post-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        color: var(--ink2);
+        font-size: 13px;
+        padding: 14px 0;
+    }
+
+    .rd-page .dump-post-actions {
+        display: flex;
+        align-items: start;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+    }
+
+    .rd-page .dump-action {
+        border: 0;
+        border-radius: 9px;
+        background: transparent;
+        color: var(--ink2);
+        padding: 9px 12px;
+        font-weight: 500;
+    }
+
+    .rd-page .dump-action:hover,
+    .rd-page .dump-action.is-active {
+        background: var(--mint);
+        color: var(--green);
+    }
+
+    .rd-page .dump-report {
+        margin-left: auto;
+        max-width: 100%;
+    }
+
+    .rd-page .dump-report summary {
+        cursor: pointer;
+        padding: 8px 12px;
+    }
+
+    .rd-page .dump-report form {
+        position: static;
+        width: 260px;
+        max-width: 100%;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #fff;
+    }
+
+    .rd-page .dump-comments {
+        margin-top: 18px;
+    }
+
+    .rd-page .dump-comments p {
+        padding: 10px 14px;
+        background: var(--bg);
+        border-radius: 11px;
+        overflow-wrap: anywhere;
+    }
+
+    .rd-page .dump-comment-form {
+        display: flex;
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .rd-page .dump-comment-form input {
+        min-width: 0;
+    }
+
+    .rd-page .dump-empty {
+        text-align: center;
+        padding: 40px 24px;
+    }
+
+    .rd-page .dump-empty p {
+        color: var(--ink2);
+    }
+
+    @media (max-width: 991px) {
+        .rd-page .dump-layout {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .rd-page .dump-sidebar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .rd-page .dump-side-link {
+            margin: 0;
+        }
+
+        .rd-page .dump-privacy-note {
+            width: 100%;
+            margin-top: 8px;
+        }
+    }
+
+    @media (max-width: 575px) {
+        .rd-page .dump-card {
+            padding: 20px 16px;
+        }
+
+        .rd-page .dump-form-bottom > div,
+        .rd-page .dump-form-bottom > button {
+            width: 100%;
+        }
+
+        .rd-page .dump-comment-form {
+            flex-wrap: wrap;
+        }
+
+        .rd-page .dump-comment-form input,
+        .rd-page .dump-comment-form button {
+            width: 100%;
+        }
+
+        .rd-page .dump-image-grid img {
+            height: 170px;
+        }
+    }
+</style>
 <div class="dump-page" id="main-content">
-    <div class="dump-hero">
-        <div><p class="eyebrow">CỘNG ĐỒNG LOCALTRIP</p><h1>Nhật ký <span>✦</span></h1><p>Chia sẻ những khoảnh khắc, cảm nhận và kinh nghiệm du lịch chân thật.</p></div>
-        <div class="dump-hero-actions"><a class="btn btn-light" href="${pageContext.request.contextPath}/dump/friends">👥 Bạn bè</a><a class="btn btn-light" href="${pageContext.request.contextPath}/passport">🧭 Hộ chiếu du lịch</a></div>
-    </div>
+    <section class="rd-hero mb-4">
+        <div class="rd-hero-top">
+            <div>
+                <div class="small text-white-50 mb-2">
+                    LOCALTRIP · CÂU CHUYỆN HÀNH TRÌNH
+                </div>
+
+                <h1 class="mb-2">Nhật ký du lịch</h1>
+
+                <p class="text-white mb-0">
+                    Chia sẻ khoảnh khắc, cảm nhận và kinh nghiệm
+                    từ những chuyến đi của bạn.
+                </p>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+                <a class="rd-back"
+                   href="${pageContext.request.contextPath}/dump/friends">
+                    Kết nối bạn bè
+                </a>
+
+                <a class="rd-back"
+                   href="${pageContext.request.contextPath}/passport">
+                    Hộ chiếu du lịch →
+                </a>
+            </div>
+        </div>
+    </section>
     <c:if test="${not empty sessionScope.errorMessage}"><div class="alert alert-danger"><c:out value="${sessionScope.errorMessage}"/></div><c:remove var="errorMessage" scope="session"/></c:if>
     <c:if test="${not empty sessionScope.successMessage}"><div class="alert alert-success"><c:out value="${sessionScope.successMessage}"/></div><c:remove var="successMessage" scope="session"/></c:if>
-    <div class="dump-layout">
-        <aside class="dump-sidebar">
-            <a class="dump-side-link active" href="${pageContext.request.contextPath}/dump">🌎 Bảng tin</a>
-            <a class="dump-side-link" href="${pageContext.request.contextPath}/dump?filter=BOOKMARKS">🔖 Bài đã lưu</a>
+        <div class="dump-layout">
+            <aside class="dump-sidebar">
+                <a class="dump-side-link ${bookmarksOnly ? '' : 'active'}"
+               href="${pageContext.request.contextPath}/dump">
+                Bảng tin
+            </a>
+
+            <a class="dump-side-link ${bookmarksOnly ? 'active' : ''}"
+               href="${pageContext.request.contextPath}/dump?filter=BOOKMARKS">
+                Bài đã lưu
+            </a>
             <a class="dump-side-link" href="${pageContext.request.contextPath}/dump/friends">🤝 Kết nối bạn bè</a>
             <a class="dump-side-link" href="${pageContext.request.contextPath}/passport">🛂 Hộ chiếu du lịch</a>
             <div class="dump-privacy-note"><strong>🔒 Bạn kiểm soát quyền riêng tư</strong><p>Bài viết có thể công khai hoặc chỉ hiển thị với bạn bè đã chấp nhận lời mời.</p></div>
@@ -29,12 +375,12 @@
                         <div class="col-md-6"><label class="form-label" for="dumpImages">Ảnh (tối đa 5 ảnh, mỗi ảnh 5 MB)</label><input class="form-control" id="dumpImages" name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple><small class="text-muted">Chỉ nhận JPG, PNG, WEBP. Ảnh được lưu ngoài thư mục web công khai.</small></div>
                         <div class="col-md-6"><label class="form-label" for="dumpPlace">Địa điểm (không bắt buộc)</label><select class="form-select" id="dumpPlace" name="placeId"><option value="">Không gắn địa điểm</option><c:forEach items="${places}" var="p"><option value="${p.id}"><c:out value="${p.name}"/></option></c:forEach></select>
                             <label class="form-label mt-2" for="dumpTrip">Chuyến đi liên quan (không bắt buộc)</label><select class="form-select" id="dumpTrip" name="tripId"><option value="">Không gắn chuyến đi</option><c:forEach items="${trips}" var="t"><option value="${t.tripId}"><c:out value="${t.tripName}"/></option></c:forEach></select>
-                            <label class="form-label mt-2" for="dumpRating">Đánh giá (không bắt buộc)</label><select class="form-select" id="dumpRating" name="rating"><option value="">Không đánh giá</option><option value="5">★★★★★ - Rất tuyệt</option><option value="4">★★★★ - Tốt</option><option value="3">★★★ - Bình thường</option><option value="2">★★ - Chưa tốt</option><option value="1">★ - Không hài lòng</option></select></div>
-                    </div>
-                    <div class="dump-form-bottom"><div><label class="form-label" for="dumpVisibility">Ai có thể xem?</label><select class="form-select" id="dumpVisibility" name="visibility"><option value="PUBLIC">🌎 Công khai</option><option value="FRIENDS">👥 Chỉ bạn bè</option></select></div><button class="btn btn-brand" type="submit">Đăng lên Nhật ký ↗</button></div>
-                    <p class="dump-form-hint">Bài viết chỉ có nội dung hoặc ảnh đều được chấp nhận. Không cần đánh giá địa điểm.</p>
-                </form>
-            </section>
+                                <label class="form-label mt-2" for="dumpRating">Đánh giá (không bắt buộc)</label><select class="form-select" id="dumpRating" name="rating"><option value="">Không đánh giá</option><option value="5">★★★★★ - Rất tuyệt</option><option value="4">★★★★ - Tốt</option><option value="3">★★★ - Bình thường</option><option value="2">★★ - Chưa tốt</option><option value="1">★ - Không hài lòng</option></select></div>
+                        </div>
+                        <div class="dump-form-bottom"><div><label class="form-label" for="dumpVisibility">Ai có thể xem?</label><select class="form-select" id="dumpVisibility" name="visibility"><option value="PUBLIC">🌎 Công khai</option><option value="FRIENDS">👥 Chỉ bạn bè</option></select></div><button class="btn btn-brand" type="submit">Đăng lên Nhật ký ↗</button></div>
+                        <p class="dump-form-hint">Bài viết chỉ có nội dung hoặc ảnh đều được chấp nhận. Không cần đánh giá địa điểm.</p>
+                    </form>
+                </section>
             <c:if test="${bookmarksOnly}"><h2 class="dump-section-title">Bài viết đã lưu</h2></c:if>
             <c:if test="${empty posts}"><div class="dump-card dump-empty"><span>🧳</span><h3>Chuyến đi nào cũng bắt đầu từ một câu chuyện</h3><p>Chưa có bài viết phù hợp. Hãy chia sẻ trải nghiệm đầu tiên hoặc kết nối thêm bạn bè.</p></div></c:if>
             <c:forEach items="${posts}" var="post">
@@ -47,7 +393,7 @@
                     <div class="dump-post-stats"><span>♥ ${post.likeCount} lượt thích</span><span>💬 ${post.commentCount} bình luận</span></div>
                     <div class="dump-post-actions"><form action="${pageContext.request.contextPath}/dump/action" method="post"><input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}"><input type="hidden" name="postId" value="${post.postId}"><input type="hidden" name="action" value="like"><button type="submit" class="dump-action ${post.liked?'is-active':''}">${post.liked?'♥ Đã thích':'♡ Thích'}</button></form><form action="${pageContext.request.contextPath}/dump/action" method="post"><input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}"><input type="hidden" name="postId" value="${post.postId}"><input type="hidden" name="action" value="bookmark"><input type="hidden" name="returnTo" value="${bookmarksOnly?'BOOKMARKS':'ALL'}"><button type="submit" class="dump-action">${post.bookmarked?'🔖 Đã lưu':'♧ Lưu bài'}</button></form><details class="dump-report"><summary>⋯</summary><form action="${pageContext.request.contextPath}/dump/action" method="post"><input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}"><input type="hidden" name="postId" value="${post.postId}"><input type="hidden" name="action" value="report"><label class="form-label">Lý do báo cáo</label><input class="form-control form-control-sm" name="reason" maxlength="500" required><button class="btn btn-sm btn-outline-danger mt-2" type="submit">Gửi báo cáo</button></form></details></div>
                     <div class="dump-comments"><c:forEach items="${post.comments}" var="comment"><p><strong><c:out value="${comment.fullName}"/></strong> <c:out value="${comment.content}"/></p></c:forEach><form class="dump-comment-form" action="${pageContext.request.contextPath}/dump/action" method="post"><input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}"><input type="hidden" name="postId" value="${post.postId}"><input type="hidden" name="action" value="comment"><input class="form-control" name="content" maxlength="1000" placeholder="Viết bình luận..." required><button class="btn btn-brand" type="submit">Gửi</button></form></div>
-                </article>
+                    </article>
             </c:forEach>
         </main>
     </div>

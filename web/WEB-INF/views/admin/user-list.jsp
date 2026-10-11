@@ -45,30 +45,137 @@
             = URLEncoder.encode(selectedStatus, "UTF-8");
     request.setAttribute("pageTitle", "Quản lý người dùng");
 %>
-
+<% request.setAttribute("tripRedesign", Boolean.TRUE);%>
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
+<style>
+    .rd-page .user-management-card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        box-shadow: none !important;
+        overflow: hidden;
+    }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="fw-bold mb-1">Quản lý người dùng</h2>
-        <p class="text-muted mb-0">
-            Danh sách tài khoản trong hệ thống LocalTrip
-        </p>
+    .rd-page .user-management-card > .card-body {
+        padding: 26px;
+    }
+
+    .rd-page .user-management-card .form-label {
+        font-weight: 600;
+        color: var(--ink);
+    }
+
+    .rd-page .user-management-card .table {
+        margin-bottom: 0;
+    }
+
+    .rd-page .user-management-card .table th {
+        padding: 14px 12px;
+        white-space: nowrap;
+        color: var(--ink2);
+        background: var(--bg);
+        font-size: 13px;
+    }
+
+    .rd-page .user-management-card .table td {
+        padding: 16px 12px;
+        border-color: var(--line);
+    }
+
+    .rd-page .user-management-card .table td:nth-child(2),
+    .rd-page .user-management-card .table td:nth-child(3) {
+        min-width: 160px;
+        overflow-wrap: anywhere;
+    }
+
+    .rd-page .user-management-card .table td:last-child {
+        min-width: 210px;
+    }
+
+    .rd-page .user-management-card .badge {
+        padding: 7px 10px;
+        border-radius: 20px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .rd-page .user-management-card .text-bg-primary {
+        background: var(--mint) !important;
+        color: var(--green) !important;
+    }
+
+    .rd-page .user-management-card .text-bg-danger {
+        background: #fff0d1 !important;
+        color: #855700 !important;
+    }
+
+    .rd-page .user-management-card .text-bg-success {
+        background: #e3f0e8 !important;
+        color: #1e5a44 !important;
+    }
+
+    .rd-page .user-management-card .text-bg-secondary {
+        background: #edf0ee !important;
+        color: #526158 !important;
+    }
+
+    .rd-page .user-management-card .pagination {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .rd-page .user-management-card .page-link {
+        border-radius: 9px;
+        color: var(--green);
+        border-color: var(--line);
+    }
+
+    .rd-page .user-management-card .page-item.active .page-link {
+        background: var(--green);
+        border-color: var(--green);
+        color: #fff;
+    }
+
+    .rd-page .user-management-card .page-item.disabled .page-link {
+        color: #6c757d;
+        background: var(--bg);
+    }
+
+    @media (max-width: 575px) {
+        .rd-page .user-management-card > .card-body {
+            padding: 20px 16px;
+        }
+    }
+</style>
+<section class="rd-hero mb-4">
+    <div class="rd-hero-top">
+        <div>
+            <div class="small text-white-50 mb-2">
+                LOCALTRIP · QUẢN TRỊ TÀI KHOẢN
+            </div>
+
+            <h1 class="mb-2">Quản lý người dùng</h1>
+
+            <p class="text-white mb-0">
+                Tìm kiếm tài khoản, cập nhật thông tin
+                và quản lý quyền sử dụng hệ thống.
+            </p>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a href="<%= request.getContextPath()%>/admin/users/create"
+               class="rd-back">
+                + Thêm người dùng
+            </a>
+
+            <a href="<%= request.getContextPath()%>/admin"
+               class="rd-back">
+                ← Tổng quan quản trị
+            </a>
+        </div>
     </div>
-
-    <div class="d-flex gap-2">
-        <a href="<%= request.getContextPath()%>/admin/users/create"
-           class="btn btn-primary">
-            Thêm người dùng
-        </a>
-
-        <a href="<%= request.getContextPath()%>/admin"
-           class="btn btn-outline-secondary">
-            Về Admin Tổng quan
-        </a>
-    </div>
-</div>
-<div class="card shadow-sm mb-4">
+</section>
+<div class="card shadow-sm mb-4 user-management-card">
     <div class="card-body">
         <form method="get"
               action="<%= request.getContextPath()%>/admin/users">
@@ -141,7 +248,7 @@
         </form>
     </div>
 </div>
-<div class="card shadow-sm">
+<div class="card shadow-sm user-management-card">
     <div class="card-body">
         <div class="d-flex justify-content-between mb-3">
             <strong>Danh sách người dùng</strong>

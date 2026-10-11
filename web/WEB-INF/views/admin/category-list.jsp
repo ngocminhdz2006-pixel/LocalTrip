@@ -1,110 +1,185 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.util.List" %>
-<%@ page import="model.Category" %>
-<%@ page import="utils.HtmlUtil" %>
-<%
-    List<Category> categories = (List<Category>) request.getAttribute("categories");
-    String keyword = (String) request.getAttribute("keyword");
-    if (keyword == null) keyword = "";
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
+<%@ page import="java.util.List,model.Category,utils.HtmlUtil" %>
 
-    String successMessage = (String) session.getAttribute("successMessage");
-    String errorMessage = (String) session.getAttribute("errorMessage");
-    session.removeAttribute("successMessage");
-    session.removeAttribute("errorMessage");
+<%
+    List<Category> categories =
+        (List<Category>) request.getAttribute("categories");
+
+    String keyword = (String) request.getAttribute("keyword");
+
+    if (keyword == null) {
+        keyword = "";
+    }
+
     request.setAttribute("pageTitle", "Quản lý danh mục");
+    request.setAttribute("tripRedesign", Boolean.TRUE);
 %>
+
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="fw-bold mb-1">Quản lý danh mục</h2>
-        <p class="text-muted mb-0">Quản lý các danh mục địa điểm được sử dụng trong LocalTrip.</p>
-    </div>
-    <div class="d-flex gap-2">
-        <a href="<%= request.getContextPath()%>/admin/categories/create" class="btn btn-primary">+ Thêm danh mục</a>
-        <a href="<%= request.getContextPath()%>/admin" class="btn btn-outline-secondary">Về Admin Tổng quan</a>
-    </div>
-</div>
-
-<% if (successMessage != null) { %>
-<div class="alert alert-success"><%= HtmlUtil.escape(successMessage) %></div>
-<% } %>
-<% if (errorMessage != null) { %>
-<div class="alert alert-danger"><%= HtmlUtil.escape(errorMessage) %></div>
-<% } %>
-<% if (request.getAttribute("errorMessage") != null) { %>
-<div class="alert alert-danger"><%= HtmlUtil.escape((String) request.getAttribute("errorMessage")) %></div>
-<% } %>
-
-<div class="card shadow-sm mb-4">
-    <div class="card-body">
-        <form method="get" action="<%= request.getContextPath()%>/admin/categories">
-            <div class="row g-3 align-items-end">
-                <div class="col-lg-9">
-                    <label class="form-label">Tìm kiếm</label>
-                    <input type="text" name="keyword" class="form-control"
-                           value="<%= HtmlUtil.escape(keyword) %>"
-                           placeholder="Tìm theo mã hoặc tên category...">
-                </div>
-                <div class="col-lg-3">
-                    <button type="submit" class="btn btn-primary">Tìm kiếm</button>
-                    <a href="<%= request.getContextPath()%>/admin/categories" class="btn btn-outline-secondary">Xóa lọc</a>
-                </div>
+<section class="rd-hero mb-4">
+    <div class="rd-hero-top">
+        <div>
+            <div class="small text-white-50 mb-2">
+                LOCALTRIP · QUẢN TRỊ ĐỊA ĐIỂM
             </div>
-        </form>
-    </div>
-</div>
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <div class="d-flex justify-content-between mb-3">
-            <strong>Danh sách danh mục</strong>
-            <span class="text-muted"><%= categories == null ? 0 : categories.size() %> kết quả</span>
+            <h1 class="mb-2">Quản lý danh mục</h1>
+
+            <p class="text-white mb-0">
+                Quản lý các nhóm địa điểm được sử dụng
+                trong hệ thống LocalTrip.
+            </p>
         </div>
 
-        <% if (categories == null || categories.isEmpty()) { %>
-        <div class="alert alert-info mb-0">Không tìm thấy category phù hợp.</div>
-        <% } else { %>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="rd-back"
+               href="<%= request.getContextPath() %>/admin/categories/create">
+                + Thêm danh mục
+            </a>
+
+            <a class="rd-back"
+               href="<%= request.getContextPath() %>/admin">
+                ← Tổng quan quản trị
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="rd-card mb-4">
+    <h2 class="h5 mb-3">Tìm kiếm danh mục</h2>
+
+    <form method="get"
+          action="<%= request.getContextPath() %>/admin/categories">
+
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-lg-8">
+                <label for="categoryKeyword"
+                       class="form-label fw-semibold">
+                    Mã hoặc tên danh mục
+                </label>
+
+                <input type="text"
+                       id="categoryKeyword"
+                       name="keyword"
+                       class="form-control"
+                       value="<%= HtmlUtil.escape(keyword) %>"
+                       placeholder="Nhập mã hoặc tên danh mục">
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Tìm kiếm
+                    </button>
+
+                    <a class="btn btn-outline-secondary"
+                       href="<%= request.getContextPath() %>/admin/categories">
+                        Xóa bộ lọc
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+</section>
+
+<section class="rd-card">
+    <div class="d-flex justify-content-between
+                align-items-center flex-wrap gap-2 mb-4">
+        <h2 class="h4 mb-0">Danh sách danh mục</h2>
+
+        <span class="rd-count">
+            <%= categories == null ? 0 : categories.size() %> kết quả
+        </span>
+    </div>
+
+    <% if (categories == null || categories.isEmpty()) { %>
+
+        <div class="border-top pt-4">
+            <p class="text-muted mb-0">
+                Không tìm thấy danh mục phù hợp.
+                Hãy thử từ khóa khác hoặc xóa bộ lọc.
+            </p>
+        </div>
+
+    <% } else { %>
+
         <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Mã</th>
-                        <th>Tên danh mục</th>
-                        <th>Số Places</th>
-                        <th>Thao tác</th>
+                        <th scope="col">ID</th>
+                        <th scope="col">Mã danh mục</th>
+                        <th scope="col">Tên danh mục</th>
+                        <th scope="col" class="text-center">
+                            Số địa điểm
+                        </th>
+                        <th scope="col">Thao tác</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     <% for (Category category : categories) { %>
-                    <tr>
-                        <td><%= category.getCategoryId() %></td>
-                        <td><span class="badge text-bg-light border"><%= HtmlUtil.escape(category.getCategoryCode()) %></span></td>
-                        <td><strong><%= HtmlUtil.escape(category.getIcon()) %> <%= HtmlUtil.escape(category.getCategoryName()) %></strong></td>
-                        <td><%= category.getPlaceCount() %></td>
-                        <td>
-                            <div class="d-flex flex-wrap gap-2">
-                                <a href="<%= request.getContextPath()%>/admin/categories/edit?id=<%= category.getCategoryId() %>"
-                                   class="btn btn-sm btn-outline-primary">Sửa</a>
-                                <% if (category.getPlaceCount() == 0) { %>
-                                <form method="post" action="<%= request.getContextPath()%>/admin/categories/delete"
-                                      onsubmit="return confirm('Bạn có chắc muốn xóa category này không?');" class="d-inline">
-                                    <input type="hidden" name="id" value="<%= category.getCategoryId() %>">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
-                                </form>
-                                <% } else { %>
-                                <button type="button" class="btn btn-sm btn-outline-secondary" disabled>Đang được sử dụng</button>
-                                <% } %>
-                            </div>
-                        </td>
-                    </tr>
+                        <tr>
+                            <td>
+                                <%= category.getCategoryId() %>
+                            </td>
+
+                            <td>
+                                <span class="rd-role">
+                                    <%= HtmlUtil.escape(category.getCategoryCode()) %>
+                                </span>
+                            </td>
+
+                            <td style="min-width:180px;overflow-wrap:anywhere;">
+                                <strong>
+                                    <%= HtmlUtil.escape(category.getIcon()) %>
+                                    <%= HtmlUtil.escape(category.getCategoryName()) %>
+                                </strong>
+                            </td>
+
+                            <td class="text-center">
+                                <%= category.getPlaceCount() %>
+                            </td>
+
+                            <td style="min-width:200px;">
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       href="<%= request.getContextPath() %>/admin/categories/edit?id=<%= category.getCategoryId() %>">
+                                        Sửa
+                                    </a>
+
+                                    <% if (category.getPlaceCount() == 0) { %>
+                                        <form method="post"
+                                              action="<%= request.getContextPath() %>/admin/categories/delete"
+                                              onsubmit="return confirm('Bạn có chắc muốn xóa danh mục này không?');">
+
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="<%= category.getCategoryId() %>">
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger">
+                                                Xóa
+                                            </button>
+                                        </form>
+                                    <% } else { %>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-secondary"
+                                                disabled>
+                                            Đang được sử dụng
+                                        </button>
+                                    <% } %>
+                                </div>
+                            </td>
+                        </tr>
                     <% } %>
                 </tbody>
             </table>
         </div>
-        <% } %>
-    </div>
-</div>
+
+    <% } %>
+</section>
 
 <%@ include file="/WEB-INF/views/common/footer.jsp" %>
