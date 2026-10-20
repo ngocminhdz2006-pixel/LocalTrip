@@ -2,8 +2,9 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<c:set var="pageTitle" value="Hộ chiếu du lịch" scope="request" />
+<c:set var="pageTitle" value="Travel Passport" scope="request" />
 <c:set var="tripRedesign" value="${true}" scope="request" />
+<fmt:setLocale value="en_US" scope="page"/>
 
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
@@ -11,20 +12,19 @@
     <div class="rd-hero-top">
         <div>
             <div class="small text-white-50 mb-2">
-                LOCALTRIP · DẤU MỐC HÀNH TRÌNH
+                LOCALTRIP · JOURNEY MILESTONES
             </div>
 
-            <h1 class="mb-2">Hộ chiếu du lịch</h1>
+            <h1 class="mb-2">Travel Passport</h1>
 
             <p class="text-white mb-0">
-                Mỗi lần ghé thăm hợp lệ là một dấu mốc
-                trong hành trình khám phá.
+                Every verified check-in is a memorable milestone in your personal exploration story.
             </p>
         </div>
 
         <a class="rd-back"
            href="${pageContext.request.contextPath}/places">
-            Khám phá địa điểm →
+            Explore destinations →
         </a>
     </div>
 </section>
@@ -54,11 +54,10 @@
                    value="${sessionScope.travelCsrf}">
 
             <div class="col-12 col-lg-7">
-                <h2 class="h5 mb-2">Quyền riêng tư hộ chiếu</h2>
+                <h2 class="h5 mb-2">Passport Privacy</h2>
 
                 <p class="text-muted small mb-0">
-                    Mặc định chỉ bạn xem được. Khi công khai,
-                    người khác có thể xem hộ chiếu qua liên kết.
+                    By default, only you can see this passport. When set to public, anyone with the link can view your milestones.
                 </p>
             </div>
 
@@ -66,7 +65,7 @@
                 <div class="d-flex gap-2">
                     <label for="passportVisibility"
                            class="visually-hidden">
-                        Quyền riêng tư hộ chiếu
+                        Passport privacy
                     </label>
 
                     <select id="passportVisibility"
@@ -74,18 +73,18 @@
                             name="visibility">
                         <option value="PRIVATE"
                                 ${passportVisibility eq 'PRIVATE' ? 'selected' : ''}>
-                            Chỉ mình tôi
+                            Only me
                         </option>
 
                         <option value="PUBLIC"
                                 ${passportVisibility eq 'PUBLIC' ? 'selected' : ''}>
-                            Công khai
+                            Public
                         </option>
                     </select>
 
                     <button class="btn btn-primary"
                             type="submit">
-                        Lưu
+                        Save
                     </button>
                 </div>
             </div>
@@ -97,7 +96,7 @@
     <div class="col-6 col-lg-3">
         <section class="rd-card h-100">
             <div class="small text-muted mb-2">
-                Địa điểm khác nhau
+                Unique Destinations
             </div>
             <strong class="h2 d-block mb-0">
                 <c:out value="${summary.placeCount}" />
@@ -108,7 +107,7 @@
     <div class="col-6 col-lg-3">
         <section class="rd-card h-100">
             <div class="small text-muted mb-2">
-                Lượt ghé thăm hợp lệ
+                Verified Check-ins
             </div>
             <strong class="h2 d-block mb-0">
                 <c:out value="${summary.checkInCount}" />
@@ -119,7 +118,7 @@
     <div class="col-6 col-lg-3">
         <section class="rd-card h-100">
             <div class="small text-muted mb-2">
-                Huy hiệu đã đạt
+                Earned Badges
             </div>
             <strong class="h2 d-block mb-0">
                 <c:out value="${summary.badgeCount}" />
@@ -130,7 +129,7 @@
     <div class="col-6 col-lg-3">
         <section class="rd-card h-100">
             <div class="small text-muted mb-2">
-                Lượt ghé thăm có ảnh
+                Visits with Photos
             </div>
             <strong class="h2 d-block mb-0">
                 <c:out value="${summary.photoCount}" />
@@ -144,24 +143,22 @@
         <section class="rd-card">
             <div class="d-flex justify-content-between
                         align-items-center flex-wrap gap-2 mb-4">
-                <h2 class="h4 mb-0">Nhật ký khám phá</h2>
-                <span class="small text-muted">Mới nhất trước</span>
+                <h2 class="h4 mb-0">Exploration Log</h2>
+                <span class="small text-muted">Newest first</span>
             </div>
 
             <c:choose>
                 <c:when test="${empty checkIns}">
                     <div class="border-top pt-4">
-                        <h3 class="h5 mb-2">Chưa có dấu mốc ghé thăm</h3>
+                        <h3 class="h5 mb-2">No check-in milestones yet</h3>
 
                         <p class="text-muted mb-0">
                             <c:choose>
                                 <c:when test="${isOwnPassport}">
-                                    Mở một địa điểm có tọa độ GPS
-                                    và chọn Ghi nhận ghé thăm
-                                    để bắt đầu hành trình.
+                                    Open any destination with GPS coordinates and select Check In to begin your story.
                                 </c:when>
                                 <c:otherwise>
-                                    Hộ chiếu này chưa có lịch sử ghé thăm.
+                                    This passport does not have check-in history yet.
                                 </c:otherwise>
                             </c:choose>
                         </p>
@@ -196,7 +193,7 @@
                             </c:if>
 
                             <c:if test="${item.hasPhoto}">
-                                <span class="rd-count">Có ảnh</span>
+                                <span class="rd-count">Photo attached</span>
 
                                 <c:if test="${isOwnPassport
                                                 and not empty item.imageId}">
@@ -204,7 +201,7 @@
                                        target="_blank"
                                        rel="noopener noreferrer"
                                        class="small ms-2">
-                                        Xem ảnh →
+                                        View photo →
                                     </a>
                                 </c:if>
                             </c:if>
@@ -217,17 +214,15 @@
 
     <div class="col-12 col-lg-5">
         <section class="rd-card">
-            <h2 class="h4 mb-2">Huy hiệu khám phá</h2>
+            <h2 class="h4 mb-2">Discovery Badges</h2>
 
             <p class="small text-muted mb-4">
-                Huy hiệu được trao tự động sau lượt ghé thăm hợp lệ.
-                Mỗi địa điểm chỉ tính một lần cho thành tích
-                địa điểm khác nhau.
+                Badges are awarded automatically following verified check-ins. Each place counts once toward unique place achievements.
             </p>
 
             <c:if test="${empty badges}">
                 <p class="text-muted mb-0">
-                    Chưa có thông tin huy hiệu.
+                    No badges available yet.
                 </p>
             </c:if>
 
@@ -258,12 +253,12 @@
                         <c:choose>
                             <c:when test="${badge.earned}">
                                 <span class="rd-count flex-shrink-0">
-                                    Đã đạt
+                                    Unlocked
                                 </span>
                             </c:when>
                             <c:otherwise>
                                 <span class="rd-role flex-shrink-0">
-                                    Chưa đạt
+                                    Locked
                                 </span>
                             </c:otherwise>
                         </c:choose>
@@ -275,7 +270,7 @@
 
                     <div class="progress"
                          role="progressbar"
-                         aria-label="Tiến độ huy hiệu: <c:out value='${badge.badgeName}'/>"
+                         aria-label="Badge progress: <c:out value='${badge.badgeName}'/>"
                          aria-valuenow="${badgePercent}"
                          aria-valuemin="0"
                          aria-valuemax="100"
@@ -288,12 +283,12 @@
                     <div class="small text-muted mt-2">
                         <c:choose>
                             <c:when test="${badge.earned}">
-                                Đã hoàn thành
+                                Completed
                             </c:when>
                             <c:otherwise>
                                 <c:out value="${badge.progress}" /> /
                                 <c:out value="${badge.threshold}" />
-                                tiến độ
+                                progress
                             </c:otherwise>
                         </c:choose>
                     </div>

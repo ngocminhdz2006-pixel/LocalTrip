@@ -1,4 +1,6 @@
 <%@ page pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <c:set var="activeTripPath"
        value="${requestScope['javax.servlet.forward.servlet_path']}"/>
@@ -8,71 +10,119 @@
            value="${pageContext.request.servletPath}"/>
 </c:if>
 
-<nav class="rd-tabs" aria-label="Các chức năng chuyến đi">
-    <a class="${activeTripPath == '/trip/detail' ? 'on' : ''}"
-       aria-current="${activeTripPath == '/trip/detail' ? 'page' : 'false'}"
-       href="${pageContext.request.contextPath}/trip/detail?tripId=${trip.id}">
-        Tổng quan
-    </a>
+<c:set var="overviewTabActive"
+       value="${activeTripPath == '/trip/detail'}"/>
 
-    <a class="${activeTripPath == '/preferences' ? 'on' : ''}"
-       aria-current="${activeTripPath == '/preferences' ? 'page' : 'false'}"
-       href="${pageContext.request.contextPath}/preferences?tripId=${trip.id}">
-        Sở thích của tôi
-    </a>
+<c:set var="preferenceTabActive"
+       value="${activeTripPath == '/preferences'
+                or fn:startsWith(activeTripPath, '/preferences/')}"/>
 
-    <a class="${activeTripPath == '/preferences/group' ? 'on' : ''}"
-       aria-current="${activeTripPath == '/preferences/group' ? 'page' : 'false'}"
-       href="${pageContext.request.contextPath}/preferences/group?tripId=${trip.id}">
-        Sở thích nhóm
-    </a>
+<c:set var="comboTabActive"
+       value="${activeTripPath == '/combos'
+                or fn:startsWith(activeTripPath, '/combos/')
+                or activeTripPath == '/recommendations'}"/>
 
-    <a class="${activeTripPath == '/recommendations' ? 'on' : ''}"
-       aria-current="${activeTripPath == '/recommendations' ? 'page' : 'false'}"
-       href="${pageContext.request.contextPath}/recommendations?tripId=${trip.id}">
-        Gợi ý địa điểm
-    </a>
+<c:set var="itineraryTabActive"
+       value="${activeTripPath == '/itinerary'
+                or fn:startsWith(activeTripPath, '/itinerary/')}"/>
 
-    <a class="${activeTripPath == '/combo' ? 'on' : ''}"
-       aria-current="${activeTripPath == '/combo' ? 'page' : 'false'}"
-       href="${pageContext.request.contextPath}/combo?tripId=${trip.id}">
-        Combo địa điểm
-    </a>
+<c:set var="expenseTabActive"
+       value="${activeTripPath == '/expenses'
+                or fn:startsWith(activeTripPath, '/expenses/')}"/>
 
-    <c:set var="itineraryTabActive"
-           value="${activeTripPath == '/itinerary'
-                    or activeTripPath == '/itinerary/add'
-                    or activeTripPath == '/itinerary/edit'
-                    or activeTripPath == '/itinerary/auto'
-                    or activeTripPath == '/itinerary/delete'}"/>
+<c:set var="settleTabActive"
+       value="${activeTripPath == '/settlement'}"/>
 
-    <a class="${itineraryTabActive ? 'on' : ''}"
-       aria-current="${itineraryTabActive ? 'page' : 'false'}"
-       href="${pageContext.request.contextPath}/itinerary?tripId=${trip.id}">
-        Lịch trình
-    </a>
+<c:set var="fundTabActive"
+       value="${activeTripPath == '/group-fund'}"/>
 
-    <c:set var="expenseTabActive"
-           value="${activeTripPath == '/expenses'
-                    or activeTripPath == '/expenses/create'
-                    or activeTripPath == '/expenses/edit'
-                    or activeTripPath == '/expenses/delete'}"/>
+<nav class="lt-trip-nav" aria-label="Trip planning tabs">
+    <div class="lt-trip-nav-scroll">
+        <a class="lt-trip-nav-link ${overviewTabActive ? 'is-active' : ''}"
+           aria-current="${overviewTabActive ? 'page' : 'false'}"
+           href="${pageContext.request.contextPath}/trip/detail?tripId=${trip.id}">
+            Overview
+        </a>
 
-    <a class="${expenseTabActive ? 'on' : ''}"
-       aria-current="${expenseTabActive ? 'page' : 'false'}"
-       href="${pageContext.request.contextPath}/expenses?tripId=${trip.id}">
-        Chi phí
-    </a>
+        <a class="lt-trip-nav-link ${preferenceTabActive ? 'is-active' : ''}"
+           aria-current="${preferenceTabActive ? 'page' : 'false'}"
+           href="${pageContext.request.contextPath}/preferences?tripId=${trip.id}">
+            Preferences
+        </a>
 
-    <a class="${activeTripPath == '/settlement' ? 'on' : ''}"
-       aria-current="${activeTripPath == '/settlement' ? 'page' : 'false'}"
-       href="${pageContext.request.contextPath}/settlement?tripId=${trip.id}">
-        Chia tiền
-    </a>
+        <a class="lt-trip-nav-link ${comboTabActive ? 'is-active' : ''}"
+           aria-current="${comboTabActive ? 'page' : 'false'}"
+           href="${pageContext.request.contextPath}/combos?tripId=${trip.id}">
+            Combos / AI Suggest
+        </a>
 
-    <a class="${activeTripPath == '/group-fund' ? 'on' : ''}"
-       aria-current="${activeTripPath == '/group-fund' ? 'page' : 'false'}"
-       href="${pageContext.request.contextPath}/group-fund?tripId=${trip.id}">
-        Quỹ nhóm
-    </a>
+        <a class="lt-trip-nav-link ${itineraryTabActive ? 'is-active' : ''}"
+           aria-current="${itineraryTabActive ? 'page' : 'false'}"
+           href="${pageContext.request.contextPath}/itinerary?tripId=${trip.id}">
+            Itinerary
+        </a>
+
+        <a class="lt-trip-nav-link ${expenseTabActive ? 'is-active' : ''}"
+           aria-current="${expenseTabActive ? 'page' : 'false'}"
+           href="${pageContext.request.contextPath}/expenses?tripId=${trip.id}">
+            Expenses
+        </a>
+
+        <a class="lt-trip-nav-link ${settleTabActive ? 'is-active' : ''}"
+           aria-current="${settleTabActive ? 'page' : 'false'}"
+           href="${pageContext.request.contextPath}/settlement?tripId=${trip.id}">
+            Settle
+        </a>
+
+        <a class="lt-trip-nav-link ${fundTabActive ? 'is-active' : ''}"
+           aria-current="${fundTabActive ? 'page' : 'false'}"
+           href="${pageContext.request.contextPath}/group-fund?tripId=${trip.id}">
+            Group Fund
+        </a>
+    </div>
 </nav>
+
+<style>
+    .lt-trip-nav {
+        margin: 18px 0;
+    }
+    .lt-trip-nav-scroll {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px;
+        border: 1px solid #dce7df;
+        border-radius: 16px;
+        background: #ffffff;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .lt-trip-nav-scroll::-webkit-scrollbar {
+        display: none;
+    }
+    .lt-trip-nav-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        padding: 8px 14px;
+        border-radius: 11px;
+        color: #65776d;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: all 0.15s ease;
+    }
+    .lt-trip-nav-link:hover {
+        color: #1e5942;
+        background: #f1f7f3;
+    }
+    .lt-trip-nav-link.is-active {
+        background: #e4f0e8;
+        color: #1e5942;
+        font-weight: 700;
+    }
+</style>

@@ -3,8 +3,8 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<fmt:setLocale value="vi_VN"/>
-<c:set var="pageTitle" value="Quỹ nhóm" scope="request"/>
+<fmt:setLocale value="en_US"/>
+<c:set var="pageTitle" value="Group Fund" scope="request"/>
 <c:set var="currentTrip" value="${trip}" scope="request"/>
 
 <%@ include file="/WEB-INF/jspf/header.jspf" %>
@@ -14,60 +14,60 @@
 <section class="rd-card mb-4">
     <div class="rd-card-heading">
         <div>
-            <h2>Quỹ chung của chuyến đi</h2>
+            <h2>Trip Group Fund</h2>
             <p class="rd-sub">
-                Theo dõi tiền thành viên đóng góp và các khoản chi từ quỹ.
+                Track member contributions and common expenses deducted from the shared fund.
             </p>
         </div>
 
         <a href="${pageContext.request.contextPath}/expenses?tripId=${trip.id}"
            class="btn btn-outline-secondary">
-            Quản lý chi phí
+            Manage expenses
         </a>
     </div>
 
     <p class="rd-sub">
-        Số dư = Tổng tiền đã đóng − Tổng chi từ quỹ.
-        Chỉ các khoản chi được đánh dấu “Chi từ quỹ nhóm”
-        mới được trừ vào số dư.
+        Fund Balance = Total Contributed − Total Spent from Fund.
+        Only expenses marked as “Paid from group fund”
+        are deducted from this balance.
     </p>
 </section>
 
 <div class="row g-3 mb-4">
     <div class="col-12 col-md-4">
         <section class="rd-card h-100">
-            <p class="rd-sub">Tổng tiền đã đóng</p>
+            <p class="rd-sub">Total Contributed</p>
             <h2 class="mt-2 text-success">
                 <fmt:formatNumber value="${fundSummary.totalContributed}"
                                   type="number"
-                                  maxFractionDigits="2"/> đ
+                                  maxFractionDigits="2"/> VND
             </h2>
         </section>
     </div>
 
     <div class="col-12 col-md-4">
         <section class="rd-card h-100">
-            <p class="rd-sub">Tổng chi từ quỹ</p>
+            <p class="rd-sub">Total Spent from Fund</p>
             <h2 class="mt-2">
                 <fmt:formatNumber value="${fundSummary.totalSpent}"
                                   type="number"
-                                  maxFractionDigits="2"/> đ
+                                  maxFractionDigits="2"/> VND
             </h2>
         </section>
     </div>
 
     <div class="col-12 col-md-4">
         <section class="rd-card h-100">
-            <p class="rd-sub">Số dư quỹ</p>
+            <p class="rd-sub">Fund Balance</p>
             <h2 class="mt-2 ${fundSummary.balance < 0 ? 'text-danger' : 'text-success'}">
                 <fmt:formatNumber value="${fundSummary.balance}"
                                   type="number"
-                                  maxFractionDigits="2"/> đ
+                                  maxFractionDigits="2"/> VND
             </h2>
 
             <c:if test="${fundSummary.balance < 0}">
                 <p class="small text-danger mt-2 mb-0">
-                    Tổng chi đang vượt số tiền đã đóng.
+                    Total spent currently exceeds total contributed funds.
                 </p>
             </c:if>
         </section>
@@ -78,10 +78,10 @@
     <section class="rd-card mb-4">
         <div class="rd-card-heading">
             <div>
-                <h2>Ghi nhận đóng quỹ</h2>
+                <h2>Record Contribution</h2>
                 <p class="rd-sub">
-                    Trưởng nhóm ghi nhận tiền đã nhận từ thành viên.
-                    Khoản đóng sẽ được cộng vào số dư quỹ.
+                    Trip owner records funds received from members.
+                    This adds directly to the group fund balance.
                 </p>
             </div>
         </div>
@@ -89,7 +89,7 @@
         <c:choose>
             <c:when test="${empty memberFundSummaries}">
                 <div class="alert alert-info mb-0">
-                    Chưa có thành viên để ghi nhận đóng quỹ.
+                    No members available to record contributions.
                 </div>
             </c:when>
 
@@ -102,18 +102,18 @@
 
                     <div class="col-12 col-md-6">
                         <label for="fundMember" class="form-label">
-                            Thành viên đóng tiền
+                            Contributing member
                         </label>
 
                         <select id="fundMember" name="memberId"
                                 class="form-select" required>
-                            <option value="">Chọn thành viên</option>
+                            <option value="">Select member</option>
 
                             <c:forEach var="memberFund"
                                        items="${memberFundSummaries}">
                                 <option value="${memberFund.userId}">
                                     <c:out value="${memberFund.memberName}"/>
-                                    — ${memberFund.role == 'OWNER' ? 'Trưởng nhóm' : 'Thành viên'}
+                                    — ${memberFund.role == 'OWNER' ? 'Trip Lead' : 'Member'}
                                 </option>
                             </c:forEach>
                         </select>
@@ -121,7 +121,7 @@
 
                     <div class="col-12 col-md-6">
                         <label for="fundAmount" class="form-label">
-                            Số tiền (đồng)
+                            Amount (VND)
                         </label>
 
                         <input id="fundAmount" type="number"
@@ -131,17 +131,17 @@
 
                     <div class="col-12">
                         <label for="fundNote" class="form-label">
-                            Ghi chú
+                            Note
                         </label>
 
                         <input id="fundNote" type="text" name="note"
                                maxlength="255" class="form-control"
-                               placeholder="Ví dụ: Đóng quỹ lần 1">
+                               placeholder="e.g. Deposit for trip round 1">
                     </div>
 
                     <div class="col-12">
                         <button class="btn btn-brand" type="submit">
-                            Ghi nhận đóng quỹ
+                            Record contribution
                         </button>
                     </div>
                 </form>
@@ -153,9 +153,9 @@
 <section class="rd-card mb-4">
     <div class="rd-card-heading">
         <div>
-            <h2>Đóng góp của thành viên</h2>
+            <h2>Member Contributions</h2>
             <p class="rd-sub">
-                Tổng tiền đóng, số lần đóng và thời điểm gần nhất.
+                Total contributed, deposit counts, and latest activity per member.
             </p>
         </div>
     </div>
@@ -163,7 +163,7 @@
     <c:choose>
         <c:when test="${empty memberFundSummaries}">
             <div class="alert alert-info mb-0">
-                Chưa có dữ liệu đóng góp của thành viên.
+                No contribution records available yet.
             </div>
         </c:when>
 
@@ -171,20 +171,20 @@
             <div class="table-responsive">
                 <table class="table align-middle mb-0">
                     <caption class="visually-hidden">
-                        Đóng góp vào quỹ của từng thành viên.
+                        Member fund contributions table.
                     </caption>
                     <thead>
                         <tr>
-                            <th scope="col">Thành viên</th>
-                            <th scope="col">Vai trò</th>
+                            <th scope="col">Member</th>
+                            <th scope="col">Role</th>
                             <th scope="col" class="text-center text-nowrap">
-                                Số lần đóng
+                                Deposits
                             </th>
                             <th scope="col" class="text-nowrap">
-                                Lần đóng gần nhất
+                                Latest deposit
                             </th>
                             <th scope="col" class="text-end text-nowrap">
-                                Tổng đã đóng
+                                Total contributed
                             </th>
                         </tr>
                     </thead>
@@ -198,7 +198,7 @@
 
                                 <td>
                                     <span class="rd-role ${memberFund.role == 'OWNER' ? 'rd-role-lead' : ''}">
-                                        ${memberFund.role == 'OWNER' ? 'Trưởng nhóm' : 'Thành viên'}
+                                        ${memberFund.role == 'OWNER' ? 'Trip Lead' : 'Member'}
                                     </span>
                                 </td>
 
@@ -215,7 +215,7 @@
                                         </c:when>
                                         <c:otherwise>
                                             <span class="text-muted">
-                                                Chưa đóng quỹ
+                                                No deposits yet
                                             </span>
                                         </c:otherwise>
                                     </c:choose>
@@ -226,7 +226,7 @@
                                         <fmt:formatNumber
                                             value="${memberFund.contributed}"
                                             type="number"
-                                            maxFractionDigits="2"/> đ
+                                            maxFractionDigits="2"/> VND
                                     </strong>
                                 </td>
                             </tr>
@@ -241,9 +241,9 @@
 <section class="rd-card">
     <div class="rd-card-heading">
         <div>
-            <h2>Lịch sử giao dịch quỹ</h2>
+            <h2>Fund Transaction History</h2>
             <p class="rd-sub">
-                Các khoản đóng góp và khoản chi từ quỹ nhóm.
+                Detailed logs of all deposits and expenses made through the group fund.
             </p>
         </div>
     </div>
@@ -251,7 +251,7 @@
     <c:choose>
         <c:when test="${empty fundTransactions}">
             <div class="alert alert-info mb-0">
-                Chưa có giao dịch quỹ.
+                No fund transactions yet.
             </div>
         </c:when>
 
@@ -259,15 +259,15 @@
             <div class="table-responsive">
                 <table class="table align-middle mb-0">
                     <caption class="visually-hidden">
-                        Lịch sử đóng góp và chi từ quỹ.
+                        Transaction history table.
                     </caption>
                     <thead>
                         <tr>
-                            <th scope="col">Thời gian</th>
-                            <th scope="col">Loại giao dịch</th>
-                            <th scope="col">Thành viên</th>
-                            <th scope="col">Mô tả</th>
-                            <th scope="col" class="text-end">Số tiền</th>
+                            <th scope="col">Date & Time</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Member</th>
+                            <th scope="col">Description</th>
+                            <th scope="col" class="text-end">Amount</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -282,12 +282,12 @@
                                     <c:choose>
                                         <c:when test="${tx.type == 'CONTRIBUTION'}">
                                             <span class="badge text-bg-success">
-                                                Đóng quỹ
+                                                Deposit
                                             </span>
                                         </c:when>
                                         <c:otherwise>
                                             <span class="badge text-bg-danger">
-                                                Chi từ quỹ
+                                                Expense
                                             </span>
                                         </c:otherwise>
                                     </c:choose>
@@ -306,7 +306,7 @@
                                         <c:if test="${tx.amount > 0}">+</c:if>
                                         <fmt:formatNumber value="${tx.amount}"
                                                           type="number"
-                                                          maxFractionDigits="2"/> đ
+                                                          maxFractionDigits="2"/> VND
                                     </strong>
                                 </td>
                             </tr>
@@ -318,4 +318,4 @@
     </c:choose>
 </section>
 
-<%@ include file="/WEB-INF/views/common/footer.jsp" %>  
+<%@ include file="/WEB-INF/views/common/footer.jsp" %>

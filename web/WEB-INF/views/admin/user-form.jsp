@@ -71,7 +71,7 @@
 
             <form id="adminUserForm"
                   method="post"
-                  action="<%= request.getContextPath() + formAction %>">
+                  action="<%= request.getContextPath() + formAction %>">`r`n                <input type="hidden" name="csrfToken" value="<%= session.getAttribute("travelCsrf") %>">
 
                 <% if (editMode) { %>
                     <input type="hidden"

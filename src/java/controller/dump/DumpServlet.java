@@ -40,7 +40,18 @@ public class DumpServlet extends HttpServlet {
                 String keyword=req.getParameter("q");
                 req.setAttribute("searchResults",dao.searchUsers(keyword,user.getUserId()));
                 req.setAttribute("friendRequests",dao.getFriendRequests(user.getUserId()));
+                req.setAttribute("friends",dao.getFriends(user.getUserId()));
                 req.setAttribute("keyword",keyword==null?"":keyword);
+
+                List<model.Trip> allTrips = tripDAO.findByUser(user.getUserId());
+                List<model.Trip> planningTrips = new ArrayList<model.Trip>();
+                for (model.Trip t : allTrips) {
+                    if ("PLANNING".equalsIgnoreCase(t.getStatus()) && ("OWNER".equalsIgnoreCase(t.getRole()) || t.getOwnerId() == user.getUserId())) {
+                        planningTrips.add(t);
+                    }
+                }
+                req.setAttribute("planningTrips", planningTrips);
+
                 req.getRequestDispatcher("/WEB-INF/views/dump/friends.jsp").forward(req,resp); return;
             }
             req.setAttribute("places",placeDAO.findAll());
@@ -92,12 +103,37 @@ public class DumpServlet extends HttpServlet {
             dao.createPost(user.getUserId(),placeId,tripId,content,rating,visibility,images);
         } catch(RuntimeException|IOException e) { for(File f:written)try{Files.deleteIfExists(f.toPath());}catch(IOException ignored){} throw e; }
     }
-    private void handleFriendAction(HttpServletRequest req,User user) {
-        String action=req.getParameter("action");
-        if("send".equals(action))dao.sendFriendRequest(user.getUserId(),parsePositive(req.getParameter("targetUserId")));
-        else if("accept".equals(action)||"decline".equals(action))dao.respondFriendRequest(parsePositive(req.getParameter("friendshipId")),user.getUserId(),"accept".equals(action));
-        else throw new IllegalArgumentException("Thao tác bạn bè không hợp lệ.");
-        req.getSession().setAttribute("successMessage","accept".equals(action)?"Đã chấp nhận lời mời kết bạn.":"decline".equals(action)?"Đã từ chối lời mời kết bạn.":"Đã gửi lời mời kết bạn.");
+    private void handleFriendAction(HttpServletRequest req, User user) {
+        String action = req.getParameter("action");
+        int friendshipId = 0;
+        String fsIdStr = req.getParameter("friendshipId");
+        if (fsIdStr != null && !fsIdStr.trim().isEmpty()) {
+            try { friendshipId = Integer.parseInt(fsIdStr.trim()); } catch (NumberFormatException ignored) {}
+        }
+        int targetUserId = 0;
+        String tUserIdStr = req.getParameter("targetUserId");
+        if (tUserIdStr != null && !tUserIdStr.trim().isEmpty()) {
+            try { targetUserId = Integer.parseInt(tUserIdStr.trim()); } catch (NumberFormatException ignored) {}
+        }
+
+        if ("send".equals(action)) {
+            dao.sendFriendRequest(user.getUserId(), parsePositive(req.getParameter("targetUserId")));
+            req.getSession().setAttribute("successMessage", "Friend request sent successfully.");
+        } else if ("accept".equals(action)) {
+            dao.respondFriendRequest(parsePositive(req.getParameter("friendshipId")), user.getUserId(), true);
+            req.getSession().setAttribute("successMessage", "Friend request accepted.");
+        } else if ("decline".equals(action)) {
+            dao.respondFriendRequest(parsePositive(req.getParameter("friendshipId")), user.getUserId(), false);
+            req.getSession().setAttribute("successMessage", "Friend request declined.");
+        } else if ("cancel".equals(action)) {
+            dao.cancelFriendRequest(user.getUserId(), targetUserId, friendshipId);
+            req.getSession().setAttribute("successMessage", "Friend request cancelled.");
+        } else if ("unfriend".equals(action)) {
+            dao.unfriend(user.getUserId(), targetUserId, friendshipId);
+            req.getSession().setAttribute("successMessage", "Friend removed successfully.");
+        } else {
+            throw new IllegalArgumentException("Invalid friend operation.");
+        }
     }
     public static File getUploadDir() throws IOException {
         String base=System.getProperty("catalina.base"); if(base==null||base.trim().isEmpty())base=System.getProperty("java.io.tmpdir");

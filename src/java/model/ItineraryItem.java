@@ -20,6 +20,22 @@ public class ItineraryItem {
     private BigDecimal longitude;
     private Timestamp createdAt;
 
+    private String activityType = "VISIT";
+    private String activityTitle;
+    private String activityStatus = "UPCOMING";
+    public String getActivityType() { return activityType; }
+    public void setActivityType(String value) { activityType=value; }
+    public String getActivityTitle() { return activityTitle; }
+    public void setActivityTitle(String value) { activityTitle=value; }
+    public String getActivityStatus() { return activityStatus; }
+    public void setActivityStatus(String value) { activityStatus=value; }
+    public String getStatusLabel() {
+        if("IN_PROGRESS".equals(activityStatus)) return "Đang diễn ra";
+        if("COMPLETED".equals(activityStatus)) return "Đã hoàn thành";
+        if("CANCELLED".equals(activityStatus)) return "Đã hủy";
+        return "Sắp tới";
+    }
+
     public ItineraryItem() {
     }
 

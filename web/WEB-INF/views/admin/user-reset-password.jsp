@@ -67,7 +67,7 @@
 
                 <form id="adminResetForm"
                       method="post"
-                      action="<%= request.getContextPath() %>/admin/users/reset-password">
+                      action="<%= request.getContextPath() %>/admin/users/reset-password">`r`n                    <input type="hidden" name="csrfToken" value="<%= session.getAttribute("travelCsrf") %>">
 
                     <input type="hidden"
                            name="userId"

@@ -1,7 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<c:set var="pageTitle" value="Chi phí" scope="request"/>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<c:set var="pageTitle" value="Trip Expenses" scope="request"/>
 <c:set var="currentTrip" value="${trip}" scope="request"/>
 <fmt:setLocale value="vi_VN" scope="page"/>
 
@@ -9,247 +10,134 @@
 <%@ include file="/WEB-INF/jspf/trip-hero.jspf" %>
 <%@ include file="/WEB-INF/jspf/trip-tabs.jspf" %>
 
-<style>
-    .rd-expense-intro {
-        margin-bottom: 24px;
-    }
+<div class="lt-expense-page" style="max-width: 680px; margin: 0 auto; padding-bottom: 24px;">
 
-    .rd-expense-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 18px;
-    }
+    <%-- Tính tổng chi phí của cả chuyến đi --%>
+    <c:set var="totalAmount" value="0" />
+    <c:forEach var="item" items="${expenses}">
+        <c:set var="totalAmount" value="${totalAmount + item.amount}" />
+    </c:forEach>
 
-    .rd-expense-table {
-        padding: 0;
-        overflow: hidden;
-    }
-
-    .rd-expense-table-heading {
-        padding: 22px 28px;
-        border-bottom: 1px solid var(--line);
-    }
-
-    .rd-expense-table-heading h2 {
-        margin: 0 0 8px;
-        font-size: 20px;
-        font-weight: 700;
-    }
-
-    .rd-expense-table .table {
-        min-width: 850px;
-    }
-
-    .rd-expense-table thead th {
-        padding: 16px 20px;
-        background: #F6F9F7;
-        color: var(--ink2);
-        font-weight: 600;
-        white-space: nowrap;
-    }
-
-    .rd-expense-table tbody td {
-        padding: 18px 20px;
-        border-color: var(--line);
-    }
-
-    .rd-expense-table tbody tr:last-child td {
-        border-bottom: 0;
-    }
-
-    .rd-expense-amount {
-        color: var(--green);
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-    .rd-expense-source {
-        display: inline-block;
-        padding: 6px 10px;
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: 600;
-        white-space: nowrap;
-    }
-
-    .rd-expense-source.fund {
-        background: var(--mint);
-        color: var(--green);
-    }
-
-    .rd-expense-source.personal {
-        background: #EEF1EF;
-        color: var(--ink2);
-    }
-
-    .rd-expense-empty {
-        padding: 48px 24px;
-        text-align: center;
-    }
-
-    .rd-expense-empty h2 {
-        margin: 16px 0 8px;
-        font-size: 20px;
-    }
-
-    @media (max-width: 600px) {
-        .rd-expense-actions .btn {
-            width: 100%;
-        }
-
-        .rd-expense-table-heading {
-            padding: 18px 20px;
-        }
-    }
-</style>
-
-<section class="rd-card rd-expense-intro">
-    <div class="rd-card-heading">
-        <div>
-            <h2>Chi phí chuyến đi</h2>
-            <p class="rd-sub">
-                Theo dõi các khoản chi, người thanh toán
-                và những thành viên tham gia chia tiền.
-            </p>
+    <%-- 1. Hero Summary Card (Mobile Financial Overview) --%>
+    <section class="lt-exp-summary-hero">
+        <div class="lt-exp-summary-top">
+            <span class="lt-exp-summary-label">Total Group Expenses</span>
+            <span style="font-size: 11px; background: rgba(255,255,255,0.18); padding: 2px 8px; border-radius: 20px;">
+                ${fn:length(expenses)} expenses
+            </span>
         </div>
+        
+        <h2 class="lt-exp-total-amount">
+            <fmt:formatNumber value="${totalAmount}" type="number" maxFractionDigits="0"/> VND
+        </h2>
 
-        <span class="rd-count">
-            <c:out value="${empty expenses ? 0 : expenses.size()}"/> khoản chi
-        </span>
-    </div>
+        <div class="lt-exp-summary-stats">
+            <div class="lt-exp-stat-item">
+                <span>Destination: </span>
+                <strong><c:out value="${trip.area}"/></strong>
+            </div>
+            <div class="lt-exp-stat-item">
+                <span>Status: </span>
+                <strong><c:out value="${trip.status}"/></strong>
+            </div>
+        </div>
+    </section>
 
-    <div class="rd-expense-actions">
-        <c:if test="${trip.status == 'PLANNING'
-                      or trip.status == 'ONGOING'}">
-              <a href="${pageContext.request.contextPath}/expenses/create?tripId=${trip.id}"
-                 class="btn btn-brand">
-                  + Thêm chi phí
-              </a>
+    <%-- 2. Action Buttons (Add Expense + Settlement) --%>
+    <div class="lt-exp-actions-row">
+        <c:if test="${trip.status == 'PLANNING' or trip.status == 'ONGOING'}">
+            <a href="${pageContext.request.contextPath}/expenses/create?tripId=${trip.id}"
+               class="lt-exp-btn-add">
+                <span>＋</span> Add Expense
+            </a>
         </c:if>
 
         <a href="${pageContext.request.contextPath}/settlement?tripId=${trip.id}"
-           class="btn btn-outline-secondary">
-            Xem chia tiền
+           class="lt-exp-btn-settle">
+            <span>⚖️</span> Settlement
         </a>
     </div>
-</section>
 
-<c:choose>
-    <c:when test="${empty expenses}">
-        <div class="rd-card rd-expense-empty">
-            <div class="empty-icon">🧾</div>
-            <h2>Chưa có khoản chi</h2>
-            <p class="rd-sub">
-                Các khoản chi được thêm sẽ xuất hiện tại đây
-                để cả nhóm cùng theo dõi.
-            </p>
-        </div>
-    </c:when>
-    <c:otherwise>
-        <div class="rd-card rd-expense-table">
-            <div class="rd-expense-table-heading">
-                <h2>Các khoản chi đã ghi nhận</h2>
-                <p class="rd-sub">
-                    Chi tiết người trả, số tiền và nguồn thanh toán.
+    <%-- 3. Danh sách expenses dạng Thẻ Di Động --%>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+        <h3 style="font-size: 13px; font-weight: 700; color: #143b2d; margin: 0;">
+            Expense History (${fn:length(expenses)})
+        </h3>
+        <span style="font-size: 10px; color: #64748b;">Most recent first</span>
+    </div>
+
+    <c:choose>
+        <c:when test="${empty expenses}">
+            <div class="rd-card rd-expense-empty" style="border-radius: 18px; border: 1px dashed #cbd5e1; text-align: center; padding: 36px 16px;">
+                <div style="font-size: 32px; margin-bottom: 8px;">🧾</div>
+                <h4 style="font-size: 15px; font-weight: 700; color: #1e293b; margin: 0 0 4px;">No expenses yet</h4>
+                <p style="font-size: 11px; color: #64748b; margin: 0;">
+                    Tap "+ Add Expense" above to record meals, tickets, or transport costs!
                 </p>
             </div>
+        </c:when>
 
-            <div class="table-responsive">
-                <table class="table mb-0 align-middle">
-                    <thead>
-                        <tr>
-                            <th>Mô tả</th>
-                            <th>Người trả</th>
-                            <th>Số tiền</th>
-                            <th>Người tham gia</th>
-                            <th>Nguồn</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
+        <c:otherwise>
+            <div class="lt-exp-card-list">
+                <c:forEach var="expense" items="${expenses}">
+                    <article class="lt-exp-card">
+                        <div class="lt-exp-card-header">
+                            <h4 class="lt-exp-desc">
+                                <c:out value="${expense.description}"/>
+                            </h4>
+                            <span class="lt-exp-price">
+                                <fmt:formatNumber value="${expense.amount}" type="number" maxFractionDigits="0"/> VND
+                            </span>
+                        </div>
 
-                    <tbody>
-                        <c:forEach var="expense" items="${expenses}">
-                            <tr>
-                                <td>
-                                    <c:out value="${expense.description}"/>
-                                </td>
+                        <div class="lt-exp-card-meta">
+                            <span class="lt-exp-payer">
+                                <span>👤 Payer: <strong><c:out value="${expense.payerName}"/></strong></span>
+                            </span>
 
-                                <td>
-                                    <c:out value="${expense.payerName}"/>
-                                </td>
+                            <c:choose>
+                                <c:when test="${expense.fromGroupFund}">
+                                    <span class="lt-exp-source-tag fund">Group fund</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="lt-exp-source-tag personal">Personal</span>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
 
-                                <td class="rd-expense-amount">
-                                    <fmt:formatNumber value="${expense.amount}"
-                                                      type="number"
-                                                      maxFractionDigits="0"/> đ
-                                </td>
+                        <div style="font-size: 11px; color: #64748b; margin-top: 6px;">
+                            <span>Split among: </span>
+                            <span style="color: #334155; font-weight: 500;">
+                                <c:forEach var="p" items="${expense.participantNames}" varStatus="st">
+                                    <c:out value="${p}"/><c:if test="${!st.last}">, </c:if>
+                                </c:forEach>
+                            </span>
+                        </div>
 
-                                <td>
-                                    <c:forEach var="p"
-                                               items="${expense.participantNames}"
-                                               varStatus="st">
-                                        <c:out value="${p}"/><c:if test="${!st.last}">, </c:if>
-                                    </c:forEach>
-                                </td>
+                        <%-- Chỉnh sửa / Delete (dành cho chủ chuyến đi hoặc người tạo) --%>
+                        <c:if test="${trip.role == 'OWNER' || expense.createdBy == sessionScope.user.userId}">
+                            <div class="lt-exp-card-actions">
+                                <a href="${pageContext.request.contextPath}/expenses/edit?tripId=${trip.id}&amp;expenseId=${expense.id}"
+                                   class="lt-exp-btn-sm lt-exp-btn-edit">
+                                    Edit
+                                </a>
 
-                                <td>
-                                    <c:choose>
-                                        <c:when test="${expense.fromGroupFund}">
-                                            <span class="rd-expense-source fund">
-                                                Quỹ nhóm
-                                            </span>
-                                        </c:when>
+                                <form method="post" action="${pageContext.request.contextPath}/expenses/delete"
+                                      onsubmit="return confirm('Are you sure you want to delete this expense?');" style="margin: 0;">
+                                    <input type="hidden" name="tripId" value="${trip.id}">
+                                    <input type="hidden" name="expenseId" value="${expense.id}">
+                                    <button type="submit" class="lt-exp-btn-sm lt-exp-btn-del" style="border: 1px solid #fecdd3;">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </c:if>
+                    </article>
+                </c:forEach>
+            </div>
+        </c:otherwise>
+    </c:choose>
 
-                                        <c:otherwise>
-                                            <span class="rd-expense-source personal">
-                                                Cá nhân
-                                            </span>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </td>
-
-                                <td>
-                                    <c:choose>
-                                        <c:when test="${trip.role == 'OWNER'
-                                                        || expense.createdBy == sessionScope.user.userId}">
-                                                <div class="d-flex gap-2 align-items-center flex-wrap">
-                                                    <a href="${pageContext.request.contextPath}/expenses/edit?tripId=${trip.id}&amp;expenseId=${expense.id}"
-                                                       class="btn btn-sm btn-outline-primary">
-                                                        Chỉnh sửa
-                                                    </a>
-
-                                                    <form method="post"
-                                                          action="${pageContext.request.contextPath}/expenses/delete"
-                                                          onsubmit="return confirm('Bạn có chắc muốn xóa khoản chi này?');">
-                                                        <input type="hidden"
-                                                               name="tripId"
-                                                               value="${trip.id}">
-
-                                                        <input type="hidden"
-                                                               name="expenseId"
-                                                               value="${expense.id}">
-
-                                                        <button type="submit"
-                                                                class="btn btn-sm btn-outline-danger">
-                                                            Xóa
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                        </c:when>
-
-                                        <c:otherwise>
-                                            <span class="text-muted">—</span>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </td>
-                            </tr>
-                        </c:forEach>
-                    </tbody>
-                </table>
-            </div> <%-- Đóng table-responsive --%>
-        </div> <%-- Đóng rd-expense-table --%>
-    </c:otherwise>
-</c:choose>
+</div>
 
 <%@ include file="/WEB-INF/views/common/footer.jsp" %>

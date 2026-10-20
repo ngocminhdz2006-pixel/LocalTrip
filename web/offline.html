@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Offline • LocalTrip</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#175b43">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #eef2ee;
+            color: #1e293b;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .offline-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 32px 24px;
+            max-width: 380px;
+            width: 100%;
+            border: 1px solid #dce7df;
+            box-shadow: 0 4px 20px rgba(23, 91, 67, 0.08);
+        }
+
+        .offline-icon-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .brand-logo {
+            font-size: 14px;
+            font-weight: 800;
+            color: #175b43;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        p {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .btn-retry {
+            width: 100%;
+            min-height: 48px;
+            background: #175b43;
+            color: #ffffff;
+            border: none;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(23, 91, 67, 0.25);
+            transition: background 0.15s ease, transform 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-retry:active {
+            transform: scale(0.98);
+        }
+
+        .btn-retry:hover {
+            background: #114231;
+        }
+
+        .online-status {
+            margin-top: 16px;
+            font-size: 11px;
+            color: #10b981;
+            font-weight: 600;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="offline-card">
+        <div class="brand-logo">LocalTrip</div>
+        
+        <div class="offline-icon-box">
+            📡
+        </div>
+
+        <h1>You're currently offline</h1>
+        <p>
+            No internet connection detected. Please check your Wi-Fi or cellular data (4G/5G).
+        </p>
+
+        <button type="button" class="btn-retry" onclick="checkConnection()">
+            🔄 Try again
+        </button>
+
+        <div id="statusNotice" class="online-status">
+            ✓ Internet connection restored! Reconnecting...
+        </div>
+    </div>
+
+    <script>
+        function checkConnection() {
+            if (navigator.onLine) {
+                window.location.reload();
+            } else {
+                alert('Still offline. Please connect to Wi-Fi or mobile data and try again.');
+            }
+        }
+
+        window.addEventListener('online', function() {
+            const notice = document.getElementById('statusNotice');
+            if (notice) notice.style.display = 'block';
+            setTimeout(function() {
+                window.location.reload();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

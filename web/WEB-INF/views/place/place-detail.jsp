@@ -4,10 +4,11 @@
 
 <c:set var="pageTitle" value="${place.name}" scope="request" />
 <c:set var="tripRedesign" value="${true}" scope="request" />
+<fmt:setLocale value="en_US" scope="page"/>
 
 <c:url var="placesUrl" value="/places" />
 
-<c:url var="itineraryUrl" value="/itinerary">
+<c:url var="itineraryUrl" value="/itinerary/add">
     <c:param name="tripId" value="${param.tripId}" />
     <c:param name="placeId" value="${place.id}" />
 </c:url>
@@ -25,7 +26,7 @@
     <div class="rd-hero-top">
         <div>
             <div class="small text-white-50 mb-2">
-                LOCALTRIP · KHÁM PHÁ ĐIỂM ĐẾN
+                LOCALTRIP · DESTINATION OVERVIEW
             </div>
 
             <h1 class="mb-3">
@@ -45,7 +46,7 @@
 
         <a href="<c:out value='${placesUrl}'/>"
            class="rd-back">
-            ← Danh sách địa điểm
+            ← Destination list
         </a>
     </div>
 </section>
@@ -53,16 +54,15 @@
 <div class="row g-4">
     <div class="col-12 col-lg-8">
         <section class="rd-card mb-4">
-            <h2 class="h4 mb-2">Thông tin địa điểm</h2>
+            <h2 class="h4 mb-2">Place Information</h2>
 
             <p class="text-muted mb-4">
-                Xem địa chỉ, giờ hoạt động và chi phí
-                trước khi lên kế hoạch ghé thăm.
+                View address, operating hours, and reference costs before scheduling a visit.
             </p>
 
             <div class="border-top pt-3 mb-3">
                 <div class="small text-muted mb-1">
-                    Địa chỉ
+                    Address
                 </div>
 
                 <div class="fw-semibold">
@@ -71,7 +71,7 @@
                             <c:out value="${place.address}" />
                         </c:when>
                         <c:otherwise>
-                            Chưa cập nhật
+                            Not specified
                         </c:otherwise>
                     </c:choose>
                 </div>
@@ -79,7 +79,7 @@
 
             <div class="border-top pt-3 mb-3">
                 <div class="small text-muted mb-1">
-                    Giờ hoạt động
+                    Opening hours
                 </div>
 
                 <div class="fw-semibold">
@@ -88,7 +88,7 @@
                             <c:out value="${place.openHours}" />
                         </c:when>
                         <c:otherwise>
-                            Chưa cập nhật
+                            Not specified
                         </c:otherwise>
                     </c:choose>
                 </div>
@@ -96,7 +96,7 @@
 
             <div class="border-top pt-3">
                 <div class="small text-muted mb-1">
-                    Chi phí dự kiến
+                    Estimated reference price
                 </div>
 
                 <div class="h4 mb-0">
@@ -104,13 +104,13 @@
                         value="${place.estimatedPrice}"
                         type="number"
                         maxFractionDigits="2" />
-                    đ
+                    VND
                 </div>
             </div>
         </section>
 
         <section class="rd-card">
-            <h2 class="h4 mb-3">Giới thiệu địa điểm</h2>
+            <h2 class="h4 mb-3">About this destination</h2>
 
             <c:choose>
                 <c:when test="${not empty place.description}">
@@ -118,7 +118,7 @@
                 </c:when>
                 <c:otherwise>
                     <p class="text-muted mb-0">
-                        Địa điểm này chưa có thông tin giới thiệu.
+                        No description available for this place yet.
                     </p>
                 </c:otherwise>
             </c:choose>
@@ -127,18 +127,17 @@
 
     <div class="col-12 col-lg-4">
         <section class="rd-card">
-            <h2 class="h4 mb-2">Khám phá cùng LocalTrip</h2>
+            <h2 class="h4 mb-2">Explore with LocalTrip</h2>
 
             <p class="text-muted mb-4">
-                Lên lịch ghé thăm hoặc ghi nhận trải nghiệm
-                của bạn tại địa điểm này.
+                Schedule a visit or record your check-in at this spot.
             </p>
 
             <div class="d-grid gap-3">
                 <c:if test="${not empty param.tripId}">
                     <a href="<c:out value='${itineraryUrl}'/>"
                        class="btn btn-primary">
-                        + Thêm vào lịch trình
+                        + Add to itinerary
                     </a>
                 </c:if>
 
@@ -147,7 +146,7 @@
                                     and not empty place.longitude}">
                         <a href="<c:out value='${checkinUrl}'/>"
                            class="btn btn-outline-secondary">
-                            Ghi nhận ghé thăm
+                            Check in here
                         </a>
                     </c:when>
 
@@ -155,19 +154,18 @@
                         <button type="button"
                                 class="btn btn-outline-secondary"
                                 disabled>
-                            Chưa hỗ trợ ghi nhận GPS
+                            GPS check-in unavailable
                         </button>
 
                         <p class="small text-muted mb-0">
-                            Địa điểm chưa có tọa độ để xác nhận
-                            vị trí ghé thăm.
+                            This destination lacks coordinates to verify physical location.
                         </p>
                     </c:otherwise>
                 </c:choose>
 
                 <a href="<c:out value='${placesUrl}'/>"
                    class="btn btn-outline-secondary">
-                    Xem địa điểm khác
+                    View other destinations
                 </a>
             </div>
         </section>

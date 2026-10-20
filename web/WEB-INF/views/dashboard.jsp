@@ -10,32 +10,31 @@
     List<Trip> trips = (List<Trip>) request.getAttribute("trips");
     String dashboardError = (String) request.getAttribute("dashboardError");
 %>
-<% request.setAttribute("pageTitle", "Tổng quan"); %>
+<% request.setAttribute("pageTitle", "Overview"); %>
 <% request.setAttribute("tripRedesign", Boolean.TRUE);%>
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 <section class="rd-hero mb-4">
     <div class="rd-hero-top">
         <div>
             <div class="small text-white-50 mb-2">
-                LOCALTRIP · SỔ TAY HÀNH TRÌNH
+                LOCALTRIP · TRAVEL NOTEBOOK
             </div>
 
             <h1 class="mb-3">
-                Chuyến đi đẹp hơn khi có nhau.
+                Trips are better together.
             </h1>
 
             <p class="text-white mb-0">
-                Xin chào,
+                Welcome back,
                 <strong><%= HtmlUtil.escape(currentUser.getFullName())%></strong>.
                 <br>
-                Lên kế hoạch, khám phá địa điểm
-                và chia sẻ chi phí cùng nhóm của bạn.
+                Plan memorable journeys, discover exciting places, and split expenses seamlessly with friends.
             </p>
         </div>
 
         <a class="rd-back"
            href="<%= request.getContextPath()%>/trip/create">
-            + Tạo chuyến đi
+            + Create trip
         </a>
     </div>
 </section>
@@ -50,7 +49,7 @@
     <div class="col-12 col-md-4">
         <section class="rd-card h-100">
             <div class="small text-muted mb-2">
-                Tổng số chuyến đi
+                Total Trips
             </div>
 
             <strong class="h2 d-block mb-0">
@@ -62,7 +61,7 @@
     <div class="col-12 col-md-4">
         <section class="rd-card h-100">
             <div class="small text-muted mb-2">
-                Chuyến đi bạn làm trưởng nhóm
+                Trips You Lead
             </div>
 
             <strong class="h2 d-block mb-0">
@@ -74,7 +73,7 @@
     <div class="col-12 col-md-4">
         <section class="rd-card h-100">
             <div class="small text-muted mb-2">
-                Chuyến đi bạn tham gia
+                Trips You Joined
             </div>
 
             <strong class="h2 d-block mb-0">
@@ -89,28 +88,28 @@
         <section class="rd-card">
             <div class="d-flex justify-content-between
                  align-items-center flex-wrap gap-2 mb-4">
-                <h2 class="h4 mb-0">Chuyến đi gần đây</h2>
+                <h2 class="h4 mb-0">Recent Trips</h2>
 
                 <a class="small text-decoration-none"
                    href="<%= request.getContextPath()%>/trips">
-                    Xem tất cả →
+                    View all →
                 </a>
             </div>
 
             <% if (trips == null || trips.isEmpty()) {%>
             <div class="border-top pt-4 text-center">
                 <h3 class="h5 mb-2">
-                    Bắt đầu hành trình đầu tiên
+                    Begin Your First Journey
                 </h3>
 
                 <p class="text-muted mb-4">
-                    Tạo chuyến đi để cùng nhóm chọn địa điểm,
-                    xây dựng lịch trình và quản lý chi phí.
+                    Create a trip to choose spots with friends,
+                    build an itinerary, and track group expenses.
                 </p>
 
                 <a class="btn btn-primary"
                    href="<%= request.getContextPath()%>/trip/create">
-                    + Tạo chuyến đi
+                    + Create trip
                 </a>
             </div>
             <% } else { %>
@@ -130,7 +129,7 @@
                           <span class="<%= owner
                                     ? "rd-role rd-role-lead"
                                     : "rd-role"%>">
-                        <%= owner ? "Trưởng nhóm" : "Thành viên"%>
+                        <%= owner ? "Trip Lead" : "Member"%>
                     </span>
                 </div>
 
@@ -140,21 +139,19 @@
 
                 <div class="d-flex flex-wrap gap-3 small">
                     <span>
-                        <strong>Thời gian:</strong>
+                        <strong>Duration:</strong>
                         <%= trip.getStartDate()%>
                         →
                         <%= trip.getEndDate()%>
                     </span>
 
                     <span>
-                        <strong>Ngân sách:</strong>
+                        <strong>Budget:</strong>
                         <%= trip.getBudget() == null
-                                ? "Chưa cập nhật"
+                                ? "Not set"
                                 : java.text.NumberFormat
-                                        .getNumberInstance(
-                                                        new java.util.Locale("vi", "VN")
-                                                )
-                                                .format(trip.getBudget()) + " đ"%>
+                                        .getNumberInstance(java.util.Locale.US)
+                                        .format(trip.getBudget()) + " VND"%>
                     </span>
                 </div>
             </div>
@@ -165,32 +162,31 @@
 
     <div class="col-12 col-lg-4">
         <section class="rd-card">
-            <h2 class="h4 mb-2">Khám phá cùng LocalTrip</h2>
+            <h2 class="h4 mb-2">Explore with LocalTrip</h2>
 
             <p class="text-muted mb-4">
-                Chuẩn bị hành trình mới hoặc lưu lại
-                những trải nghiệm đáng nhớ.
+                Plan a new adventure or preserve your travel memories.
             </p>
 
             <div class="d-grid gap-3">
                 <a class="btn btn-primary"
                    href="<%= request.getContextPath()%>/trip/create">
-                    + Lên kế hoạch chuyến đi
+                    + Plan a new trip
                 </a>
 
                 <a class="btn btn-outline-secondary"
                    href="<%= request.getContextPath()%>/places">
-                    Khám phá địa điểm
+                    Explore destinations
                 </a>
 
                 <a class="btn btn-outline-secondary"
                    href="<%= request.getContextPath()%>/dump">
-                    Nhật ký du lịch
+                    Travel feed
                 </a>
 
                 <a class="btn btn-outline-secondary"
                    href="<%= request.getContextPath()%>/passport">
-                    Hộ chiếu du lịch
+                    Travel Passport
                 </a>
             </div>
         </section>
@@ -208,22 +204,20 @@
     String seasonalComboButtonText;
     if (trips != null && !trips.isEmpty() && trips.get(0) != null) {
         seasonalComboTarget = request.getContextPath() + "/combo?tripId=" + trips.get(0).getTripId();
-        seasonalComboButtonText = "Khám phá địa điểm";
+        seasonalComboButtonText = "Explore combos";
     } else {
-        // Combo recommendations require a trip context. If the user has no trip yet,
-        // guide them to create one first instead of sending them to a broken /combo URL.
         seasonalComboTarget = request.getContextPath() + "/trip/create";
-        seasonalComboButtonText = "Tạo chuyến đi để khám phá combo";
+        seasonalComboButtonText = "Create trip to explore combos";
     }
 %>
 <% if (showSeasonalComboPopup) {%>
 <div id="seasonalComboPopup" class="seasonal-popup-backdrop" role="dialog" aria-modal="true" aria-labelledby="seasonalPopupTitle">
     <div class="seasonal-popup-card">
-        <button type="button" class="seasonal-popup-close" id="seasonalPopupClose" aria-label="Đóng popup">&times;</button>
-        <img class="seasonal-popup-image" src="<%= request.getContextPath()%>/images/saigon-combo-bon-mua-popup.png" alt="Sài Gòn - Khám phá theo combo bốn mùa">
+        <button type="button" class="seasonal-popup-close" id="seasonalPopupClose" aria-label="Close popup">&times;</button>
+        <img class="seasonal-popup-image" src="<%= request.getContextPath()%>/images/saigon-combo-bon-mua-popup.png" alt="Saigon - Explore Four Seasons Combos">
         <div class="seasonal-popup-caption">
-            <h2 id="seasonalPopupTitle">Khám phá Sài Gòn theo combo bốn mùa</h2>
-            <p>Lên kế hoạch cho hành trình tiếp theo cùng LocalTrip.</p>
+            <h2 id="seasonalPopupTitle">Explore Saigon Seasonal Combos</h2>
+            <p>Plan your next exciting adventure with LocalTrip.</p>
             <a class="btn btn-brand" href="<%= seasonalComboTarget%>"><%= seasonalComboButtonText%></a>
         </div>
     </div>

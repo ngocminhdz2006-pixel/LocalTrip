@@ -117,17 +117,35 @@ public class TripServlet extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-            request.setAttribute(
-                    "trips",
-                    tripDAO.findByUser(user.getUserId())
-            );
+            java.util.List<Trip> trips
+                    = tripDAO.findByUser(user.getUserId());
+
+            java.util.Map<Integer, Integer> memberCounts
+                    = new java.util.HashMap<>();
+
+            for (Trip trip : trips) {
+                java.util.Set<Integer> memberIds
+                        = new java.util.HashSet<>();
+
+                memberIds.add(trip.getOwnerId());
+
+                for (model.TripMember member
+                        : tripMemberDAO.findByTrip(trip.getTripId())) {
+                    memberIds.add(member.getUserId());
+                }
+
+                memberCounts.put(trip.getTripId(), memberIds.size());
+            }
+
+            request.setAttribute("trips", trips);
+            request.setAttribute("memberCounts", memberCounts);
 
             request.getRequestDispatcher(LIST_VIEW)
                     .forward(request, response);
 
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể tải danh sách chuyến đi.",
+                    "Cannot load trips.",
                     e
             );
         }
@@ -248,12 +266,33 @@ public class TripServlet extends HttpServlet {
         request.setAttribute("viewTripDays", viewDays);
         request.setAttribute("viewTripNights", Math.max(0, viewDays - 1));
         request.setAttribute("viewMemberCount", viewMembers.size());
-        if (!viewMembers.isEmpty()) request.setAttribute("viewBudgetPerMember", trip.getBudget().divide(java.math.BigDecimal.valueOf(viewMembers.size()), 0, java.math.RoundingMode.HALF_UP));
+        if (!viewMembers.isEmpty()) {
+            request.setAttribute("viewBudgetPerMember", trip.getBudget().divide(java.math.BigDecimal.valueOf(viewMembers.size()), 0, java.math.RoundingMode.HALF_UP));
+        }
         java.time.LocalDate viewToday = java.time.LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
         boolean viewInDates = !viewToday.isBefore(trip.getStartDate().toLocalDate()) && !viewToday.isAfter(trip.getEndDate().toLocalDate());
-        boolean viewHasItinerary = !new dao.ItineraryDAO().findByTrip(tripId).isEmpty();
+        int itineraryCount = new dao.ItineraryDAO().findByTrip(tripId).size();
+        boolean viewHasItinerary = itineraryCount > 0;
+        boolean hasUserPreference = !new dao.PreferenceDAO().findSelectedCategoryIds(tripId, user.getUserId()).isEmpty();
+
+        java.util.List<java.util.Map<String, Object>> allFriends = new dao.TravelFeatureDAO().getFriends(user.getUserId());
+        java.util.List<java.util.Map<String, Object>> availableFriends = new java.util.ArrayList<java.util.Map<String, Object>>();
+        java.util.Set<Integer> memberUserIds = new java.util.HashSet<Integer>();
+        for (model.TripMember tm : viewMembers) {
+            memberUserIds.add(tm.getUserId());
+        }
+        for (java.util.Map<String, Object> friend : allFriends) {
+            Object fId = friend.get("userId");
+            if (fId instanceof Number && !memberUserIds.contains(((Number) fId).intValue())) {
+                availableFriends.add(friend);
+            }
+        }
+
+        request.setAttribute("availableFriends", availableFriends);
+        request.setAttribute("itineraryCount", itineraryCount);
+        request.setAttribute("hasUserPreference", hasUserPreference);
         request.setAttribute("viewCanStart", viewInDates && viewHasItinerary);
-        request.setAttribute("viewStartReason", !viewHasItinerary ? "Thêm hoặc xác nhận lịch trình trước khi bắt đầu." : !viewInDates ? "Chỉ có thể bắt đầu trong thời gian của chuyến đi." : "");
+        request.setAttribute("viewStartReason", !viewHasItinerary ? "Please add or confirm itinerary activities before starting." : !viewInDates ? "Trips can only be started during the scheduled travel dates." : "");
 
         request.getRequestDispatcher(DETAIL_VIEW)
                 .forward(request, response);
@@ -322,7 +361,7 @@ public class TripServlet extends HttpServlet {
             forwardCreateError(
                     request,
                     response,
-                    "Ngày hoặc ngân sách không hợp lệ."
+                    "Invalid dates or budget."
             );
             return;
         }
@@ -508,7 +547,7 @@ public class TripServlet extends HttpServlet {
                 "Tạo chuyến đi thành công."
         );
 
-        response.sendRedirect(request.getContextPath() + "/combo?tripId=" + createdTripId);
+        response.sendRedirect(request.getContextPath() + "/trip/detail?tripId=" + createdTripId);
 
     }
 
@@ -587,7 +626,7 @@ public class TripServlet extends HttpServlet {
 
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể thêm thành viên.",
+                    "Cannot add member.",
                     e
             );
         }
@@ -604,7 +643,7 @@ public class TripServlet extends HttpServlet {
 
         request.getSession().setAttribute(
                 "successMessage",
-                "Thêm thành viên thành công."
+                    "Member added successfully."
         );
 
         redirectToDetail(request, response, tripId);
@@ -662,7 +701,7 @@ public class TripServlet extends HttpServlet {
         if (memberUserId == currentUser.getUserId()) {
             request.getSession().setAttribute(
                     "errorMessage",
-                    "Không thể xóa OWNER khỏi chuyến đi."
+                    "Cannot remove the owner from the trip."
             );
 
             redirectToDetail(request, response, tripId);
@@ -678,7 +717,7 @@ public class TripServlet extends HttpServlet {
         if (!removed) {
             request.getSession().setAttribute(
                     "errorMessage",
-                    "Không thể xóa thành viên này. Thành viên có thể đã liên quan đến khoản chi."
+                    "Cannot remove this member. They may be linked to recorded expenses."
             );
             redirectToDetail(request, response, tripId);
             return;
@@ -686,7 +725,7 @@ public class TripServlet extends HttpServlet {
 
         request.getSession().setAttribute(
                 "successMessage",
-                "Xóa thành viên thành công."
+                    "Member removed successfully."
         );
 
         redirectToDetail(request, response, tripId);

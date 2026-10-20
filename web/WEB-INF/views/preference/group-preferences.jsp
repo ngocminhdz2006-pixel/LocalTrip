@@ -2,9 +2,9 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<c:set var="pageTitle" value="Sở thích nhóm" scope="request"/>
+<c:set var="pageTitle" value="Group Preferences" scope="request"/>
 <c:set var="currentTrip" value="${trip}" scope="request"/>
-<fmt:setLocale value="vi_VN" scope="page"/>
+<fmt:setLocale value="en_US" scope="page"/>
 
 <%@ include file="/WEB-INF/jspf/header.jspf" %>
 
@@ -97,16 +97,15 @@
 
         <div class="rd-card-heading">
             <div>
-                <h2 id="group-preferences-title">Sở thích nhóm</h2>
+                <h2 id="group-preferences-title">Group Preferences</h2>
                 <p class="rd-sub">
-                    Những trải nghiệm được các thành viên quan tâm,
-                    xếp theo số người chọn.
+                    Experiences favored by your group, ranked by vote count.
                 </p>
             </div>
 
             <c:if test="${totalMembers > 0}">
                 <span class="rd-count">
-                    <c:out value="${totalMembers}"/> thành viên
+                    <c:out value="${totalMembers}"/> members
                 </span>
             </c:if>
         </div>
@@ -114,10 +113,10 @@
         <c:choose>
             <c:when test="${empty groupPreferences}">
                 <div class="rd-preference-empty">
-                    <h3>Nhóm chưa có lựa chọn sở thích</h3>
+                    <h3>No group preferences yet</h3>
                     <p>
-                        Mỗi thành viên có thể chọn sở thích của mình
-                        để cùng tìm những địa điểm phù hợp.
+                        Each member can select their preferences
+                        to discover suitable shared destinations.
                     </p>
                 </div>
             </c:when>
@@ -148,14 +147,14 @@
                                         / <c:out value="${totalMembers}"/>
                                     </c:if>
 
-                                    người chọn
+                                    votes
                                 </span>
                             </div>
 
                             <div class="rd-group-meter">
                                 <div class="progress"
                                      role="progressbar"
-                                     aria-label="Tỷ lệ thành viên chọn <c:out value='${gp.categoryName}'/>"
+                                     aria-label="Percentage of members who selected <c:out value='${gp.categoryName}'/>"
                                      aria-valuenow="${groupPercentage}"
                                      aria-valuemin="0"
                                      aria-valuemax="100">
@@ -176,8 +175,8 @@
                 </div>
 
                 <p class="rd-help mt-3">
-                    Mỗi người có thể chọn nhiều danh mục,
-                    nên tổng các tỷ lệ có thể lớn hơn 100%.
+                    Members can select multiple categories,
+                    so total percentages may exceed 100%.
                 </p>
             </c:otherwise>
         </c:choose>
@@ -185,12 +184,12 @@
         <div class="rd-preference-actions">
             <a href="${pageContext.request.contextPath}/recommendations?tripId=${trip.id}"
                class="btn btn-brand">
-                Xem gợi ý địa điểm
+                View place suggestions
             </a>
 
             <a href="${pageContext.request.contextPath}/preferences?tripId=${trip.id}"
                class="btn btn-outline-secondary">
-                Sửa sở thích của tôi
+                Edit my preferences
             </a>
         </div>
     </section>
@@ -198,24 +197,24 @@
     <aside class="rd-card rd-preference-guide"
            aria-labelledby="group-guide-title">
 
-        <span class="rd-count">Sở thích chung</span>
+        <span class="rd-count">Shared interests</span>
 
-        <h2 id="group-guide-title">Cùng chọn trải nghiệm</h2>
+        <h2 id="group-guide-title">Collaborative Planning</h2>
 
         <p class="rd-sub">
-            Danh mục có nhiều người chọn giúp nhóm nhận ra
-            những trải nghiệm được quan tâm nhất.
+            Categories with high interest help the group prioritize
+            the most exciting destinations.
         </p>
 
         <ol>
-            <li>Mỗi thành viên chọn và lưu sở thích riêng.</li>
-            <li>Nhóm xem số người chọn và tỷ lệ từng danh mục.</li>
-            <li>Xem gợi ý địa điểm để cùng lên lịch trình.</li>
+            <li>Each member chooses and saves their preferences.</li>
+            <li>Group compares interest percentages for each category.</li>
+            <li>Explore recommendations to build the daily itinerary.</li>
         </ol>
 
         <p class="rd-help">
-            Tỷ lệ được tính trên tổng thành viên chuyến đi,
-            bao gồm cả người chưa chọn sở thích.
+            Percentages are calculated over total trip members,
+            including those who have not yet submitted preferences.
         </p>
     </aside>
 </div>

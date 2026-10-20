@@ -1,17 +1,17 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 
 <%
-    request.setAttribute("pageTitle", "Đăng ký");
+    request.setAttribute("pageTitle", "Register");
 %>
 
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
 <section class="rd-card">
     <div class="mb-4">
-        <h2 class="h3 mb-2">Tạo tài khoản LocalTrip</h2>
+        <h2 class="h3 mb-2">Create your LocalTrip account</h2>
 
         <p class="text-muted mb-0">
-            Bắt đầu lên kế hoạch và khám phá cùng bạn bè.
+            Start planning journeys and exploring the world with friends.
         </p>
     </div>
 
@@ -21,14 +21,14 @@
 
         <div class="mb-3">
             <label for="fullName" class="form-label fw-semibold">
-                Họ tên
+                Full name
             </label>
 
             <input type="text"
                    id="fullName"
                    name="fullName"
                    class="form-control"
-                   placeholder="Nhập họ tên của bạn"
+                   placeholder="Enter your full name"
                    maxlength="100"
                    autocomplete="name"
                    required>
@@ -43,7 +43,7 @@
                    id="email"
                    name="email"
                    class="form-control"
-                   placeholder="ban@example.com"
+                   placeholder="you@example.com"
                    maxlength="150"
                    autocomplete="email"
                    required>
@@ -51,7 +51,7 @@
 
         <div class="mb-3">
             <label for="password" class="form-label fw-semibold">
-                Mật khẩu
+                Password
             </label>
 
             <input type="password"
@@ -61,21 +61,20 @@
                    minlength="8"
                    maxlength="64"
                    pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,64}"
-                   title="Mật khẩu phải có 8–64 ký tự, gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt."
+                   title="Password must be 8–64 characters with uppercase, lowercase, number and special character."
                    aria-describedby="passwordHelp"
                    autocomplete="new-password"
                    required>
 
             <div id="passwordHelp" class="form-text">
-                Từ 8 đến 64 ký tự, gồm chữ hoa, chữ thường,
-                chữ số và ký tự đặc biệt.
+                8 to 64 characters, including uppercase, lowercase, numbers, and symbols.
             </div>
         </div>
 
         <div class="mb-3">
             <label for="confirmPassword"
                    class="form-label fw-semibold">
-                Nhập lại mật khẩu
+                Confirm password
             </label>
 
             <input type="password"
@@ -95,21 +94,21 @@
 
             <label class="form-check-label"
                    for="showRegisterPasswords">
-                Hiển thị mật khẩu
+                Show passwords
             </label>
         </div>
 
         <button type="submit"
                 class="btn btn-primary w-100 py-2">
-            Tạo tài khoản
+            Create account
         </button>
     </form>
 
     <div class="border-top mt-4 pt-4 text-center">
         <p class="mb-0">
-            Đã có tài khoản?
+            Already have an account?
             <a href="<%= request.getContextPath() %>/login">
-                Đăng nhập
+                Sign in
             </a>
         </p>
     </div>
@@ -126,7 +125,7 @@
         confirmPassword.setCustomValidity(
             confirmPassword.value
                 && confirmPassword.value !== password.value
-                ? 'Mật khẩu nhập lại chưa khớp.'
+                ? 'Passwords do not match.'
                 : ''
         );
     }

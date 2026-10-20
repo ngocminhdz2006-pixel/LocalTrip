@@ -34,6 +34,12 @@ public class LoginServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("user") != null) {
+            String redirectAfterLogin = (String) session.getAttribute("redirectAfterLogin");
+            session.removeAttribute("redirectAfterLogin");
+            if (redirectAfterLogin != null && isValidRedirect(request, redirectAfterLogin)) {
+                response.sendRedirect(redirectAfterLogin);
+                return;
+            }
             redirectByRole(request, response, (User) session.getAttribute("user"));
             return;
         }
@@ -175,8 +181,12 @@ public class LoginServlet extends HttpServlet {
 
         // Đăng nhập thành công
         HttpSession oldSession = request.getSession(false);
-
+        String redirectAfterLogin = null;
         if (oldSession != null) {
+            Object r = oldSession.getAttribute("redirectAfterLogin");
+            if (r instanceof String) {
+                redirectAfterLogin = (String) r;
+            }
             oldSession.invalidate();
         }
 
@@ -199,6 +209,11 @@ public class LoginServlet extends HttpServlet {
 
         if (rememberMe) {
             RememberMeUtil.create(request, response, user);
+        }
+
+        if (redirectAfterLogin != null && isValidRedirect(request, redirectAfterLogin)) {
+            response.sendRedirect(redirectAfterLogin);
+            return;
         }
 
         redirectByRole(request, response, user);
@@ -253,5 +268,29 @@ public class LoginServlet extends HttpServlet {
                 ipAddress,
                 userAgent
         );
+    }
+
+    private boolean isValidRedirect(HttpServletRequest request, String url) {
+        if (url == null || url.trim().isEmpty()) {
+            return false;
+        }
+        String cleanUrl = url.trim();
+        if (cleanUrl.contains("\r") || cleanUrl.contains("\n")) {
+            return false;
+        }
+        if (cleanUrl.startsWith("//") || cleanUrl.startsWith("/\\")) {
+            return false;
+        }
+        String contextPath = request.getContextPath();
+        if (contextPath != null && !contextPath.isEmpty()) {
+            if (!cleanUrl.startsWith(contextPath + "/") && !cleanUrl.equals(contextPath)) {
+                return false;
+            }
+        } else {
+            if (!cleanUrl.startsWith("/") || cleanUrl.startsWith("//")) {
+                return false;
+            }
+        }
+        return true;
     }
 }

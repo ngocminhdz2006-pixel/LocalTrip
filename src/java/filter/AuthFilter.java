@@ -30,6 +30,9 @@ public class AuthFilter implements Filter {
         HttpServletResponse resp = (HttpServletResponse) response;
         req.setCharacterEncoding("UTF-8");
         resp.setCharacterEncoding("UTF-8");
+        resp.setHeader("X-Content-Type-Options", "nosniff");
+        resp.setHeader("X-Frame-Options", "SAMEORIGIN");
+        resp.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
         String contextPath = req.getContextPath();
         String uri = req.getRequestURI();
         String path = uri.substring(contextPath.length());
@@ -50,6 +53,16 @@ public class AuthFilter implements Filter {
         if (user == null) {
             HttpSession newSession = req.getSession(true);
             newSession.setAttribute("authMessage", "Vui lòng đăng nhập để tiếp tục.");
+
+            if ("GET".equalsIgnoreCase(req.getMethod())) {
+                String targetUrl = req.getRequestURI();
+                String queryString = req.getQueryString();
+                if (queryString != null && !queryString.trim().isEmpty()) {
+                    targetUrl += "?" + queryString;
+                }
+                newSession.setAttribute("redirectAfterLogin", targetUrl);
+            }
+
             resp.sendRedirect(contextPath + "/login");
             return;
         }
@@ -86,6 +99,9 @@ public class AuthFilter implements Filter {
             freshUser.setPasswordHash(null);
 
             session.setAttribute("user", freshUser);
+            if (session.getAttribute("travelCsrf") == null) {
+                session.setAttribute("travelCsrf", java.util.UUID.randomUUID().toString());
+            }
             user = freshUser;
 
         } catch (RuntimeException e) {
@@ -111,16 +127,28 @@ public class AuthFilter implements Filter {
             return;
         }
 
-        if (adminPath || userPath) {
-            String expected = HomeServlet.pathForRole(user.getRole());
+        // Enforce CSRF protection for authenticated POST requests
+        if ("POST".equalsIgnoreCase(req.getMethod())) {
+            String contentType = req.getContentType();
+            boolean isMultipart = contentType != null && contentType.toLowerCase().startsWith("multipart/");
 
-            if (expected == null
-                    || (adminPath && !"/admin".equals(expected))
-                    || (userPath && !"/user".equals(expected))) {
-                resp.sendError(HttpServletResponse.SC_FORBIDDEN);
-                return;
+            // Multipart requests validate CSRF inside their @MultipartConfig servlets
+            if (!isMultipart) {
+                String paramToken = req.getParameter("csrfToken");
+                Object sessionToken = session.getAttribute("travelCsrf");
+
+                boolean valid = (sessionToken instanceof String && ((String) sessionToken).equals(paramToken))
+                        || (req.getParameter("statusToken") != null && req.getParameter("statusToken").equals(session.getAttribute("tripStatusToken")))
+                        || (req.getParameter("deleteToken") != null && req.getParameter("deleteToken").equals(session.getAttribute("tripDeleteToken")))
+                        || (req.getParameter("token") != null && req.getParameter("token").equals(session.getAttribute("autoItineraryToken")));
+
+                if (!valid) {
+                    resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid or missing CSRF security token.");
+                    return;
+                }
             }
         }
+
         chain.doFilter(request, response);
     }
 
@@ -153,7 +181,10 @@ public class AuthFilter implements Filter {
                 || "/forgot-password".equals(path) || "/reset-password".equals(path)) {
             return true;
         }
-        if (path.startsWith("/css/") || path.startsWith("/js/") || path.startsWith("/images/")) {
+        if ("/manifest.json".equals(path) || "/sw.js".equals(path) || "/offline.html".equals(path) || "/favicon.ico".equals(path)) {
+            return true;
+        }
+        if (path.startsWith("/css/") || path.startsWith("/js/") || path.startsWith("/images/") || path.startsWith("/assets/")) {
             return true;
         }
         if (path.startsWith("/WEB-INF/")) {

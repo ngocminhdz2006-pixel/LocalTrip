@@ -3,6 +3,7 @@ package controller.itinerary;
 import dao.ItineraryDAO;
 import dao.PlaceDAO;
 import dao.TripDAO;
+import dao.TripMemberDAO;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -21,13 +22,15 @@ import model.User;
 @WebServlet(name = "ItineraryServlet", urlPatterns = {
     "/itinerary",
     "/itinerary/add",
-    "/itinerary/delete"
+    "/itinerary/delete",
+    "/itinerary/confirm"
 })
 public class ItineraryServlet extends HttpServlet {
 
     private final TripDAO tripDAO = new TripDAO();
     private final PlaceDAO placeDAO = new PlaceDAO();
     private final ItineraryDAO itineraryDAO = new ItineraryDAO();
+    private final TripMemberDAO tripMemberDAO = new TripMemberDAO();
 
     @Override
     protected void doGet(
@@ -113,6 +116,11 @@ public class ItineraryServlet extends HttpServlet {
                 return;
             }
 
+            if ("/itinerary/confirm".equals(path)) {
+                confirmItinerary(request, response, currentUser);
+                return;
+            }
+
             /*
              * Nút "+ Thêm vào Itinerary" trong trang Recommendation
              * đang POST tới /itinerary với tripId và placeId.
@@ -145,6 +153,104 @@ public class ItineraryServlet extends HttpServlet {
         }
     }
 
+    private void confirmItinerary(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            User currentUser
+    ) throws ServletException, IOException {
+
+        int tripId = parsePositiveInt(
+                request.getParameter("tripId")
+        );
+
+        Trip trip = tripDAO.findByIdForUser(
+                tripId,
+                currentUser.getUserId()
+        );
+
+        if (trip == null) {
+            response.sendError(
+                    HttpServletResponse.SC_NOT_FOUND,
+                    "Trip not found or access denied."
+            );
+            return;
+        }
+
+        if (!"OWNER".equalsIgnoreCase(trip.getRole())) {
+            response.sendError(
+                    HttpServletResponse.SC_FORBIDDEN,
+                    "Only the Trip Lead can confirm the itinerary."
+            );
+            return;
+        }
+
+        if ("COMPLETED".equalsIgnoreCase(trip.getStatus())
+                || "CANCELLED".equalsIgnoreCase(trip.getStatus())) {
+            request.getSession().setAttribute(
+                    "errorMessage",
+                    "Cannot confirm itinerary for completed or cancelled trips."
+            );
+            response.sendRedirect(request.getContextPath() + "/itinerary?tripId=" + tripId);
+            return;
+        }
+
+        java.util.List<ItineraryItem> items = itineraryDAO.findByTrip(tripId);
+        if (items.isEmpty()) {
+            request.getSession().setAttribute(
+                    "errorMessage",
+                    "Please add at least one activity to the itinerary before confirming."
+            );
+            response.sendRedirect(request.getContextPath() + "/itinerary?tripId=" + tripId);
+            return;
+        }
+
+        java.time.LocalDate today = java.time.LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+        java.time.LocalDate startDate = trip.getStartDate().toLocalDate();
+        java.time.LocalDate endDate = trip.getEndDate().toLocalDate();
+
+        boolean inDates = !today.isBefore(startDate) && !today.isAfter(endDate);
+
+        if ("PLANNING".equalsIgnoreCase(trip.getStatus())) {
+            if (inDates) {
+                boolean updated = new dao.TripStatusDAO().changeStatus(
+                        tripId,
+                        currentUser.getUserId(),
+                        "PLANNING",
+                        "ONGOING",
+                        java.sql.Date.valueOf(today)
+                );
+                if (updated) {
+                    request.getSession().setAttribute(
+                            "successMessage",
+                            "Itinerary confirmed! The trip is now underway (ONGOING)."
+                    );
+                } else {
+                    request.getSession().setAttribute(
+                            "successMessage",
+                            "Itinerary confirmed and finalized for the group."
+                    );
+                }
+            } else if (today.isBefore(startDate)) {
+                request.getSession().setAttribute(
+                        "successMessage",
+                        "Itinerary confirmed and finalized! The trip will start on " + startDate + "."
+                );
+            } else {
+                request.getSession().setAttribute(
+                        "errorMessage",
+                        "The scheduled end date for this trip has already passed."
+                );
+            }
+        } else if ("ONGOING".equalsIgnoreCase(trip.getStatus())) {
+            request.getSession().setAttribute(
+                    "successMessage",
+                    "Itinerary schedule confirmed for ongoing trip."
+            );
+        }
+
+        response.sendRedirect(request.getContextPath() + "/itinerary?tripId=" + tripId);
+    }
+
     private void showItinerary(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -170,11 +276,18 @@ public class ItineraryServlet extends HttpServlet {
 
         if (request.getSession().getAttribute("autoItineraryToken") == null)
             request.getSession().setAttribute("autoItineraryToken", java.util.UUID.randomUUID().toString());
+        if(request.getSession().getAttribute("activityStatusToken")==null)
+            request.getSession().setAttribute("activityStatusToken",java.util.UUID.randomUUID().toString());
         request.setAttribute("trip", trip);
-        request.setAttribute(
-                "items",
-                itineraryDAO.findByTrip(tripId)
-        );
+        request.setAttribute("members", tripMemberDAO.findByTrip(tripId));
+        java.util.List<ItineraryItem> items=itineraryDAO.findByTrip(tripId);
+        request.setAttribute("items",items);
+        BigDecimal remaining=BigDecimal.ZERO;
+        for(ItineraryItem item:items) {
+            if(("UPCOMING".equals(item.getActivityStatus()) || "IN_PROGRESS".equals(item.getActivityStatus())) && item.getEstimatedCost()!=null)
+                remaining=remaining.add(item.getEstimatedCost());
+        }
+        request.setAttribute("remainingEstimatedCost",remaining);
 
         request.getRequestDispatcher(
                 "/WEB-INF/views/intinerary/intinerary.jsp"
@@ -225,13 +338,23 @@ public class ItineraryServlet extends HttpServlet {
             return;
         }
 
+        if (placeId <= 0) {
+            String redirectUrl = request.getContextPath() + "/places?tripId=" + tripId;
+            if (trip.getDestination() != null && !trip.getDestination().trim().isEmpty()) {
+                redirectUrl += "&city=" + java.net.URLEncoder.encode(trip.getDestination().trim(), "UTF-8");
+            }
+            response.sendRedirect(redirectUrl);
+            return;
+        }
+
         Place place = placeDAO.findById(placeId);
 
         if (place == null) {
-            response.sendError(
-                    HttpServletResponse.SC_NOT_FOUND,
-                    "Không tìm thấy địa điểm."
-            );
+            String redirectUrl = request.getContextPath() + "/places?tripId=" + tripId;
+            if (trip.getDestination() != null && !trip.getDestination().trim().isEmpty()) {
+                redirectUrl += "&city=" + java.net.URLEncoder.encode(trip.getDestination().trim(), "UTF-8");
+            }
+            response.sendRedirect(redirectUrl);
             return;
         }
 
@@ -448,6 +571,9 @@ public class ItineraryServlet extends HttpServlet {
             HttpServletResponse response,
             User currentUser
     ) throws IOException {
+        Object token=request.getSession().getAttribute("activityStatusToken");
+        if(token==null || !token.equals(request.getParameter("csrfToken"))) { response.sendError(403); return; }
+
 
         int tripId = parsePositiveInt(
                 request.getParameter("tripId")

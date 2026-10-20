@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 
 <%
-    request.setAttribute("pageTitle", "Đặt lại mật khẩu");
+    request.setAttribute("pageTitle", "Reset password");
     String token = (String) request.getAttribute("token");
     String resetSuccess = (String) request.getAttribute("successMessage");
 %>
@@ -10,10 +10,10 @@
 
 <section class="rd-card">
     <div class="mb-4">
-        <h2 class="h3 mb-2">Đặt lại mật khẩu</h2>
+        <h2 class="h3 mb-2">Reset password</h2>
 
         <p class="text-muted mb-0">
-            Tạo mật khẩu mới để tiếp tục sử dụng LocalTrip.
+            Create a new password to secure and access your LocalTrip account.
         </p>
     </div>
 
@@ -21,7 +21,7 @@
 
         <a class="btn btn-primary w-100 py-2"
            href="<%= request.getContextPath() %>/login">
-            Đăng nhập
+            Sign in
         </a>
 
     <% } else if (token != null && !token.isEmpty()) { %>
@@ -37,7 +37,7 @@
             <div class="mb-3">
                 <label for="newPassword"
                        class="form-label fw-semibold">
-                    Mật khẩu mới
+                    New password
                 </label>
 
                 <input type="password"
@@ -47,21 +47,20 @@
                        minlength="8"
                        maxlength="64"
                        pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,64}"
-                       title="Mật khẩu phải có 8–64 ký tự, gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt."
+                       title="Password must be 8–64 characters with uppercase, lowercase, number and special character."
                        autocomplete="new-password"
                        aria-describedby="newPasswordHelp"
                        required>
 
                 <div id="newPasswordHelp" class="form-text">
-                    Từ 8 đến 64 ký tự, gồm chữ hoa, chữ thường,
-                    chữ số và ký tự đặc biệt.
+                    8 to 64 characters, including uppercase, lowercase, numbers, and symbols.
                 </div>
             </div>
 
             <div class="mb-3">
                 <label for="confirmNewPassword"
                        class="form-label fw-semibold">
-                    Nhập lại mật khẩu mới
+                    Confirm new password
                 </label>
 
                 <input type="password"
@@ -75,72 +74,75 @@
             </div>
 
             <div class="form-check mb-4">
-                <input type="checkbox"
-                       class="form-check-input"
+                <input class="form-check-input"
+                       type="checkbox"
                        id="showResetPasswords">
 
                 <label class="form-check-label"
                        for="showResetPasswords">
-                    Hiển thị mật khẩu
+                    Show passwords
                 </label>
             </div>
 
             <button type="submit"
                     class="btn btn-primary w-100 py-2">
-                Lưu mật khẩu mới
+                Update password
             </button>
         </form>
 
     <% } else { %>
 
-        <p class="text-muted mb-4">
-            Hãy yêu cầu liên kết mới để đặt lại mật khẩu.
+        <p class="text-muted">
+            The reset token is missing, invalid or expired.
         </p>
 
-        <a class="btn btn-primary w-100 py-2"
+        <a class="btn btn-secondary w-100 py-2"
            href="<%= request.getContextPath() %>/forgot-password">
-            Yêu cầu liên kết mới
+            Request new reset link
         </a>
 
     <% } %>
 
-    <% if (resetSuccess == null) { %>
-        <div class="border-top mt-4 pt-4 text-center">
+    <div class="border-top mt-4 pt-4 text-center">
+        <p class="mb-0">
+            Remembered your credentials?
             <a href="<%= request.getContextPath() %>/login">
-                ← Quay lại đăng nhập
+                Sign in
             </a>
-        </div>
-    <% } %>
+        </p>
+    </div>
 </section>
 
 <script>
 (function () {
     const form = document.getElementById('resetPasswordForm');
+    const password = document.getElementById('newPassword');
+    const confirmPassword = document.getElementById('confirmNewPassword');
+    const showPasswords = document.getElementById('showResetPasswords');
 
-    if (!form) {
+    if (!form || !password || !confirmPassword) {
         return;
     }
 
-    const password = document.getElementById('newPassword');
-    const confirmation = document.getElementById('confirmNewPassword');
-    const showPasswords = document.getElementById('showResetPasswords');
-
     function validateConfirmation() {
-        confirmation.setCustomValidity(
-            confirmation.value && confirmation.value !== password.value
-                ? 'Mật khẩu nhập lại chưa khớp.'
+        confirmPassword.setCustomValidity(
+            confirmPassword.value
+                && confirmPassword.value !== password.value
+                ? 'Passwords do not match.'
                 : ''
         );
     }
 
     password.addEventListener('input', validateConfirmation);
-    confirmation.addEventListener('input', validateConfirmation);
+    confirmPassword.addEventListener('input', validateConfirmation);
 
-    showPasswords.addEventListener('change', function () {
-        const type = showPasswords.checked ? 'text' : 'password';
-        password.type = type;
-        confirmation.type = type;
-    });
+    if (showPasswords) {
+        showPasswords.addEventListener('change', function () {
+            const type = showPasswords.checked ? 'text' : 'password';
+            password.type = type;
+            confirmPassword.type = type;
+        });
+    }
 
     form.addEventListener('submit', function (event) {
         validateConfirmation();

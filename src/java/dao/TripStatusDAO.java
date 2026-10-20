@@ -34,7 +34,7 @@ public class TripStatusDAO {
             sql += "AND start_date <= ? AND end_date >= ? "
                     + "AND EXISTS ("
                     + "SELECT 1 FROM dbo.ItineraryItems i "
-                    + "WHERE i.trip_id = Trips.trip_id)";
+                    + "WHERE i.trip_id = Trips.trip_id AND i.activity_status <> 'CANCELLED')";
         }
 
         try (Connection connection = DBContext.getConnection();

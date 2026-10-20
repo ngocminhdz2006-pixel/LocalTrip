@@ -43,6 +43,9 @@ public class ItineraryEditServlet extends HttpServlet {
             ItineraryItem original = null;
             for (ItineraryItem item : itinerary.findByTrip(tripId)) if (item.getItemId() == itemId) original = item;
             if (original == null) { resp.sendError(404, "Hoạt động đã bị xóa hoặc thay thế. Hãy mở lại lịch trình."); return; }
+            if(!"UPCOMING".equals(original.getActivityStatus())) { resp.sendError(403,"Chỉ được sửa hoạt động sắp tới."); return; }
+            boolean restWithoutPlace="REST".equals(original.getActivityType()) && original.getPlaceId()==0;
+            req.setAttribute("restWithoutPlace",restWithoutPlace);
             Date today = Date.valueOf(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")));
             if (original.getVisitDate().before(today)) { resp.sendError(403, "Không thể sửa hoạt động của ngày đã qua."); return; }
             List<Place> candidates = places.findForDestination(trip.getDestination());
@@ -56,7 +59,8 @@ public class ItineraryEditServlet extends HttpServlet {
                 req.setAttribute("submittedPlaceId", 0);
                 try {
                     ItineraryItem edited = new ItineraryItem();
-                    edited.setItemId(itemId); edited.setTripId(tripId); edited.setPlaceId(id(req.getParameter("placeId")));
+                    edited.setItemId(itemId); edited.setTripId(tripId); edited.setPlaceId(restWithoutPlace ? 0 : id(req.getParameter("placeId")));
+                    edited.setActivityType(original.getActivityType()); edited.setActivityTitle(original.getActivityTitle());
                     req.setAttribute("submittedPlaceId", edited.getPlaceId());
                     edited.setVisitDate(Date.valueOf(req.getParameter("visitDate")));
                     edited.setStartTime(Time.valueOf(LocalTime.parse(req.getParameter("startTime"))));

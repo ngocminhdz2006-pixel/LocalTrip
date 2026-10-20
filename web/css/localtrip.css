@@ -804,8 +804,8 @@ a{
 
 @media (max-width: 768px) {
     .localtrip-map {
-        height: 430px;
-        min-height: 360px;
+        height: 340px;
+        min-height: 300px;
     }
 }
 
@@ -944,5 +944,44 @@ h1, h2, h3, h4, h5, h6 {
     .trip-workspace nav{
         flex-direction:row;
         flex-wrap:wrap
+    }
+}
+.lt-trip-more-links {
+    display: grid;
+    gap: 0;
+    padding: 4px 14px;
+}
+
+.lt-trip-more-links a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 48px;
+    padding: 10px 2px;
+    border-bottom: 1px solid var(--brand-border);
+    color: var(--brand-text);
+    text-decoration: none;
+}
+
+.lt-trip-more-links a:last-child {
+    border-bottom: 0;
+}
+
+.lt-trip-more-links a::after {
+    content: "\203A";
+    color: var(--brand-muted);
+    font-size: 22px;
+    line-height: 1;
+}
+
+.lt-trip-more-links a[aria-current="page"] {
+    color: var(--brand-primary);
+    font-weight: 700;
+}
+
+@media (max-width: 600px) {
+    .lt-trip-more-links a {
+        min-height: 52px;
+        padding: 12px 2px;
     }
 }

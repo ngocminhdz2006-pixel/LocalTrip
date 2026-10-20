@@ -1,77 +1,60 @@
-<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
-
+<%@ page contentType="text/html;charset=UTF-8"
+         pageEncoding="UTF-8" language="java" %>
 <%
-    request.setAttribute("pageTitle", "Quên mật khẩu");
+    request.setAttribute("pageTitle", "Forgot password");
     String emailValue = request.getParameter("email");
-    String devResetUrl = (String) request.getAttribute("devResetUrl");
+    if (emailValue == null) {
+        emailValue = "";
+    }
 %>
 
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
-<section class="rd-card">
-    <div class="mb-4">
-        <h2 class="h3 mb-2">Quên mật khẩu?</h2>
+<section class="rd-card lt-signin" style="max-width: 440px; margin: 0 auto;">
 
-        <p class="text-muted mb-0">
-            Nhập email đã đăng ký để yêu cầu
-            liên kết đặt lại mật khẩu.
-        </p>
+    <div class="lt-signin-brand">
+        <div class="lt-signin-logo">
+            Local<span>Trip</span>
+        </div>
     </div>
 
-    <form method="post"
-          action="<%= request.getContextPath() %>/forgot-password">
+    <h2 class="lt-signin-title">Reset password</h2>
+    <p class="lt-signin-sub">
+        Enter your registered email address and we will help you regain access to your account.
+    </p>
 
-        <div class="mb-4">
-            <label for="recoveryEmail"
-                   class="form-label fw-semibold">
-                Email tài khoản
-            </label>
+    <form method="post" action="<%= request.getContextPath() %>/forgot-password">
 
-            <input type="email"
-                   id="recoveryEmail"
-                   name="email"
-                   class="form-control"
-                   value="<%= utils.HtmlUtil.escape(emailValue) %>"
-                   placeholder="ban@example.com"
-                   autocomplete="email"
-                   required
-                   aria-describedby="recoveryHelp">
-
-            <div id="recoveryHelp" class="form-text">
-                Nếu tài khoản tồn tại, hệ thống sẽ tạo
-                liên kết có hiệu lực trong 30 phút.
+        <div class="lt-field-group mb-3">
+            <label for="recoveryEmail" class="form-label">Email address</label>
+            <div class="lt-field">
+                <svg class="lt-field-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7a8a82" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);width:20px;height:20px;pointer-events:none;">
+                    <rect x="3" y="5" width="18" height="14" rx="2" fill="none"/>
+                    <path d="M3 7l9 6 9-6"/>
+                </svg>
+                <input type="email"
+                       id="recoveryEmail"
+                       name="email"
+                       class="form-control"
+                       value="<%= utils.HtmlUtil.escape(emailValue) %>"
+                       placeholder="your.email@example.com"
+                       autocomplete="email"
+                       required>
+            </div>
+            <div class="form-text" style="font-size: 11px; color: #64748b; margin-top: 4px;">
+                Reset tokens remain valid for 30 minutes for security purposes.
             </div>
         </div>
 
-        <button type="submit"
-                class="btn btn-primary w-100 py-2">
-            Yêu cầu đặt lại mật khẩu
+        <button type="submit" class="btn btn-primary w-100 lt-signin-submit">
+            Send reset instructions
         </button>
     </form>
 
-    <% if (devResetUrl != null) { %>
-        <div class="alert alert-warning mt-4 mb-0">
-            <strong class="d-block mb-2">
-                Liên kết thử nghiệm
-            </strong>
-
-            <p class="small mb-3">
-                Phiên bản hiện tại chưa gửi email.
-                Dùng liên kết dưới đây để thử đặt lại mật khẩu.
-            </p>
-
-            <a href="<%= utils.HtmlUtil.escape(devResetUrl) %>"
-               class="fw-semibold">
-                Đặt lại mật khẩu →
-            </a>
-        </div>
-    <% } %>
-
-    <div class="border-top mt-4 pt-4 text-center">
-        <a href="<%= request.getContextPath() %>/login">
-            ← Quay lại đăng nhập
-        </a>
-    </div>
+    <p class="lt-signin-switch" style="margin-top: 20px;">
+        Remember your password?
+        <a href="<%= request.getContextPath() %>/login">Sign in</a>
+    </p>
 </section>
 
 <%@ include file="/WEB-INF/views/common/footer.jsp" %>

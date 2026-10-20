@@ -51,7 +51,7 @@ public class TripStatusServlet extends HttpServlet {
 
         if (token == null || !token.equals(expectedToken)) {
             response.sendError(
-                    403, "Phiên thao tác không hợp lệ. Hãy tải lại trang."
+                    403, "Invalid session token. Please reload the page."
             );
             return;
         }
@@ -65,7 +65,7 @@ public class TripStatusServlet extends HttpServlet {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException e) {
-            response.sendError(400, "Mã chuyến đi không hợp lệ.");
+            response.sendError(400, "Invalid trip ID.");
             return;
         }
 
@@ -103,16 +103,15 @@ public class TripStatusServlet extends HttpServlet {
             if (updated) {
                 session.setAttribute(
                         "successMessage",
-                        "Đã cập nhật trạng thái chuyến đi."
+                        "Trip status updated successfully."
                 );
             } else {
                 session.setAttribute(
                         "errorMessage",
-                        "Không thể chuyển trạng thái. "
-                        + "Chỉ được bắt đầu trong thời gian chuyến đi "
-                        + "và khi đã có lịch trình. "
-                        + "Chuyến đã hoàn thành hoặc đã hủy "
-                        + "không thể chuyển trạng thái."
+                        "Cannot change trip status. "
+                        + "Trips can only be started during the scheduled travel dates "
+                        + "and after an itinerary has been added. "
+                        + "Completed or cancelled trips cannot change status."
                 );
             }
 
@@ -123,7 +122,7 @@ public class TripStatusServlet extends HttpServlet {
 
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể cập nhật trạng thái chuyến đi.", e
+                    "Cannot update trip status.", e
             );
         }
     }

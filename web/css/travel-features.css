@@ -617,3 +617,234 @@
         display:none
     }
 }
+.lt-day-tabs {
+    display: flex;
+    gap: 9px;
+    overflow-x: auto;
+    padding: 14px 18px;
+    border-bottom: 1px solid #e0e9e3;
+}
+
+.lt-day-tab {
+    flex: 0 0 auto;
+    min-width: 78px;
+    padding: 9px 13px;
+    border: 1px solid #dce7df;
+    border-radius: 12px;
+    background: #fff;
+    color: #52645a;
+    cursor: pointer;
+    text-align: center;
+}
+
+.lt-day-tab span,
+.lt-day-tab small {
+    display: block;
+}
+
+.lt-day-tab small {
+    margin-top: 2px;
+    font-size: 11px;
+}
+
+.lt-day-tab.is-active {
+    border-color: #175b43;
+    background: #e3f0e8;
+    color: #175b43;
+    font-weight: 700;
+}
+
+.lt-activity-row[hidden] {
+    display: none !important;
+}
+
+@media (max-width: 600px) {
+    .itinerary-table-wrap {
+        width: 100%;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .itinerary-table-wrap table,
+    .itinerary-table-wrap tbody {
+        display: block;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .itinerary-table-wrap thead {
+        display: none;
+    }
+
+    .itinerary-table-wrap tr.lt-activity-row:not([hidden]) {
+        display: grid;
+        width: 100%;
+        min-width: 0;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-areas:
+            "activity status"
+            "date date"
+            "time time"
+            "note note"
+            "cost cost"
+            "actions actions";
+        box-sizing: border-box;
+        margin: 10px 0;
+        padding: 14px;
+        border: 1px solid #d8e4dc;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 3px 12px rgba(24, 64, 48, 0.06);
+        overflow: hidden;
+    }
+
+    .itinerary-table-wrap tr.lt-activity-row > td {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 4px;
+        width: auto;
+        min-width: 0;
+        box-sizing: border-box;
+        padding: 9px 0;
+        border: 0;
+        border-bottom: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .itinerary-table-wrap tr.lt-activity-row > td::before {
+        content: attr(data-label);
+        display: block;
+        color: #718078;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1.2;
+        letter-spacing: 0.02em;
+    }
+
+    .itinerary-table-wrap tr.lt-activity-row > td:nth-child(1) {
+        grid-area: activity;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        font-size: 16px;
+        line-height: 1.35;
+        font-weight: 700;
+    }
+    .itinerary-table-wrap tr.lt-activity-row > td:nth-child(1)::before,
+    .itinerary-table-wrap tr.lt-activity-row > td:nth-child(2)::before {
+        display: none;
+    }
+
+    .itinerary-table-wrap tr.lt-activity-row > td:nth-child(2) {
+        grid-area: status;
+        align-items: flex-end;
+    }
+    .itinerary-table-wrap tr.lt-activity-row > td:nth-child(2) .badge {
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+    .itinerary-table-wrap tr.lt-activity-row > td:nth-child(3) {
+        grid-area: date;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        text-align: left;
+        gap: 4px;
+    }
+    .lt-date-value {
+        display: block;
+        width: 100%;
+        text-align: left;
+    }
+    .itinerary-table-wrap tr.lt-activity-row > td:nth-child(4) {
+        grid-area: time;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .lt-time-value {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .itinerary-table-wrap tr.lt-activity-row > td:nth-child(5) {
+        grid-area: note;
+        align-items: stretch;
+        padding: 10px 12px;
+        margin-top: 4px;
+        border: 0;
+        border-radius: 10px;
+        background: #f3f8f5;
+    }
+
+    .itinerary-table-wrap tr.lt-activity-row > td:nth-child(5)::before {
+        margin-bottom: 2px;
+    }
+
+    .lt-schedule-note {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        color: #586b61;
+        font-size: 13px;
+        line-height: 1.45;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+    .itinerary-table-wrap tr.lt-activity-row > td:nth-child(6) {
+        grid-area: cost;
+        align-items: flex-start;
+        width: 100%;
+        padding-top: 8px;
+        color: #17624f;
+        font-size: 15px;
+        font-weight: 700;
+    }
+    .itinerary-table-wrap tr.lt-activity-row > td:nth-child(7) {
+        grid-area: actions;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 8px;
+        width: 100%;
+        padding-top: 10px;
+        border-bottom: 0;
+    }
+
+    .itinerary-table-wrap tr.lt-activity-row > td:nth-child(7) > a {
+        margin: 0 !important;
+    }
+
+    .itinerary-table-wrap tr.lt-activity-row > td:nth-child(7) form {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 8px;
+        width: auto;
+        max-width: 100%;
+        margin: 0;
+    }
+
+    .itinerary-table-wrap tr.lt-activity-row > td:nth-child(7) form button {
+        max-width: 100%;
+        margin: 0 !important;
+    }
+
+    .itinerary-table-wrap tr.lt-activity-row > td.lt-note-empty {
+        display: none;
+    }
+
+}

@@ -4,16 +4,16 @@
 
 <c:choose>
     <c:when test="${not empty expense}">
-        <c:set var="pageTitle" value="Chỉnh sửa khoản chi" scope="request"/>
+        <c:set var="pageTitle" value="Edit expense" scope="request"/>
     </c:when>
     <c:otherwise>
-        <c:set var="pageTitle" value="Thêm khoản chi" scope="request"/>
+        <c:set var="pageTitle" value="Add expense" scope="request"/>
     </c:otherwise>
 </c:choose>
 
 <c:set var="currentTrip" value="${trip}" scope="request"/>
 
-<fmt:setLocale value="vi_VN" scope="page"/>
+<fmt:setLocale value="en_US" scope="page"/>
 
 <%@ include file="/WEB-INF/jspf/header.jspf" %>
 <%@ include file="/WEB-INF/jspf/trip-hero.jspf" %>
@@ -128,13 +128,13 @@
             <h4 class="mb-4">
                 <c:choose>
                     <c:when test="${not empty expense}">
-                        Chỉnh sửa khoản chi
+                        Edit expense
                     </c:when>
                     <c:otherwise>
-                        Thêm khoản chi
+                        Add expense
                     </c:otherwise>
                 </c:choose>
-                cho "<c:out value="${trip.name}"/>"
+                for "<c:out value="${trip.name}"/>"
             </h4>
 
             <c:if test="${not empty error}">
@@ -158,7 +158,7 @@
 
                 <div class="mb-3">
                     <label for="description" class="form-label">
-                        Mô tả
+                        Description
                     </label>
 
                     <input type="text"
@@ -167,14 +167,14 @@
                            maxlength="200"
                            class="form-control"
                            value="<c:out value='${expense.description}'/>"
-                           placeholder="VD: Ăn trưa quán A"
+                           placeholder="e.g. Lunch at Restaurant A"
                            required>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="amount" class="form-label">
-                            Số tiền (đ)
+                            Amount (VND)
                         </label>
 
                         <input type="number"
@@ -189,7 +189,7 @@
 
                     <div class="col-md-6 mb-3">
                         <label id="payerLabel" for="payerId" class="form-label">
-                            Người trả
+                            Paid by
                         </label>
 
                         <select id="payerId"
@@ -215,7 +215,7 @@
 
                 <div class="mb-3">
                     <label class="form-label d-flex justify-content-between">
-                        Người tham gia chia đều
+                        Split between participants
 
                         <span class="form-check form-check-inline">
                             <input type="checkbox"
@@ -224,7 +224,7 @@
 
                             <label class="form-check-label"
                                    for="selectAllParticipants">
-                                Chọn tất cả
+                                Select all
                             </label>
                         </span>
                     </label>
@@ -261,29 +261,29 @@
                                </c:if>>
 
                         <label class="form-check-label fw-bold" for="fromFund">
-                            Chi từ quỹ nhóm
+                            Paid from group fund
                         </label>
                     </div>
 
                     <div class="small text-muted ms-4 mt-1">
-                        Trưởng nhóm được chọn làm người trả mặc định. Bạn vẫn có thể đổi người trả.
+                        Trip Lead is selected as default payer. You can change the payer if needed.
                     </div>
                 </div>
 
                 <button type="submit" class="btn btn-brand">
                     <c:choose>
                         <c:when test="${not empty expense}">
-                            Lưu thay đổi
+                            Save changes
                         </c:when>
                         <c:otherwise>
-                            Lưu khoản chi
+                            Save expense
                         </c:otherwise>
                     </c:choose>
                 </button>
 
                 <a href="${pageContext.request.contextPath}/expenses?tripId=${trip.id}"
                    class="btn btn-outline-secondary">
-                    Hủy
+                    Cancel
                 </a>
             </form>
         </div>

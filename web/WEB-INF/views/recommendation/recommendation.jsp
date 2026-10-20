@@ -2,9 +2,9 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<c:set var="pageTitle" value="Gợi ý địa điểm" scope="request"/>
+<c:set var="pageTitle" value="Place suggestions" scope="request"/>
 <c:set var="currentTrip" value="${trip}" scope="request"/>
-<fmt:setLocale value="vi_VN" scope="page"/>
+<fmt:setLocale value="en_US" scope="page"/>
 
 <%@ include file="/WEB-INF/jspf/header.jspf" %>
 <%@ include file="/WEB-INF/jspf/trip-hero.jspf" %>
@@ -178,31 +178,29 @@
     <section class="rd-card" aria-labelledby="recommendation-title">
         <div class="rd-card-heading">
             <div>
-                <h2 id="recommendation-title">Gợi ý địa điểm</h2>
+                <h2 id="recommendation-title">Place Suggestions</h2>
                 <p class="rd-sub">
-                    Khám phá địa điểm phù hợp với khu vực,
-                    sở thích và ngân sách của chuyến đi.
+                    Discover places matching your destination area, group preferences, and budget.
                 </p>
             </div>
 
             <span class="rd-count">
                 <c:out value="${empty recommendations ? 0 : recommendations.size()}"/>
-                địa điểm
+                places
             </span>
         </div>
 
         <c:choose>
             <c:when test="${empty recommendations}">
                 <div class="rd-rec-empty">
-                    <h3>Chưa tìm thấy địa điểm phù hợp</h3>
+                    <h3>No matching places found</h3>
                     <p>
-                        Hãy kiểm tra khu vực chuyến đi và sở thích
-                        của các thành viên để tìm thêm gợi ý.
+                        Check your trip area and member preferences to find more curated recommendations.
                     </p>
 
                     <a href="${pageContext.request.contextPath}/preferences?tripId=${trip.id}"
                        class="btn btn-brand mt-3">
-                        Chọn sở thích của tôi
+                        Choose my preferences
                     </a>
                 </div>
             </c:when>
@@ -222,7 +220,7 @@
                                             value="${rec.score}"
                                             maxFractionDigits="0"/>
                                     </strong>
-                                    <small>Điểm gợi ý</small>
+                                    <small>Score</small>
                                 </div>
                             </div>
 
@@ -233,42 +231,42 @@
                                 </p>
 
                                 <p>
-                                    Đánh giá:
+                                    Rating:
                                     <c:out value="${rec.place.rating}"/> / 5
                                 </p>
 
                                 <c:if test="${not empty rec.place.address}">
                                     <p>
-                                        Địa chỉ:
+                                        Address:
                                         <c:out value="${rec.place.address}"/>
                                     </p>
                                 </c:if>
 
                                 <p>
-                                    Chi phí dự kiến:
+                                    Estimated price:
                                     <strong>
                                         <fmt:formatNumber
                                             value="${rec.place.estimatedPrice}"
-                                            maxFractionDigits="0"/> đ
+                                            maxFractionDigits="0"/> VND
                                     </strong>
                                 </p>
                             </div>
 
                             <div class="rd-rec-reason">
                                 <p>
-                                    <strong>Vì sao được gợi ý?</strong><br>
+                                    <strong>Why suggested?</strong><br>
                                     <c:out value="${rec.reason}"/>
                                 </p>
 
                                 <div>
-                                    Phù hợp sở thích:
+                                    Preference match:
                                     <fmt:formatNumber
                                         value="${rec.preferenceMatch}"
                                         maxFractionDigits="0"/>%
                                 </div>
 
                                 <div>
-                                    Phù hợp ngân sách:
+                                    Budget match:
                                     <fmt:formatNumber
                                         value="${rec.budgetMatch}"
                                         maxFractionDigits="0"/>%
@@ -290,14 +288,14 @@
 
                                         <button type="submit"
                                                 class="btn btn-brand btn-sm">
-                                            + Thêm vào lịch trình
+                                            + Add to itinerary
                                         </button>
                                     </form>
                                 </c:if>
 
                                 <a href="${pageContext.request.contextPath}/places/detail?placeId=${rec.place.id}&amp;tripId=${trip.id}"
                                    class="btn btn-outline-secondary btn-sm">
-                                    Xem chi tiết
+                                    View details
                                 </a>
                             </div>
                         </article>
@@ -310,42 +308,41 @@
     <aside class="rd-card rd-rec-guide"
            aria-labelledby="recommendation-guide-title">
 
-        <span class="rd-count">Từ sở thích đến hành trình</span>
+        <span class="rd-count">From preferences to journey</span>
 
         <h2 id="recommendation-guide-title">
-            Chọn điểm đến cùng nhóm
+            Select Group Destinations
         </h2>
 
         <p class="rd-sub">
-            So sánh điểm gợi ý, chi phí và thông tin địa điểm
-            trước khi đưa vào lịch trình.
+            Compare recommendation scores, estimated prices, and spot details
+            before adding them to your schedule.
         </p>
 
         <ol>
-            <li>Xem sở thích chung của các thành viên.</li>
-            <li>Chọn địa điểm phù hợp với nhóm.</li>
+            <li>Review common preferences submitted by members.</li>
+            <li>Select suitable spots for the group.</li>
             <li>
-                Trưởng nhóm thêm địa điểm và chọn ngày,
-                giờ trong lịch trình.
+                Trip Lead adds places with dates and times to the itinerary.
             </li>
         </ol>
 
         <div class="rd-rec-links">
             <a href="${pageContext.request.contextPath}/preferences/group?tripId=${trip.id}"
                class="btn btn-outline-secondary">
-                Xem sở thích nhóm
+                View group preferences
             </a>
 
             <a href="${pageContext.request.contextPath}/itinerary?tripId=${trip.id}"
                class="btn btn-outline-secondary">
-                Xem lịch trình
+                View itinerary
             </a>
         </div>
 
         <c:if test="${trip.role != 'OWNER'}">
             <p class="rd-help mt-3">
-                Bạn có thể xem và trao đổi với nhóm.
-                Trưởng nhóm là người thêm địa điểm vào lịch trình.
+                You can explore suggestions and discuss with the group.
+                The Trip Lead is responsible for adding places to the itinerary.
             </p>
         </c:if>
     </aside>

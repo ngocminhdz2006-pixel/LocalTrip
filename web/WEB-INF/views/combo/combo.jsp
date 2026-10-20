@@ -1,11 +1,11 @@
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@page import="java.util.List,model.Place,model.Trip"%>
+<%@page import="java.util.List,model.Place,model.Trip,utils.HtmlUtil"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<c:set var="pageTitle" value="Combo địa điểm" scope="request"/>
+<c:set var="pageTitle" value="Curated Combos" scope="request"/>
 <c:set var="currentTrip" value="${trip}" scope="request"/>
-<fmt:setLocale value="vi_VN" scope="page"/>
+<fmt:setLocale value="en_US" scope="page"/>
 
 <%@ include file="/WEB-INF/jspf/header.jspf" %>
 <%
@@ -13,7 +13,7 @@
     String profile = (String) request.getAttribute("profile");
     String visitDate = (String) request.getAttribute("visitDate");
     List<Place> comboPlaces = (List<Place>) request.getAttribute("comboPlaces");
-    String profileName = "summer".equals(profile) ? "Mùa hạ" : ("autumn".equals(profile) ? "Mùa thu" : ("winter".equals(profile) ? "Mùa đông" : "Mùa xuân"));
+    String profileName = "summer".equals(profile) ? "Summer Cool" : ("autumn".equals(profile) ? "Autumn Walk" : ("winter".equals(profile) ? "Winter Evening" : "Spring Fresh"));
     String profileIcon = "summer".equals(profile) ? "☀️" : ("autumn".equals(profile) ? "🍂" : ("winter".equals(profile) ? "❄️" : "🌸"));
     java.util.Map<String, String> savedDraft = (java.util.Map<String, String>) request.getAttribute("comboDraft");
     String message = request.getParameter("message");
@@ -39,249 +39,171 @@
     .rd-page .season-note {
         font-size: 13px;
         color: var(--ink2);
-        line-height: 1.7;
-        margin-top: 10px;
-    }
-
-    .rd-page .combo-profiles {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 16px;
-        margin: 0 0 22px;
-    }
-
-    .rd-page .combo-profile {
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        padding: 0;
-        border: 1px solid var(--line);
-        border-radius: 18px;
-        color: var(--ink);
-        background: #fff;
-        box-shadow: none;
-        text-decoration: none;
-        min-width: 0;
-    }
-
-    .rd-page .combo-profile:hover {
-        transform: none;
-        border-color: var(--green2);
-        box-shadow: none;
-    }
-
-    .rd-page .combo-profile.active {
-        border: 2px solid var(--green);
-        background: var(--mint);
-        box-shadow: none;
-    }
-
-    .rd-page .combo-profile-image {
-        display: block;
-        width: 100%;
-        height: 155px;
-        object-fit: cover;
-        background: var(--mint);
-    }
-
-    .combo-profile-content {
-        display: block;
-        padding: 16px;
-    }
-
-    .rd-page .combo-profile strong {
-        display: block;
-        margin: 6px 0 8px;
-        font-size: 17px;
-        color: var(--ink);
-    }
-
-    .combo-profile small {
-        display: block;
-        font-size: 13px;
-        line-height: 1.7;
-        color: var(--ink2);
-    }
-
-    .combo-image-credit {
-        display: block;
-        margin-top: 10px;
-        font-size: 11px;
-        color: var(--ink2);
         line-height: 1.6;
     }
 
-    .rd-page .combo-controls {
+    .combo-profiles {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .combo-profile {
         display: flex;
-        gap: 12px;
-        align-items: end;
-        flex-wrap: wrap;
-        padding: 22px;
-        background: #fff;
+        flex-direction: column;
         border: 1px solid var(--line);
-        border-radius: 18px;
-        margin-bottom: 26px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fff;
+        text-decoration: none;
+        color: inherit;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .combo-profile:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    .combo-profile.active {
+        border-color: var(--green);
+        box-shadow: 0 0 0 2px var(--green);
+    }
+
+    .combo-profile-image {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+    }
+
+    .combo-profile-content {
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .combo-profile-content strong {
+        font-size: 14px;
+        color: var(--ink);
+    }
+
+    .combo-profile-content small {
+        font-size: 11px;
+        color: var(--ink2);
+        line-height: 1.4;
+    }
+
+    .combo-image-credit {
+        font-size: 10px;
+        color: #94a3b8;
+        margin-top: 4px;
+    }
+
+    .combo-controls {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        background: #fff;
+        padding: 16px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
     }
 
     .combo-controls label {
-        display: block;
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 600;
-        margin-bottom: 7px;
-        color: var(--ink2);
+        margin-bottom: 4px;
+        display: block;
     }
 
-    .rd-page .combo-controls input {
-        font: inherit;
-        padding: 11px 14px;
+    .combo-controls input[type="date"] {
+        padding: 8px 12px;
         border: 1px solid var(--line);
-        border-radius: 11px;
-        background: #fff;
-        color: var(--ink);
-        min-height: 46px;
-        max-width: 100%;
-    }
-
-    .rd-page .combo-wrap > h2 {
-        font-size: 23px;
-        margin: 0 0 8px;
-    }
-
-    .rd-page .combo-wrap > p {
+        border-radius: 8px;
         font-size: 14px;
-        color: var(--ink2);
-        line-height: 1.7;
+    }
+
+    .combo-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        background: var(--green);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .combo-btn:hover {
+        background: var(--green-hover, #114633);
+        color: #fff;
+    }
+
+    .combo-btn.secondary {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--ink);
+    }
+
+    .combo-list {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
         margin-bottom: 20px;
     }
 
-    .rd-page .combo-list {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 18px;
-        margin-top: 20px;
-    }
-
-    .rd-page .combo-card {
-        min-width: 0;
+    .combo-card {
+        background: #fff;
         border: 1px solid var(--line);
-        border-radius: 18px;
-        padding: 22px;
-        background: #fff;
-        box-shadow: none;
-    }
-
-    .rd-page .combo-card h3 {
-        font-family: inherit;
-        font-size: 19px;
-        font-weight: 700;
-        line-height: 1.5;
-        margin: 0 0 18px;
-        color: var(--ink);
-    }
-
-    .rd-page .combo-card .row {
-        row-gap: 0;
-    }
-
-    .combo-meta {
-        font-size: 13px;
-        color: var(--ink2);
-        line-height: 1.7;
-    }
-
-    .rd-page .combo-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 11px 18px;
-        border: 1px solid var(--green);
-        border-radius: 11px;
-        background: var(--green);
-        color: #fff;
-        font: 600 14px/1.5 "Be Vietnam Pro", "Segoe UI", sans-serif;
-        text-align: center;
-        text-decoration: none;
-        cursor: pointer;
-        min-height: 46px;
-    }
-
-    .rd-page .combo-btn:hover {
-        background: #174735;
-        color: #fff;
-    }
-
-    .rd-page .combo-btn.secondary {
-        background: #fff;
-        color: var(--green);
-        border-color: var(--line);
-    }
-
-    .rd-page .combo-btn.secondary:hover {
-        background: var(--mint);
-        color: var(--green);
-    }
-
-    .combo-alert {
-        padding: 14px 18px;
         border-radius: 12px;
-        background: var(--mint);
-        border: 1px solid #C9DECF;
+        padding: 16px;
+    }
+
+    .combo-card h3 {
+        font-size: 15px;
+        font-weight: 700;
         color: var(--green);
-        margin: 16px 0;
-        line-height: 1.7;
+        margin: 0 0 10px;
     }
 
     .combo-warning {
-        padding: 14px 18px;
-        border-radius: 12px;
-        background: var(--sunbg);
-        border: 1px solid #ECD79F;
-        color: #765300;
-        margin: 16px 0;
-        line-height: 1.7;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        color: #92400e;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        margin-bottom: 16px;
     }
 
-    @media (max-width: 1000px) {
-        .rd-page .combo-profiles {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .rd-page .combo-list {
-            grid-template-columns: minmax(0, 1fr);
-        }
+    .combo-alert {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        color: #065f46;
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        margin-bottom: 16px;
     }
 
-    @media (max-width: 600px) {
-        .rd-page .combo-profiles {
-            grid-template-columns: minmax(0, 1fr);
+    @media (max-width: 768px) {
+        .combo-profiles {
+            grid-template-columns: repeat(2, 1fr);
         }
-
-        .rd-page .combo-profile-image {
-            height: 190px;
-        }
-
-        .rd-page .combo-controls {
-            padding: 20px;
-            align-items: stretch;
-            flex-direction: column;
-        }
-
-        .combo-controls > div,
-        .combo-controls input,
-        .combo-controls .combo-btn {
-            width: 100%;
-        }
-
-        .rd-page .combo-card {
-            padding: 20px;
-        }
-
-        .combo-wrap > form > .combo-btn {
-            width: 100%;
-            margin-top: 10px;
+        .combo-list {
+            grid-template-columns: 1fr;
         }
     }
 </style>
+
 <div class="combo-wrap">
     <%@ include file="/WEB-INF/jspf/trip-hero.jspf" %>
     <%@ include file="/WEB-INF/jspf/trip-tabs.jspf" %>
@@ -289,10 +211,9 @@
     <section class="rd-card combo-intro">
         <div class="rd-card-heading">
             <div>
-                <h2>Combo địa điểm</h2>
+                <h2>Curated Combos</h2>
                 <p class="rd-sub">
-                    Chọn chủ đề và ngày, xem trước rồi chỉnh
-                    lịch trình trước khi xác nhận.
+                    Select a theme and date, preview curated options, and adjust schedule before confirming.
                 </p>
             </div>
 
@@ -302,42 +223,48 @@
         </div>
 
         <p class="season-note">
-            TP.HCM có hai mùa khí hậu chính.
-            Bốn mùa dưới đây là bốn chủ đề trải nghiệm
-            để nhóm chọn phong cách khám phá.
+            Each combo theme offers a balanced combination of sightseeing, dining, coffee breaks, and rest.
         </p>
     </section>
+
     <% if (message != null && !message.trim().isEmpty()) {%><div class="combo-alert"><%= HtmlUtil.escape(message)%></div><% } %>
     <% if (error != null) {%><div class="combo-warning"><%= HtmlUtil.escape(error)%></div><% }%>
+
     <div class="combo-profiles">
         <a class="combo-profile <%= "spring".equals(profile) ? "active" : ""%>" href="<%= request.getContextPath()%>/combo?tripId=<%= comboTrip.getTripId()%>&profile=spring&date=<%= visitDate%>">
-            <img class="combo-profile-image" loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/Tao_Dan_Park,_Ho_Chi_Minh_City.jpg?width=900" alt="Công viên Tao Đàn tại TP.HCM" onerror="this.onerror=null;this.src='https://commons.wikimedia.org/wiki/Special:FilePath/Tao_Dan_Park.jpg?width=900';">
-            <span class="combo-profile-content"><span aria-hidden="true">🌸</span><strong>Mùa xuân</strong><small>Du xuân, công viên, đường hoa và trải nghiệm văn hóa.</small><span class="combo-image-credit">Địa điểm tham khảo: Công viên Tao Đàn</span></span>
+            <img class="combo-profile-image" loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/Tao_Dan_Park,_Ho_Chi_Minh_City.jpg?width=900" alt="Tao Dan Park" onerror="this.onerror=null;this.src='https://commons.wikimedia.org/wiki/Special:FilePath/Tao_Dan_Park.jpg?width=900';">
+            <span class="combo-profile-content"><span aria-hidden="true">🌸</span><strong>Spring Fresh</strong><small>Parks, flower walks, and cultural discovery.</small><span class="combo-image-credit">Reference spot: Tao Dan Park</span></span>
         </a>
         <a class="combo-profile <%= "summer".equals(profile) ? "active" : ""%>" href="<%= request.getContextPath()%>/combo?tripId=<%= comboTrip.getTripId()%>&profile=summer&date=<%= visitDate%>">
-            <img class="combo-profile-image" loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/War_Remnants_Museum,_Ho_Chi_Minh_City.jpg?width=900" alt="Bảo tàng Chứng tích Chiến tranh tại TP.HCM" onerror="this.onerror=null;this.src='https://commons.wikimedia.org/wiki/Special:FilePath/War_Remnants_Museum.jpg?width=900';">
-            <span class="combo-profile-content"><span aria-hidden="true">☀️</span><strong>Mùa hạ</strong><small>Ưu tiên điểm trong nhà, bảo tàng, trung tâm thương mại và quán cà phê.</small><span class="combo-image-credit">Địa điểm tham khảo: Bảo tàng Chứng tích Chiến tranh</span></span>
+            <img class="combo-profile-image" loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/War_Remnants_Museum,_Ho_Chi_Minh_City.jpg?width=900" alt="War Remnants Museum" onerror="this.onerror=null;this.src='https://commons.wikimedia.org/wiki/Special:FilePath/War_Remnants_Museum.jpg?width=900';">
+            <span class="combo-profile-content"><span aria-hidden="true">☀️</span><strong>Summer Cool</strong><small>Indoor exhibitions, museums, and air-conditioned cafes.</small><span class="combo-image-credit">Reference spot: War Remnants Museum</span></span>
         </a>
         <a class="combo-profile <%= "autumn".equals(profile) ? "active" : ""%>" href="<%= request.getContextPath()%>/combo?tripId=<%= comboTrip.getTripId()%>&profile=autumn&date=<%= visitDate%>">
-            <img class="combo-profile-image" loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/Ho_Chi_Minh_City,_Central_Post_Office,_2020-01_CN-02.jpg?width=900" alt="Bưu điện Trung tâm Sài Gòn" onerror="this.onerror=null;this.src='https://commons.wikimedia.org/wiki/Special:FilePath/Saigon_Central_Post_Office_%2814585530306%29.jpg?width=900';">
-            <span class="combo-profile-content"><span aria-hidden="true">🍂</span><strong>Mùa thu</strong><small>Dạo phố, ngắm kiến trúc, khám phá bảo tàng và cà phê.</small><span class="combo-image-credit">Địa điểm tham khảo: Bưu điện Trung tâm Sài Gòn</span></span>
+            <img class="combo-profile-image" loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/Ho_Chi_Minh_City,_Central_Post_Office,_2020-01_CN-02.jpg?width=900" alt="Central Post Office" onerror="this.onerror=null;this.src='https://commons.wikimedia.org/wiki/Special:FilePath/Saigon_Central_Post_Office_%2814585530306%29.jpg?width=900';">
+            <span class="combo-profile-content"><span aria-hidden="true">🍂</span><strong>Autumn Walk</strong><small>City strolls, architecture, museums, and artisanal coffee.</small><span class="combo-image-credit">Reference spot: Central Post Office</span></span>
         </a>
         <a class="combo-profile <%= "winter".equals(profile) ? "active" : ""%>" href="<%= request.getContextPath()%>/combo?tripId=<%= comboTrip.getTripId()%>&profile=winter&date=<%= visitDate%>">
-            <img class="combo-profile-image" loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/20180413_215356Nguy%E1%BB%85n_Hu%E1%BB%87_Walking_Street.jpg?width=900" alt="Phố đi bộ Nguyễn Huệ về đêm" onerror="this.onerror=null;this.src='https://commons.wikimedia.org/wiki/Special:FilePath/Ho_Chi_Minh_City,_Nguyen_Hue_Street,_2020-01_CN-04.jpg?width=900';">
-            <span class="combo-profile-content"><span aria-hidden="true">❄️</span><strong>Mùa đông</strong><small>Ngắm phố đêm, thưởng thức món nóng và khám phá trung tâm.</small><span class="combo-image-credit">Địa điểm tham khảo: Phố đi bộ Nguyễn Huệ</span></span>
+            <img class="combo-profile-image" loading="lazy" src="https://commons.wikimedia.org/wiki/Special:FilePath/20180413_215356Nguy%E1%BB%85n_Hu%E1%BB%87_Walking_Street.jpg?width=900" alt="Nguyen Hue Walking Street" onerror="this.onerror=null;this.src='https://commons.wikimedia.org/wiki/Special:FilePath/Ho_Chi_Minh_City,_Nguyen_Hue_Street,_2020-01_CN-04.jpg?width=900';">
+            <span class="combo-profile-content"><span aria-hidden="true">❄️</span><strong>Winter Evening</strong><small>Night walks, warm culinary treats, and illuminated center.</small><span class="combo-image-credit">Reference spot: Nguyen Hue Walking Street</span></span>
         </a>
     </div>
+
     <form class="combo-controls" method="get" action="<%= request.getContextPath()%>/combo">
         <input type="hidden" name="tripId" value="<%= comboTrip.getTripId()%>">
         <input type="hidden" name="profile" value="<%= profile%>">
-        <div><label for="date">Ngày áp dụng combo</label><input id="date" type="date" name="date" value="<%= visitDate%>" min="<%= request.getAttribute("comboMinimumDate")%>" max="<%= comboTrip.getEndDate()%>" required></div>
-        <button class="combo-btn" type="submit">Tạo combo cho ngày này</button>
-        <a class="combo-btn secondary" href="<%= request.getContextPath()%>/itinerary?tripId=<%= comboTrip.getTripId()%>">Xem lịch trình</a>
+        <div>
+            <label for="date">Apply combo for date</label>
+            <input id="date" type="date" name="date" value="<%= visitDate%>" min="<%= request.getAttribute("comboMinimumDate")%>" max="<%= comboTrip.getEndDate()%>" required>
+        </div>
+        <button class="combo-btn" type="submit">Generate combo for this date</button>
+        <a class="combo-btn secondary" href="<%= request.getContextPath()%>/itinerary?tripId=<%= comboTrip.getTripId()%>">View itinerary</a>
     </form>
-    <h2>Combo <%= profileName%></h2>
-    <p>Khu vực: <strong><%= HtmlUtil.escape(comboTrip.getDestination())%></strong>. Lịch trình có tham quan, bữa ăn, đồ uống và thời gian nghỉ/di chuyển.</p>
+
+    <h2>Combo: <%= profileName%></h2>
+    <p>Destination area: <strong><%= HtmlUtil.escape(comboTrip.getDestination())%></strong>. Itinerary covers sightseeing, meal, drinks, and rest.</p>
+
     <% if (comboPlaces == null || comboPlaces.isEmpty()) { %>
-    <div class="combo-warning">Khu vực này chưa đủ địa điểm cho combo gồm tham quan, bữa ăn và đồ uống. Bạn có thể tự soạn lịch trình.</div>
+    <div class="combo-warning">This area does not have enough places for a full combo. You can customize the itinerary manually.</div>
     <% } else {%>
     <form method="post" action="<%= request.getContextPath()%>/combo">
         <input type="hidden" name="tripId" value="<%= comboTrip.getTripId()%>">
@@ -352,7 +279,7 @@
             %>
             <article class="combo-card">
                 <h3><%= controller.ComboServlet.slotLabel(idx)%></h3>
-                <label for="comboPlace<%= idx%>" class="form-label">Địa điểm</label>
+                <label for="comboPlace<%= idx%>" class="form-label">Destination</label>
                 <select id="comboPlace<%= idx%>" class="form-select" name="placeId<%= idx%>" required>
                     <% for (Place option : (List<Place>) request.getAttribute("comboCandidates")) {
                             if (!controller.ComboServlet.slotMatches(option, idx)) {
@@ -364,21 +291,21 @@
                     <% }%>
                 </select>
                 <div class="row mt-2">
-                    <div class="col-6"><label class="form-label" for="comboStart<%= idx%>">Bắt đầu</label><input id="comboStart<%= idx%>" class="form-control" type="time" name="start<%= idx%>" value="<%= HtmlUtil.escape(savedDraft == null ? starts[idx] : savedDraft.get("start" + idx))%>" required></div>
-                    <div class="col-6"><label class="form-label" for="comboEnd<%= idx%>">Kết thúc</label><input id="comboEnd<%= idx%>" class="form-control" type="time" name="end<%= idx%>" value="<%= HtmlUtil.escape(savedDraft == null ? ends[idx] : savedDraft.get("end" + idx))%>" required></div>
+                    <div class="col-6"><label class="form-label" for="comboStart<%= idx%>">Start</label><input id="comboStart<%= idx%>" class="form-control" type="time" name="start<%= idx%>" value="<%= HtmlUtil.escape(savedDraft == null ? starts[idx] : savedDraft.get("start" + idx))%>" required></div>
+                    <div class="col-6"><label class="form-label" for="comboEnd<%= idx%>">End</label><input id="comboEnd<%= idx%>" class="form-control" type="time" name="end<%= idx%>" value="<%= HtmlUtil.escape(savedDraft == null ? ends[idx] : savedDraft.get("end" + idx))%>" required></div>
                 </div>
-                <p class="combo-meta mt-3 combo-selected-meta">Gợi ý: <%= HtmlUtil.escape(p.getAddress())%><br>Chi phí tham khảo: <%= p.getEstimatedCost() == null ? "0" : p.getEstimatedCost().toPlainString()%> đ</p>
+                <p class="combo-meta mt-3 combo-selected-meta">Address: <%= HtmlUtil.escape(p.getAddress())%><br>Estimated reference cost: <%= p.getEstimatedCost() == null ? "0" : p.getEstimatedCost().toPlainString()%> VND</p>
             </article>
             <% idx++;
                 } %>
         </div>
-        <p class="mt-3">Bạn có thể đổi địa điểm và giờ. Giữ ít nhất 15 phút giữa các hoạt động để nghỉ và di chuyển. Combo chỉ được lưu sau khi xác nhận.</p>
+        <p class="mt-3">You can adjust places and times. Keep at least 15 minutes between activities for travel. Combo is saved upon confirmation.</p>
         <% if (Boolean.TRUE.equals(request.getAttribute("comboEditable"))) {%>
-        <button class="combo-btn" type="submit">Xác nhận lịch trình ngày <%= visitDate%></button>
+        <button class="combo-btn" type="submit">Confirm itinerary for <%= visitDate%></button>
         <% } else { %>
-        <div class="combo-warning">Chỉ trưởng nhóm được xác nhận combo; ngày áp dụng phải chưa qua và chuyến đi phải còn cho phép chỉnh sửa.</div>
+        <div class="combo-warning">Only the Trip Lead can confirm combos for upcoming days on editable trips.</div>
         <% }%>
-        <a class="combo-btn secondary" href="<%= request.getContextPath()%>/itinerary?tripId=<%= comboTrip.getTripId()%>">Xem lịch đã lưu</a>
+        <a class="combo-btn secondary" href="<%= request.getContextPath()%>/itinerary?tripId=<%= comboTrip.getTripId()%>">View saved itinerary</a>
     </form>
     <% }%>
 </div>

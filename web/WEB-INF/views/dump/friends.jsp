@@ -1,97 +1,65 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<c:set var="pageTitle" value="Bạn bè" scope="request" />
+<c:set var="pageTitle" value="Friends" scope="request" />
 <c:set var="tripRedesign" value="${true}" scope="request" />
 
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
-<section class="rd-hero mb-4">
-    <div class="rd-hero-top">
-        <div>
-            <div class="small text-white-50 mb-2">
-                LOCALTRIP · KẾT NỐI BẠN ĐỒNG HÀNH
-            </div>
+<div class="lt-friends-container">
 
-            <h1 class="mb-2">Kết nối bạn bè</h1>
+    <%-- 1. Header Bar: Friends Title + NFC Badge --%>
+    <div class="lt-friends-header-bar">
+        <h1 class="lt-friends-header-title">Friends</h1>
+        <span class="lt-nfc-badge">NFC Ready</span>
+    </div>
 
-            <p class="text-white mb-0">
-                Tìm bạn đồng hành và chia sẻ những trải nghiệm.
-                Người đã chấp nhận kết bạn mới xem được
-                nhật ký ở chế độ Bạn bè.
-            </p>
+    <%-- Thông báo phản hồi --%>
+    <c:if test="${not empty sessionScope.errorMessage}">
+        <div class="alert alert-danger" role="alert" style="border-radius: 12px; font-size: 12px; margin-bottom: 12px;">
+            <c:out value="${sessionScope.errorMessage}" />
         </div>
+        <c:remove var="errorMessage" scope="session" />
+    </c:if>
 
-        <a class="rd-back"
-           href="${pageContext.request.contextPath}/dump">
-            ← Quay lại nhật ký
-        </a>
+    <c:if test="${not empty sessionScope.successMessage}">
+        <div class="alert alert-success" role="status" style="border-radius: 12px; font-size: 12px; margin-bottom: 12px;">
+            <c:out value="${sessionScope.successMessage}" />
+        </div>
+        <c:remove var="successMessage" scope="session" />
+    </c:if>
+
+    <%-- 2. Search Bar: Search kiếm bạn bè từ xa --%>
+    <div class="lt-friends-search-box">
+        <form method="get" action="${pageContext.request.contextPath}/dump/friends" class="lt-search-input-wrap">
+            <svg class="lt-search-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="search"
+                   name="q"
+                   minlength="2"
+                   value="<c:out value='${keyword}'/>"
+                   placeholder="Search by name or email..."
+                   class="lt-search-input" />
+            <button type="submit" class="lt-search-submit-btn">Search</button>
+        </form>
     </div>
-</section>
 
-<c:if test="${not empty sessionScope.errorMessage}">
-    <div class="alert alert-danger" role="alert">
-        <c:out value="${sessionScope.errorMessage}" />
-    </div>
-    <c:remove var="errorMessage" scope="session" />
-</c:if>
-
-<c:if test="${not empty sessionScope.successMessage}">
-    <div class="alert alert-success" role="status">
-        <c:out value="${sessionScope.successMessage}" />
-    </div>
-    <c:remove var="successMessage" scope="session" />
-</c:if>
-
-<div class="row g-4">
-    <div class="col-12 col-lg-7">
-        <section class="rd-card">
-            <h2 class="h4 mb-2">Tìm bạn đồng hành</h2>
-
-            <p class="text-muted mb-4">
-                Nhập tên hoặc email tài khoản LocalTrip.
-            </p>
-
-            <form method="get"
-                  action="${pageContext.request.contextPath}/dump/friends"
-                  class="row g-2">
-
-                <div class="col-12 col-sm">
-                    <label for="friendKeyword" class="visually-hidden">
-                        Tên hoặc email
-                    </label>
-
-                    <input type="search"
-                           class="form-control"
-                           id="friendKeyword"
-                           name="q"
-                           minlength="2"
-                           value="<c:out value='${keyword}'/>"
-                           placeholder="Tên hoặc email, ít nhất 2 ký tự">
-                </div>
-
-                <div class="col-12 col-sm-auto">
-                    <button class="btn btn-primary w-100"
-                            type="submit">
-                        Tìm kiếm
-                    </button>
-                </div>
-            </form>
-
+    <%-- Search results nếu có keyword --%>
+    <c:if test="${not empty keyword or not empty searchResults}">
+        <section class="lt-friends-section">
+            <div class="lt-friends-section-head">
+                <h2 class="lt-friends-section-title">Search results</h2>
+                <span class="lt-friends-subtext">${fn:length(searchResults)} results</span>
+            </div>
             <c:choose>
                 <c:when test="${not empty searchResults}">
-                    <div class="border-top mt-4 pt-3">
-                        <h3 class="h6 mb-3">Kết quả tìm kiếm</h3>
-
-                        <c:forEach items="${searchResults}" var="person">
-                            <div class="d-flex flex-wrap align-items-center
-                                        gap-3 border-bottom py-3">
-
-                                <div class="rounded-circle d-flex
-                                            align-items-center justify-content-center
-                                            flex-shrink-0 text-white"
-                                     style="width:44px;height:44px;background:var(--green);">
+                    <c:forEach items="${searchResults}" var="person">
+                        <div class="lt-friend-item">
+                            <div class="lt-friend-profile">
+                                <div class="lt-friend-avatar-wrap">
                                     <c:choose>
                                         <c:when test="${not empty person.fullName}">
                                             <c:out value="${fn:substring(person.fullName, 0, 1)}" />
@@ -99,165 +67,384 @@
                                         <c:otherwise>?</c:otherwise>
                                     </c:choose>
                                 </div>
-
-                                <div class="flex-grow-1"
-                                     style="min-width:0;overflow-wrap:anywhere;">
-                                    <strong class="d-block">
-                                        <c:out value="${person.fullName}" />
-                                    </strong>
-
-                                    <span class="small text-muted">
-                                        <c:out value="${person.email}" />
-                                    </span>
+                                <div>
+                                    <h4 class="lt-friend-name"><c:out value="${person.fullName}" /></h4>
+                                    <p class="lt-friend-sub" style="color: #64748b;"><c:out value="${person.email}" /></p>
                                 </div>
-
-                                <c:choose>
-                                    <c:when test="${person.status eq 'ACCEPTED'}">
-                                        <span class="rd-count">Bạn bè</span>
-                                    </c:when>
-
-                                    <c:when test="${person.status eq 'PENDING'
-                                                  and person.requesterId eq sessionScope.user.userId}">
-                                        <span class="rd-role">
-                                            Đã gửi lời mời
-                                        </span>
-                                    </c:when>
-
-                                    <c:when test="${person.status eq 'PENDING'}">
-                                        <span class="rd-role rd-role-lead">
-                                            Đang chờ bạn xử lý
-                                        </span>
-                                    </c:when>
-
-                                    <c:otherwise>
-                                        <form method="post"
-                                              action="${pageContext.request.contextPath}/dump/friends">
-                                            <input type="hidden"
-                                                   name="csrfToken"
-                                                   value="${sessionScope.travelCsrf}">
-
-                                            <input type="hidden"
-                                                   name="action"
-                                                   value="send">
-
-                                            <input type="hidden"
-                                                   name="targetUserId"
-                                                   value="${person.userId}">
-
-                                            <button class="btn btn-sm btn-outline-primary"
-                                                    type="submit">
-                                                + Kết bạn
-                                            </button>
-                                        </form>
-                                    </c:otherwise>
-                                </c:choose>
                             </div>
-                        </c:forEach>
-                    </div>
-                </c:when>
 
-                <c:when test="${not empty keyword}">
-                    <div class="border-top mt-4 pt-4">
-                        <p class="text-muted mb-0">
-                            Chưa tìm thấy người dùng phù hợp.
-                            Hãy thử tên hoặc email khác.
-                        </p>
-                    </div>
+                            <c:choose>
+                                <c:when test="${person.status eq 'ACCEPTED'}">
+                                    <span class="lt-btn-invite" style="background: #f1f5f9; color: #475569; border-color: #cbd5e1;">Friends</span>
+                                </c:when>
+                                <c:when test="${person.status eq 'PENDING' and person.requesterId eq sessionScope.user.userId}">
+                                    <form method="post" action="${pageContext.request.contextPath}/dump/friends" style="margin: 0; display: inline-flex; align-items: center; gap: 4px;">
+                                        <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
+                                        <input type="hidden" name="action" value="cancel">
+                                        <input type="hidden" name="targetUserId" value="${person.userId}">
+                                        <button class="lt-btn-invite" type="submit" style="background: #fef2f2; color: #dc2626; border-color: #fecaca; cursor: pointer;" title="Cancel sent friend request">
+                                            ✕ Cancel request
+                                        </button>
+                                    </form>
+                                </c:when>
+                                <c:when test="${person.status eq 'PENDING'}">
+                                    <span class="lt-btn-invite" style="background: #dbeafe; color: #1e40af; border-color: #bfdbfe;">Waiting for you</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <form method="post" action="${pageContext.request.contextPath}/dump/friends" style="margin: 0;">
+                                        <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
+                                        <input type="hidden" name="action" value="send">
+                                        <input type="hidden" name="targetUserId" value="${person.userId}">
+                                        <button class="lt-btn-invite" type="submit">+ Add friend</button>
+                                    </form>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                    </c:forEach>
                 </c:when>
-
                 <c:otherwise>
-                    <div class="border-top mt-4 pt-4">
-                        <p class="text-muted mb-0">
-                            Tìm người dùng để gửi lời mời kết bạn.
-                        </p>
-                    </div>
+                    <p style="font-size: 11px; color: #64748b; padding: 10px; text-align: center; background: #fff; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                        No matching users found. Try another search.
+                    </p>
                 </c:otherwise>
             </c:choose>
         </section>
+    </c:if>
+
+    <%-- 3. Connect with NFC Card (Instant Pairing) --%>
+    <div class="lt-nfc-pairing-card">
+        <div class="lt-nfc-card-top">
+            <div class="lt-nfc-card-info">
+                <span class="lt-nfc-pill">Instant Pairing</span>
+                <h2 class="lt-nfc-card-title">Connect with NFC</h2>
+                <p class="lt-nfc-card-desc">Tap an NFC tag or phone to open LocalTrip profile instantly.</p>
+            </div>
+            <div class="lt-nfc-icon-box">
+                <span>((•))</span>
+                <span>Tap Tag</span>
+            </div>
+        </div>
+
+        <%-- Dual Action Buttons: NFC + QR / Share link --%>
+        <div class="lt-nfc-actions-dual">
+            <button type="button" class="lt-btn-action-primary" onclick="triggerFriendNfcScan()">
+                <span>🏷️</span> My NFC tag
+            </button>
+            <button type="button" class="lt-btn-action-secondary" onclick="openQrModal()">
+                <span>🔳</span> QR / Share link
+            </button>
+        </div>
     </div>
 
-    <div class="col-12 col-lg-5">
-        <section class="rd-card">
-            <div class="d-flex justify-content-between
-                        align-items-center gap-2 mb-2">
-                <h2 class="h4 mb-0">Lời mời kết bạn</h2>
-
-                <span class="rd-count">
-                    ${fn:length(friendRequests)}
-                </span>
+    <%-- 4. Friend Requests (Friend requests nếu có) --%>
+    <c:if test="${not empty friendRequests}">
+        <section class="lt-friends-section">
+            <div class="lt-friends-section-head">
+                <h2 class="lt-friends-section-title">Friend requests</h2>
+                <span class="lt-friends-subtext">${fn:length(friendRequests)} requests</span>
             </div>
-
-            <p class="text-muted mb-4">
-                Những người đang muốn kết nối với bạn.
-            </p>
-
-            <c:choose>
-                <c:when test="${empty friendRequests}">
-                    <div class="border-top pt-4">
-                        <p class="text-muted mb-0">
-                            Bạn chưa có lời mời kết bạn mới.
-                        </p>
+            <c:forEach items="${friendRequests}" var="req">
+                <div class="lt-friend-item">
+                    <div class="lt-friend-profile">
+                        <div class="lt-friend-avatar-wrap">
+                            <c:out value="${fn:substring(req.fullName, 0, 1)}" />
+                        </div>
+                        <div>
+                            <h4 class="lt-friend-name"><c:out value="${req.fullName}" /></h4>
+                            <p class="lt-friend-sub" style="color: #64748b;"><c:out value="${req.email}" /></p>
+                        </div>
                     </div>
-                </c:when>
+                    <form method="post" action="${pageContext.request.contextPath}/dump/friends" style="display: flex; gap: 6px; margin: 0;">
+                        <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
+                        <input type="hidden" name="friendshipId" value="${req.friendshipId}">
+                        <button type="submit" name="action" value="accept" class="lt-btn-invite" style="background: #175b43; color: #fff;">Accept</button>
+                        <button type="submit" name="action" value="decline" class="lt-btn-invite" style="background: #f1f5f9; color: #475569; border-color: #e2e8f0;">Decline</button>
+                    </form>
+                </div>
+            </c:forEach>
+        </section>
+    </c:if>
 
-                <c:otherwise>
-                    <c:forEach items="${friendRequests}" var="friend">
-                        <div class="border-top py-3">
-                            <div class="d-flex align-items-center gap-3 mb-3">
-                                <div class="rounded-circle d-flex
-                                            align-items-center justify-content-center
-                                            flex-shrink-0 text-white"
-                                     style="width:44px;height:44px;background:var(--green);">
-                                    <c:choose>
-                                        <c:when test="${not empty friend.fullName}">
-                                            <c:out value="${fn:substring(friend.fullName, 0, 1)}" />
-                                        </c:when>
-                                        <c:otherwise>?</c:otherwise>
-                                    </c:choose>
-                                </div>
+    <%-- 5. My Friends List --%>
+    <section class="lt-friends-section">
+        <div class="lt-friends-section-head">
+            <h2 class="lt-friends-section-title">My Friends (${fn:length(friends)})</h2>
+            <span class="lt-friends-subtext">Online now</span>
+        </div>
 
-                                <div style="min-width:0;overflow-wrap:anywhere;">
-                                    <strong class="d-block">
-                                        <c:out value="${friend.fullName}" />
-                                    </strong>
+        <c:choose>
+            <c:when test="${empty friends}">
+                <div style="background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 16px; padding: 24px; text-align: center;">
+                    <p style="font-size: 13px; font-weight: 600; color: #1e293b; margin: 0 0 4px;">No friends connected yet</p>
+                    <p style="font-size: 11px; color: #64748b; margin: 0;">Search for friends above or tap NFC to connect instantly!</p>
+                </div>
+            </c:when>
 
-                                    <span class="small text-muted">
-                                        <c:out value="${friend.email}" />
-                                    </span>
-                                </div>
+            <c:otherwise>
+                <c:forEach items="${friends}" var="f">
+                    <div class="lt-friend-item">
+                        <div class="lt-friend-profile">
+                            <div class="lt-friend-avatar-wrap">
+                                <c:out value="${fn:substring(f.fullName, 0, 1)}" />
+                                <span class="lt-online-dot"></span>
                             </div>
-
-                            <form method="post"
-                                  action="${pageContext.request.contextPath}/dump/friends"
-                                  class="d-flex flex-wrap gap-2">
-                                <input type="hidden"
-                                       name="csrfToken"
-                                       value="${sessionScope.travelCsrf}">
-
-                                <input type="hidden"
-                                       name="friendshipId"
-                                       value="${friend.friendshipId}">
-
-                                <button type="submit"
-                                        class="btn btn-sm btn-primary"
-                                        name="action"
-                                        value="accept">
-                                    Chấp nhận
-                                </button>
-
-                                <button type="submit"
-                                        class="btn btn-sm btn-outline-secondary"
-                                        name="action"
-                                        value="decline">
-                                    Từ chối
+                            <div>
+                                <h4 class="lt-friend-name"><c:out value="${f.fullName}" /></h4>
+                                <p class="lt-friend-sub">Connected via LocalTrip</p>
+                            </div>
+                        </div>
+                        <div class="lt-friend-actions">
+                            <button type="button" class="lt-btn-invite lt-btn-invite-trip"
+                                    onclick="openTripInviteModal('${f.userId}', '<c:out value="${f.fullName}" escapeXml="true"/>', '<c:out value="${f.email}" escapeXml="true"/>')">
+                                + Invite to Trip
+                            </button>
+                            <form method="post" action="${pageContext.request.contextPath}/dump/friends"
+                                  onsubmit="return confirm('Remove <c:out value="${f.fullName}" escapeXml="true"/> from friends?');"
+                                  style="margin: 0;">
+                                <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
+                                <input type="hidden" name="action" value="unfriend">
+                                <input type="hidden" name="friendshipId" value="${f.friendshipId}">
+                                <input type="hidden" name="targetUserId" value="${f.userId}">
+                                <button type="submit" class="lt-btn-unfriend" title="Unfriend">
+                                    Unfriend
                                 </button>
                             </form>
                         </div>
-                    </c:forEach>
-                </c:otherwise>
-            </c:choose>
-        </section>
+                    </div>
+                </c:forEach>
+            </c:otherwise>
+        </c:choose>
+    </section>
+
+</div>
+
+<%-- Modal QR / Share Link Fallback --%>
+<div id="qrShareModal" class="lt-modal-backdrop" onclick="closeQrModal(event)">
+    <div class="lt-modal-card" onclick="event.stopPropagation()">
+        <h3 style="font-size: 15px; font-weight: 700; color: #143b2d; margin: 0 0 6px;">QR Code & Profile Link</h3>
+        <p style="font-size: 11px; color: #64748b; margin: 0 0 12px;">Scan this code with iPhone Camera or Android to view profile</p>
+        
+        <div class="lt-modal-qr-wrap">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${pageContext.request.scheme}://${pageContext.request.serverName}:${pageContext.request.serverPort}${pageContext.request.contextPath}/dump/friends?q=${sessionScope.user.email}"
+                 alt="Friend invite QR code" style="width: 160px; height: 160px; display: block; border-radius: 8px;">
+        </div>
+
+        <p style="font-size: 11px; font-weight: 600; color: #0f172a; margin: 8px 0 14px; word-break: break-all;">
+            ${sessionScope.user.fullName} (${sessionScope.user.email})
+        </p>
+
+        <div style="display: flex; gap: 8px;">
+            <button type="button" class="lt-btn-action-primary" style="flex: 1;" onclick="copyProfileLink()">
+                📋 Copy Link
+            </button>
+            <button type="button" class="lt-btn-action-secondary" style="flex: 1;" onclick="document.getElementById('qrShareModal').style.display='none'">
+                Close
+            </button>
+        </div>
     </div>
 </div>
+
+<%-- Modal Invite Friend to Planning Trip --%>
+<div id="tripInviteModal" class="lt-modal-backdrop" onclick="closeTripInviteModal(event)">
+    <div class="lt-modal-card" onclick="event.stopPropagation()" style="max-width: 420px; width: 92%;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <div>
+                <h3 style="font-size: 16px; font-weight: 700; color: #143b2d; margin: 0 0 4px;">Invite to Trip</h3>
+                <p style="font-size: 11.5px; color: #64748b; margin: 0;">
+                    Inviting <strong id="modalFriendName" style="color: #175b43;"></strong> (<span id="modalFriendEmail"></span>)
+                </p>
+            </div>
+            <button type="button" onclick="document.getElementById('tripInviteModal').style.display='none'"
+                    style="background: none; border: none; font-size: 18px; color: #94a3b8; cursor: pointer; padding: 0 4px;">✕</button>
+        </div>
+
+        <c:choose>
+            <c:when test="${not empty planningTrips}">
+                <form method="post" action="${pageContext.request.contextPath}/trip/member/add" style="margin: 0;">
+                    <input type="hidden" id="modalInviteEmail" name="email" value="">
+
+                    <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 6px;">
+                        SELECT A PLANNING TRIP (YOU ARE OWNER):
+                    </label>
+
+                    <div style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; margin-bottom: 16px; padding: 2px;">
+                        <c:forEach items="${planningTrips}" var="pTrip" varStatus="pStatus">
+                            <label class="lt-trip-select-label">
+                                <input type="radio" name="tripId" value="${pTrip.tripId}" ${pStatus.first ? 'checked' : ''} style="accent-color: #175b43;">
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-size: 12.5px; font-weight: 700; color: #143b2d;">
+                                        <c:out value="${pTrip.tripName}" />
+                                    </div>
+                                    <div style="font-size: 10.5px; color: #64748b;">
+                                        📍 <c:out value="${pTrip.destination}" /> · <fmt:formatDate value="${pTrip.startDate}" pattern="dd/MM/yyyy"/> - <fmt:formatDate value="${pTrip.endDate}" pattern="dd/MM/yyyy"/>
+                                    </div>
+                                </div>
+                            </label>
+                        </c:forEach>
+                    </div>
+
+                    <div style="display: flex; gap: 8px;">
+                        <button type="submit" class="lt-btn-action-primary" style="flex: 1; border-radius: 12px; font-size: 12.5px;">
+                            ✉️ Send Trip Invitation
+                        </button>
+                        <button type="button" class="lt-btn-action-secondary" style="flex: 1; border-radius: 12px; font-size: 12.5px;"
+                                onclick="document.getElementById('tripInviteModal').style.display='none'">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </c:when>
+            <c:otherwise>
+                <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 14px;">
+                    <p style="font-size: 12.5px; font-weight: 600; color: #1e293b; margin: 0 0 4px;">No Planning Trips Available</p>
+                    <p style="font-size: 11px; color: #64748b; margin: 0 0 12px;">You need to own an upcoming trip in Planning status to invite friends.</p>
+                    <a href="${pageContext.request.contextPath}/trip/create" class="lt-btn-action-primary" style="display: inline-block; padding: 8px 16px; border-radius: 10px; font-size: 11.5px; text-decoration: none;">
+                        + Create a New Trip
+                    </a>
+                </div>
+                <button type="button" class="lt-btn-action-secondary" style="width: 100%; border-radius: 12px; font-size: 12px;"
+                        onclick="document.getElementById('tripInviteModal').style.display='none'">
+                    Close
+                </button>
+            </c:otherwise>
+        </c:choose>
+    </div>
+</div>
+
+<style>
+    .lt-friend-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .lt-btn-invite-trip {
+        background: #175b43 !important;
+        color: #ffffff !important;
+        border: none !important;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    .lt-btn-invite-trip:hover {
+        background: #143b2d !important;
+    }
+    .lt-btn-unfriend {
+        background: #f8fafc;
+        color: #94a3b8;
+        border: 1px solid #e2e8f0;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 6px 10px;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .lt-btn-unfriend:hover {
+        background: #fef2f2;
+        color: #dc2626;
+        border-color: #fecaca;
+    }
+    .lt-trip-select-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        background: #f8fafc;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .lt-trip-select-label:hover {
+        background: #ffffff;
+        border-color: #175b43;
+    }
+</style>
+<script>
+    async function triggerFriendNfcScan() {
+        if ('NDEFReader' in window) {
+            try {
+                const ndef = new NDEFReader();
+                await ndef.scan();
+                alert('NFC scanner activated! Tap your friend\'s NFC tag or phone against your device.');
+
+                ndef.onreading = (event) => {
+                    let scannedData = '';
+                    const decoder = new TextDecoder();
+                    for (const record of event.message.records) {
+                        if (record.recordType === 'text') {
+                            scannedData = decoder.decode(record.data);
+                        } else if (record.recordType === 'url') {
+                            scannedData = decoder.decode(record.data);
+                        }
+                    }
+
+                    if (scannedData) {
+                        let queryValue = scannedData.trim();
+                        try {
+                            if (queryValue.includes('http://') || queryValue.includes('https://')) {
+                                const parsedUrl = new URL(queryValue);
+                                const qParam = parsedUrl.searchParams.get('q');
+                                if (qParam) {
+                                    queryValue = qParam;
+                                }
+                            }
+                        } catch (ignored) {}
+
+                        window.location.href = '${pageContext.request.contextPath}/dump/friends?q=' + encodeURIComponent(queryValue);
+                    }
+                };
+
+                ndef.onreadingerror = () => {
+                    alert('Cannot read data from NFC tag. Please try tapping again.');
+                };
+            } catch (e) {
+                alert('Cannot start NFC scan: ' + (e.message || e));
+            }
+        } else {
+            // iOS / Desktop Fallback
+            openQrModal();
+        }
+    }
+
+    function openTripInviteModal(friendId, friendName, friendEmail) {
+        document.getElementById('modalFriendName').innerText = friendName;
+        document.getElementById('modalFriendEmail').innerText = friendEmail;
+        const emailInput = document.getElementById('modalInviteEmail');
+        if (emailInput) {
+            emailInput.value = friendEmail;
+        }
+        document.getElementById('tripInviteModal').style.display = 'flex';
+    }
+
+    function closeTripInviteModal(e) {
+        if (e.target.id === 'tripInviteModal') {
+            e.target.style.display = 'none';
+        }
+    }
+
+    function openQrModal() {
+        document.getElementById('qrShareModal').style.display = 'flex';
+    }
+
+    function closeQrModal(e) {
+        if (e.target.id === 'qrShareModal') {
+            e.target.style.display = 'none';
+        }
+    }
+
+    function copyProfileLink() {
+        const link = window.location.origin + '${pageContext.request.contextPath}/dump/friends?q=${sessionScope.user.email}';
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(link).then(function() {
+                alert('Friend invite link copied to clipboard: ' + link);
+            });
+        } else {
+            prompt('Copy this link to share with friends:', link);
+        }
+    }
+</script>
 
 <%@ include file="/WEB-INF/views/common/footer.jsp" %>

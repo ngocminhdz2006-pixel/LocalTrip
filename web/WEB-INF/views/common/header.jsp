@@ -31,6 +31,10 @@
                 = request.getContextPath() + "/user";
     }
 
+    if (session != null && session.getAttribute("travelCsrf") == null) {
+        session.setAttribute("travelCsrf", java.util.UUID.randomUUID().toString());
+    }
+
     String headerError
             = (String) request.getAttribute("errorMessage");
 
@@ -56,12 +60,18 @@
 %>
 
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
 
     <meta name="viewport"
-          content="width=device-width, initial-scale=1">
+          content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="view-transition" content="same-origin">
+    <meta name="theme-color" content="#175b43">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="<%= request.getContextPath() %>/manifest.json">
 
     <title>
         <%= HtmlUtil.escape(
@@ -78,14 +88,16 @@
           href="<%= request.getContextPath() %>/css/style.css">
     <link rel="stylesheet" href="<%= request.getContextPath() %>/css/localtrip.css?v=2">
     <link rel="stylesheet" href="<%= request.getContextPath() %>/css/travel-features.css?v=1">
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/css/mobile-user.css?v=2">
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/css/mobile-auth.css?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/app-theme.css?v=1">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/site.css?v=1">
 </head>
 
-<body class="rd-page <%= headerUser == null ? "auth-page" : (headerIsAdmin ? "admin-page" : "user-page") %>">
-<a class="skip-link" href="#main-content">Đi đến nội dung</a>
+<body class="rd-page <%= headerUser == null ? "auth-page" : (headerIsAdmin ? "admin-page" : "user-page") %> <%= Boolean.TRUE.equals(request.getAttribute("isLoginPage")) ? "login-page" : "" %>">
+<a class="skip-link" href="#main-content">Skip to content</a>
 
 <nav class="navbar navbar-expand-lg app-navbar sticky-top">
     <div class="container">
@@ -106,7 +118,7 @@
                 data-bs-target="#mainNavigation"
                 aria-controls="mainNavigation"
                 aria-expanded="false"
-                aria-label="Mở menu">
+                aria-label="Open navigation">
 
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -121,28 +133,28 @@
                     <li class="nav-item">
                         <a class="nav-link"
                            href="<%= request.getContextPath() %>/user">
-                            Tổng quan
+                            Overview
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link"
                            href="<%= request.getContextPath() %>/trips">
-                            Chuyến đi
+                            Trips
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link"
                            href="<%= request.getContextPath() %>/places">
-                            Địa điểm
+                            Places
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<%= request.getContextPath() %>/dump">Nhật ký</a>
+                        <a class="nav-link" href="<%= request.getContextPath() %>/dump">Dump</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<%= request.getContextPath() %>/passport">Hộ chiếu</a>
+                        <a class="nav-link" href="<%= request.getContextPath() %>/passport">Passport</a>
                     </li>
                 </ul>
 
@@ -153,32 +165,32 @@
                     <li class="nav-item">
                         <a class="nav-link"
                            href="<%= request.getContextPath() %>/admin">
-                            Tổng quan
+                            Overview
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link"
                            href="<%= request.getContextPath() %>/admin/users">
-                            Người dùng
+                            Users
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link"
                            href="<%= request.getContextPath() %>/admin/places">
-                            Địa điểm
+                            Places
                         </a>
                     </li>
 
                     <li class="nav-item">
                         <a class="nav-link"
                            href="<%= request.getContextPath() %>/admin/audit-logs">
-                            Nhật ký
+                            Dump
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<%= request.getContextPath() %>/admin/dump-reports">Báo cáo Nhật ký</a>
+                        <a class="nav-link" href="<%= request.getContextPath() %>/admin/dump-reports">Dump Reports</a>
                     </li>
                 </ul>
 
@@ -205,14 +217,14 @@
 
                         <span class="app-user-role">
                             <%= HtmlUtil.escape(
-                                    headerIsAdmin ? "Quản trị viên" : "Thành viên"
+                                    headerIsAdmin ? "Administrator" : "Member"
                             ) %>
                         </span>
                     </div>
 
                     <a href="<%= request.getContextPath() %>/logout"
                        class="btn app-logout-btn">
-                        Đăng xuất
+                        Sign out
                     </a>
                 </div>
 
@@ -222,12 +234,12 @@
 
                     <a href="<%= request.getContextPath() %>/login"
                        class="btn btn-outline-light">
-                        Đăng nhập
+                        Sign in
                     </a>
 
                     <a href="<%= request.getContextPath() %>/register"
                        class="btn btn-light">
-                        Đăng ký
+                        Register
                     </a>
                 </div>
 
@@ -245,17 +257,17 @@
         if (workspaceTrip.getTripId() > 0) {
 %>
 <div class="trip-layout"><aside class="trip-workspace">
-    <div class="trip-workspace-label">Không gian chuyến đi · <%= HtmlUtil.escape(workspaceTrip.getTripName()) %></div>
-    <nav aria-label="Các chức năng chuyến đi">
-        <a href="<%= request.getContextPath() %>/trip/detail?tripId=<%= workspaceTrip.getTripId() %>">Tổng quan</a>
-        <a href="<%= request.getContextPath() %>/preferences?tripId=<%= workspaceTrip.getTripId() %>">Sở thích</a>
-        <a href="<%= request.getContextPath() %>/preferences/group?tripId=<%= workspaceTrip.getTripId() %>">Sở thích nhóm</a>
-        <a href="<%= request.getContextPath() %>/recommendations?tripId=<%= workspaceTrip.getTripId() %>">Gợi ý địa điểm</a>
-        <a href="<%= request.getContextPath() %>/combo?tripId=<%= workspaceTrip.getTripId() %>">Combo địa điểm</a>
-        <a href="<%= request.getContextPath() %>/itinerary?tripId=<%= workspaceTrip.getTripId() %>">Lịch trình</a>
-        <a href="<%= request.getContextPath() %>/expenses?tripId=<%= workspaceTrip.getTripId() %>">Chi phí</a>
-        <a href="<%= request.getContextPath() %>/settlement?tripId=<%= workspaceTrip.getTripId() %>">Chia tiền</a>
-        <a href="<%= request.getContextPath() %>/group-fund?tripId=<%= workspaceTrip.getTripId() %>">Quỹ nhóm</a>
+    <div class="trip-workspace-label">Trip workspace · <%= HtmlUtil.escape(workspaceTrip.getTripName()) %></div>
+    <nav aria-label="Trip features">
+        <a href="<%= request.getContextPath() %>/trip/detail?tripId=<%= workspaceTrip.getTripId() %>">Overview</a>
+        <a href="<%= request.getContextPath() %>/preferences?tripId=<%= workspaceTrip.getTripId() %>">My Preferences</a>
+        <a href="<%= request.getContextPath() %>/preferences/group?tripId=<%= workspaceTrip.getTripId() %>">Group Preferences</a>
+        <a href="<%= request.getContextPath() %>/recommendations?tripId=<%= workspaceTrip.getTripId() %>">Place Suggestions</a>
+        <a href="<%= request.getContextPath() %>/combo?tripId=<%= workspaceTrip.getTripId() %>">Combos</a>
+        <a href="<%= request.getContextPath() %>/itinerary?tripId=<%= workspaceTrip.getTripId() %>">Itinerary</a>
+        <a href="<%= request.getContextPath() %>/expenses?tripId=<%= workspaceTrip.getTripId() %>">Expenses</a>
+        <a href="<%= request.getContextPath() %>/settlement?tripId=<%= workspaceTrip.getTripId() %>">Settlement</a>
+        <a href="<%= request.getContextPath() %>/group-fund?tripId=<%= workspaceTrip.getTripId() %>">Group Fund</a>
     </nav>
 </aside><div class="trip-content">
 <% request.setAttribute("hasTripLayout", Boolean.TRUE); } } %>
@@ -287,14 +299,14 @@
     <% } %>
 
 
-<% boolean redesignAuth = headerUser == null && java.util.Arrays.asList("Đăng nhập", "Đăng ký", "Quên mật khẩu", "Đặt lại mật khẩu").contains(pageTitleText);
+<% boolean redesignAuth = headerUser == null && java.util.Arrays.asList("Sign in", "Register", "Forgot password", "Reset password", "Đăng ký", "Quên mật khẩu", "Đặt lại mật khẩu").contains(pageTitleText);
    if (redesignAuth) { request.setAttribute("hasAuthLayout", Boolean.TRUE); %>
 <div class="rd-auth-layout">
-    <section class="rd-auth-welcome" aria-label="Giới thiệu LocalTrip">
-        <span class="eyebrow">LOCALTRIP · CÙNG NHAU KHÁM PHÁ</span>
-        <h1>Chuyến đi đẹp hơn<br>khi có nhau.</h1>
-        <p>Lên kế hoạch cho những ngày đáng nhớ, tìm điểm đến yêu thích và chia sẻ hành trình cùng bạn bè.</p>
-        <div class="rd-auth-features"><span>Khám phá địa điểm</span><span>Lên lịch cùng nhóm</span><span>Chia sẻ chi phí</span></div>
+    <section class="rd-auth-welcome" aria-label="About LocalTrip">
+        <span class="eyebrow">LOCALTRIP · EXPLORE TOGETHER</span>
+        <h1>Trips are better<br>together.</h1>
+        <p>Plan memorable journeys, discover exciting places, and share adventures with friends.</p>
+        <div class="rd-auth-features"><span>Discover places</span><span>Group planning</span><span>Split expenses</span></div>
     </section>
     <div class="rd-auth-form">
 <% } %>

@@ -38,6 +38,7 @@ public final class ItineraryDraft {
             clone.setVisitDate(new Date(item.getVisitDate().getTime()));
             clone.setStartTime(new java.sql.Time(item.getStartTime().getTime()));
             clone.setEndTime(new java.sql.Time(item.getEndTime().getTime()));
+            clone.setActivityType(item.getActivityType()); clone.setActivityTitle(item.getActivityTitle()); clone.setActivityStatus(item.getActivityStatus());
             clone.setNote(item.getNote()); clone.setEstimatedCost(item.getEstimatedCost());
             clone.setLatitude(item.getLatitude()); clone.setLongitude(item.getLongitude());
             result.add(clone);

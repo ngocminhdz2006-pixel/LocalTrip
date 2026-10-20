@@ -168,6 +168,79 @@ public class TravelFeatureDAO {
         try(Connection c=DBContext.getConnection();PreparedStatement ps=c.prepareStatement(sql)){ps.setInt(1,userId);try(ResultSet rs=ps.executeQuery()){while(rs.next()){Map<String,Object> m=new LinkedHashMap<String,Object>();m.put("friendshipId",rs.getInt(1));m.put("userId",rs.getInt(2));m.put("fullName",rs.getString(3));m.put("email",rs.getString(4));m.put("createdAt",rs.getTimestamp(5));out.add(m);}}}catch(SQLException e){throw failure("Không thể tải lời mời kết bạn.",e);}return out;
     }
 
+    public List<Map<String,Object>> getFriends(int userId) {
+        List<Map<String,Object>> out=new ArrayList<Map<String,Object>>();
+        String sql = "SELECT u.user_id, u.full_name, u.email, f.friendship_id, f.created_at "
+                   + "FROM dbo.Friendships f "
+                   + "JOIN dbo.Users u ON (u.user_id = CASE WHEN f.requester_id=? THEN f.addressee_id ELSE f.requester_id END) "
+                   + "WHERE (f.requester_id=? OR f.addressee_id=?) AND f.status='ACCEPTED' "
+                   + "ORDER BY u.full_name ASC";
+        try(Connection c=DBContext.getConnection();PreparedStatement ps=c.prepareStatement(sql)) {
+            ps.setInt(1,userId); ps.setInt(2,userId); ps.setInt(3,userId);
+            try(ResultSet rs=ps.executeQuery()) {
+                while(rs.next()){
+                    Map<String,Object> m=new LinkedHashMap<String,Object>();
+                    m.put("userId",rs.getInt(1));
+                    m.put("fullName",rs.getString(2));
+                    m.put("email",rs.getString(3));
+                    m.put("friendshipId",rs.getInt(4));
+                    m.put("createdAt",rs.getTimestamp(5));
+                    out.add(m);
+                }
+            }
+        } catch(SQLException e) { throw failure("Không thể tải danh sách bạn bè.",e); }
+        return out;
+    }
+
+    public void cancelFriendRequest(int requesterId, int targetUserId, int friendshipId) {
+        String sql;
+        if (friendshipId > 0) {
+            sql = "DELETE FROM dbo.Friendships WHERE friendship_id=? AND requester_id=? AND status='PENDING'";
+        } else {
+            sql = "DELETE FROM dbo.Friendships WHERE requester_id=? AND addressee_id=? AND status='PENDING'";
+        }
+        try (Connection c = DBContext.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            if (friendshipId > 0) {
+                ps.setInt(1, friendshipId);
+                ps.setInt(2, requesterId);
+            } else {
+                ps.setInt(1, requesterId);
+                ps.setInt(2, targetUserId);
+            }
+            if (ps.executeUpdate() == 0) {
+                throw new IllegalArgumentException("Friend request not found or cannot be cancelled.");
+            }
+        } catch (SQLException e) {
+            throw failure("Cannot cancel friend request.", e);
+        }
+    }
+
+    public void unfriend(int userId, int friendUserId, int friendshipId) {
+        String sql;
+        if (friendshipId > 0) {
+            sql = "DELETE FROM dbo.Friendships WHERE friendship_id=? AND status='ACCEPTED' AND (requester_id=? OR addressee_id=?)";
+        } else {
+            sql = "DELETE FROM dbo.Friendships WHERE status='ACCEPTED' AND ((requester_id=? AND addressee_id=?) OR (requester_id=? AND addressee_id=?))";
+        }
+        try (Connection c = DBContext.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            if (friendshipId > 0) {
+                ps.setInt(1, friendshipId);
+                ps.setInt(2, userId);
+                ps.setInt(3, userId);
+            } else {
+                ps.setInt(1, userId);
+                ps.setInt(2, friendUserId);
+                ps.setInt(3, friendUserId);
+                ps.setInt(4, userId);
+            }
+            if (ps.executeUpdate() == 0) {
+                throw new IllegalArgumentException("Friendship not found or already removed.");
+            }
+        } catch (SQLException e) {
+            throw failure("Cannot remove friend.", e);
+        }
+    }
+
     private static double haversineMeters(double lat1,double lon1,double lat2,double lon2) {
         double earthRadius=6371000.0;
         double dLat=Math.toRadians(lat2-lat1), dLon=Math.toRadians(lon2-lon1);

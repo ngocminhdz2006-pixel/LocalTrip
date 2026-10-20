@@ -2,7 +2,7 @@
 <%@ page import="utils.HtmlUtil" %>
 
 <%
-    request.setAttribute("pageTitle", "Có lỗi xảy ra");
+    request.setAttribute("pageTitle", "Error");
     request.setAttribute("tripRedesign", Boolean.TRUE);
 
     Object statusObject =
@@ -25,8 +25,8 @@
 
             <h1 class="h3 mb-3">
                 <%= "404".equals(status)
-                    ? "Không tìm thấy trang"
-                    : "Đã có lỗi xảy ra" %>
+                    ? "Page Not Found"
+                    : "Something went wrong" %>
             </h1>
 
             <p class="text-muted mb-4"
@@ -34,15 +34,15 @@
                 <% if (detail != null) { %>
                     <%= HtmlUtil.escape(String.valueOf(detail)) %>
                 <% } else if ("404".equals(status)) { %>
-                    Trang hoặc dữ liệu bạn yêu cầu không tồn tại.
+                    The page or resource you requested could not be found.
                 <% } else { %>
-                    Hệ thống gặp sự cố, vui lòng thử lại sau.
+                    The system encountered an error. Please try again later.
                 <% } %>
             </p>
 
             <a href="<%= request.getContextPath() %>/login"
                class="btn btn-primary px-4">
-                Về trang đăng nhập
+                Back to Login
             </a>
         </section>
     </div>

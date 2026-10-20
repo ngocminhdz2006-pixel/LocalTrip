@@ -32,28 +32,20 @@ public class HomeServlet extends HttpServlet {
         }
 
         User user = (User) session.getAttribute("user");
-        String path = request.getServletPath();
-        String expectedPath = pathForRole(user.getRole());
 
-        if (expectedPath == null) {
-            session.invalidate();
-            response.sendRedirect(request.getContextPath() + "/login");
+        if ("USER".equals(user.getRole())) {
+            response.sendRedirect(request.getContextPath() + "/trips");
             return;
         }
 
-        if (!expectedPath.equals(path)) {
+        if (!"ADMIN".equals(user.getRole())) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
 
         try {
-            if ("USER".equals(user.getRole())) {
-                loadUserDashboard(request, user);
-                request.getRequestDispatcher(USER_VIEW).forward(request, response);
-            } else {
-                loadAdminDashboard(request);
-                request.getRequestDispatcher(ADMIN_VIEW).forward(request, response);
-            }
+            loadAdminDashboard(request);
+            request.getRequestDispatcher(ADMIN_VIEW).forward(request, response);
         } catch (RuntimeException e) {
             request.setAttribute("dashboardError", "Không thể tải dữ liệu dashboard. Vui lòng thử lại.");
             String view = "ADMIN".equals(user.getRole()) ? ADMIN_VIEW : USER_VIEW;
@@ -78,7 +70,7 @@ public class HomeServlet extends HttpServlet {
 
     public static String pathForRole(String role) {
         if ("ADMIN".equals(role)) return "/admin";
-        if ("USER".equals(role)) return "/user";
+        if ("USER".equals(role)) return "/trips";
         return null;
     }
 }

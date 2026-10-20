@@ -1,0 +1,288 @@
+/* =========================================================
+   LocalTrip - Mobile Auth & Sign In Responsive Styles
+   ========================================================= */
+
+/* Hide brand header on desktop (desktop has navbar & left hero banner) */
+.lt-signin-brand {
+    display: none;
+}
+
+/* Ensure SVG Pin is strictly sized */
+.lt-signin-pin,
+svg.lt-signin-pin {
+    width: 22px !important;
+    height: 22px !important;
+    max-width: 22px !important;
+    max-height: 22px !important;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Input field container and icons */
+.lt-signin .lt-field {
+    position: relative;
+    width: 100%;
+}
+
+.lt-signin .lt-field-group {
+    margin-bottom: 16px;
+}
+
+.lt-signin .lt-field .form-control {
+    min-height: 48px;
+    padding: 12px 42px 12px 44px;
+    font-size: 15px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1.5px solid #d1d5db;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    color: #1e293b;
+}
+
+.lt-signin .lt-field .form-control:focus {
+    border-color: #175b43;
+    box-shadow: 0 0 0 3px rgba(23, 91, 67, 0.15);
+}
+
+/* Strictly constrain input SVGs so they NEVER become giant black boxes */
+.lt-signin .lt-field-icon,
+svg.lt-field-icon {
+    position: absolute !important;
+    top: 50% !important;
+    left: 14px !important;
+    width: 20px !important;
+    height: 20px !important;
+    max-width: 20px !important;
+    max-height: 20px !important;
+    transform: translateY(-50%) !important;
+    fill: none !important;
+    stroke: #7a8a82 !important;
+    stroke-width: 1.8 !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+    pointer-events: none !important;
+    z-index: 2;
+}
+
+.lt-signin .lt-field-icon rect,
+svg.lt-field-icon rect,
+.lt-signin .lt-field-icon path,
+svg.lt-field-icon path {
+    fill: none !important;
+    stroke: #7a8a82 !important;
+}
+
+.lt-signin .lt-field-toggle {
+    position: absolute;
+    top: 50%;
+    right: 4px;
+    width: 38px;
+    height: 38px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.lt-signin .lt-field-toggle svg {
+    width: 20px !important;
+    height: 20px !important;
+    fill: none !important;
+    stroke: currentColor !important;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.lt-signin .lt-field-toggle[aria-pressed="true"] {
+    color: #175b43;
+}
+
+.lt-signin-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+
+.lt-signin-sub {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.lt-signin-forgot {
+    margin: -4px 0 16px;
+    text-align: right;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.lt-signin-forgot a {
+    color: #175b43;
+    text-decoration: none;
+}
+.lt-signin-forgot a:hover {
+    text-decoration: underline;
+}
+
+.lt-signin-submit {
+    min-height: 48px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    background: #175b43 !important;
+    border-color: #175b43 !important;
+}
+.lt-signin-submit:hover {
+    background: #114633 !important;
+    border-color: #114633 !important;
+}
+
+.lt-signin-switch {
+    margin: 20px 0 0;
+    text-align: center;
+    font-size: 14px;
+    color: #64748b;
+}
+.lt-signin-switch a {
+    color: #175b43;
+    font-weight: 700;
+    text-decoration: none;
+}
+.lt-signin-switch a:hover {
+    text-decoration: underline;
+}
+
+/* Fast Google Social Button */
+.lt-social-login-btn {
+    width: 100%;
+    min-height: 46px;
+    background: #ffffff;
+    border: 1.5px solid #d1d5db;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    transition: all 0.15s ease;
+}
+.lt-social-login-btn:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+/* Divider */
+.lt-divider-or {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+}
+.lt-divider-line {
+    flex: 1;
+    height: 1px;
+    background: #e5e7eb;
+}
+.lt-divider-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* NFC context card */
+.lt-nfc-context-card {
+    margin-top: 20px;
+    background: #eaf5ee;
+    border: 1px solid rgba(23, 91, 67, 0.2);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.lt-nfc-context-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #175b43;
+    border: 1px solid rgba(23, 91, 67, 0.2);
+    box-shadow: 0 2px 5px rgba(23, 91, 67, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.lt-nfc-context-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #14532d;
+    margin: 0 0 2px 0;
+}
+.lt-nfc-context-desc {
+    font-size: 12px;
+    color: #1e5a44;
+    margin: 0;
+}
+
+/* =========================================================
+   Mobile Viewport Styles (Screens <= 767.98px)
+   ========================================================= */
+@media (max-width: 767.98px) {
+    body.auth-page .app-navbar,
+    body.auth-page .rd-auth-welcome,
+    body.auth-page .app-footer,
+    body.login-page .app-navbar,
+    body.login-page .rd-auth-welcome,
+    body.login-page .app-footer {
+        display: none !important;
+    }
+
+    body.auth-page,
+    body.login-page {
+        min-height: 100vh;
+        background: linear-gradient(180deg, #e3f0e8 0%, #f6faf7 42%);
+    }
+
+    body.auth-page .app-main,
+    body.login-page .app-main {
+        max-width: 440px;
+        margin: 0 auto;
+        padding: 24px 20px 40px;
+    }
+
+    body.auth-page .rd-card.lt-signin,
+    body.login-page .rd-card.lt-signin {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .lt-signin-brand {
+        display: block !important;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .lt-signin-title {
+        text-align: center;
+    }
+    .lt-signin-sub {
+        text-align: center;
+    }
+}

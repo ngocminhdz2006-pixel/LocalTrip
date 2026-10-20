@@ -1,8 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<c:set var="pageTitle" value="Nhật ký - Cộng đồng du lịch" scope="request"/>
+<c:set var="pageTitle" value="Travel Feed" scope="request"/>
 <c:set var="tripRedesign" value="${true}" scope="request"/>
+<fmt:setLocale value="en_US" scope="page"/>
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 <style>
     .rd-page .dump-page {
@@ -323,26 +324,25 @@
         <div class="rd-hero-top">
             <div>
                 <div class="small text-white-50 mb-2">
-                    LOCALTRIP · CÂU CHUYỆN HÀNH TRÌNH
+                    LOCALTRIP · JOURNEY STORIES
                 </div>
 
-                <h1 class="mb-2">Nhật ký du lịch</h1>
+                <h1 class="mb-2">Travel Feed</h1>
 
                 <p class="text-white mb-0">
-                    Chia sẻ khoảnh khắc, cảm nhận và kinh nghiệm
-                    từ những chuyến đi của bạn.
+                    Share moments, impressions, and recommendations from your adventures.
                 </p>
             </div>
 
             <div class="d-flex flex-wrap gap-2">
                 <a class="rd-back"
                    href="${pageContext.request.contextPath}/dump/friends">
-                    Kết nối bạn bè
+                    Connect friends
                 </a>
 
                 <a class="rd-back"
                    href="${pageContext.request.contextPath}/passport">
-                    Hộ chiếu du lịch →
+                    Travel Passport →
                 </a>
             </div>
         </div>
@@ -353,46 +353,45 @@
             <aside class="dump-sidebar">
                 <a class="dump-side-link ${bookmarksOnly ? '' : 'active'}"
                href="${pageContext.request.contextPath}/dump">
-                Bảng tin
+                Activity feed
             </a>
 
             <a class="dump-side-link ${bookmarksOnly ? 'active' : ''}"
                href="${pageContext.request.contextPath}/dump?filter=BOOKMARKS">
-                Bài đã lưu
+                Saved posts
             </a>
-            <a class="dump-side-link" href="${pageContext.request.contextPath}/dump/friends">🤝 Kết nối bạn bè</a>
-            <a class="dump-side-link" href="${pageContext.request.contextPath}/passport">🛂 Hộ chiếu du lịch</a>
-            <div class="dump-privacy-note"><strong>🔒 Bạn kiểm soát quyền riêng tư</strong><p>Bài viết có thể công khai hoặc chỉ hiển thị với bạn bè đã chấp nhận lời mời.</p></div>
+            <a class="dump-side-link" href="${pageContext.request.contextPath}/dump/friends">🤝 Connect friends</a>
+            <a class="dump-side-link" href="${pageContext.request.contextPath}/passport">🛂 Travel Passport</a>
+            <div class="dump-privacy-note"><strong>🔒 Privacy Control</strong><p>Posts can be public or visible only to confirmed travel friends.</p></div>
         </aside>
         <main class="dump-main">
             <section class="dump-card dump-create-card">
-                <h2>Chia sẻ hành trình của bạn</h2>
+                <h2>Share your journey</h2>
                 <form action="${pageContext.request.contextPath}/dump/create" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
-                    <label class="form-label" for="dumpContent">Bạn đã trải nghiệm điều gì?</label>
-                    <textarea class="form-control" id="dumpContent" name="content" maxlength="2000" rows="3" placeholder="Viết cảm nhận, mẹo du lịch hoặc để ảnh kể câu chuyện của bạn..."></textarea>
+                    <label class="form-label" for="dumpContent">What did you experience?</label>
+                    <textarea class="form-control" id="dumpContent" name="content" maxlength="2000" rows="3" placeholder="Write your impressions, local travel tips, or let photos tell the story..."></textarea>
                     <div class="row g-3 mt-1">
-                        <div class="col-md-6"><label class="form-label" for="dumpImages">Ảnh (tối đa 5 ảnh, mỗi ảnh 5 MB)</label><input class="form-control" id="dumpImages" name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple><small class="text-muted">Chỉ nhận JPG, PNG, WEBP. Ảnh được lưu ngoài thư mục web công khai.</small></div>
-                        <div class="col-md-6"><label class="form-label" for="dumpPlace">Địa điểm (không bắt buộc)</label><select class="form-select" id="dumpPlace" name="placeId"><option value="">Không gắn địa điểm</option><c:forEach items="${places}" var="p"><option value="${p.id}"><c:out value="${p.name}"/></option></c:forEach></select>
-                            <label class="form-label mt-2" for="dumpTrip">Chuyến đi liên quan (không bắt buộc)</label><select class="form-select" id="dumpTrip" name="tripId"><option value="">Không gắn chuyến đi</option><c:forEach items="${trips}" var="t"><option value="${t.tripId}"><c:out value="${t.tripName}"/></option></c:forEach></select>
-                                <label class="form-label mt-2" for="dumpRating">Đánh giá (không bắt buộc)</label><select class="form-select" id="dumpRating" name="rating"><option value="">Không đánh giá</option><option value="5">★★★★★ - Rất tuyệt</option><option value="4">★★★★ - Tốt</option><option value="3">★★★ - Bình thường</option><option value="2">★★ - Chưa tốt</option><option value="1">★ - Không hài lòng</option></select></div>
+                        <div class="col-md-6"><label class="form-label" for="dumpImages">Photos (up to 5 photos, 5MB each)</label><input class="form-control" id="dumpImages" name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple><small class="text-muted">JPG, PNG, WEBP accepted.</small></div>
+                        <div class="col-md-6"><label class="form-label" for="dumpPlace">Destination (optional)</label><select class="form-select" id="dumpPlace" name="placeId"><option value="">No tagged destination</option><c:forEach items="${places}" var="p"><option value="${p.id}"><c:out value="${p.name}"/></option></c:forEach></select>
+                            <label class="form-label mt-2" for="dumpTrip">Related trip (optional)</label><select class="form-select" id="dumpTrip" name="tripId"><option value="">No tagged trip</option><c:forEach items="${trips}" var="t"><option value="${t.tripId}"><c:out value="${t.tripName}"/></option></c:forEach></select>
+                                <label class="form-label mt-2" for="dumpRating">Rating (optional)</label><select class="form-select" id="dumpRating" name="rating"><option value="">No rating</option><option value="5">★★★★★ - Excellent</option><option value="4">★★★★ - Good</option><option value="3">★★★ - Average</option><option value="2">★★ - Fair</option><option value="1">★ - Poor</option></select></div>
                         </div>
-                        <div class="dump-form-bottom"><div><label class="form-label" for="dumpVisibility">Ai có thể xem?</label><select class="form-select" id="dumpVisibility" name="visibility"><option value="PUBLIC">🌎 Công khai</option><option value="FRIENDS">👥 Chỉ bạn bè</option></select></div><button class="btn btn-brand" type="submit">Đăng lên Nhật ký ↗</button></div>
-                        <p class="dump-form-hint">Bài viết chỉ có nội dung hoặc ảnh đều được chấp nhận. Không cần đánh giá địa điểm.</p>
+                        <div class="dump-form-bottom"><div><label class="form-label" for="dumpVisibility">Audience</label><select class="form-select" id="dumpVisibility" name="visibility"><option value="PUBLIC">🌎 Public</option><option value="FRIENDS">👥 Friends only</option></select></div><button class="btn btn-brand" type="submit">Post to Feed ↗</button></div>
                     </form>
                 </section>
-            <c:if test="${bookmarksOnly}"><h2 class="dump-section-title">Bài viết đã lưu</h2></c:if>
-            <c:if test="${empty posts}"><div class="dump-card dump-empty"><span>🧳</span><h3>Chuyến đi nào cũng bắt đầu từ một câu chuyện</h3><p>Chưa có bài viết phù hợp. Hãy chia sẻ trải nghiệm đầu tiên hoặc kết nối thêm bạn bè.</p></div></c:if>
+            <c:if test="${bookmarksOnly}"><h2 class="dump-section-title">Saved posts</h2></c:if>
+            <c:if test="${empty posts}"><div class="dump-card dump-empty"><span>🧳</span><h3>Every journey begins with a story</h3><p>No posts available yet. Share your first experience or connect with friends.</p></div></c:if>
             <c:forEach items="${posts}" var="post">
                 <article class="dump-card dump-post">
-                    <div class="dump-post-head"><div class="dump-avatar"><c:out value="${post.fullName.substring(0,1)}"/></div><div class="dump-post-author"><strong><c:out value="${post.fullName}"/></strong><small><fmt:formatDate value="${post.createdAt}" pattern="dd/MM/yyyy HH:mm"/> · <c:choose><c:when test="${post.visibility eq 'FRIENDS'}">👥 Bạn bè</c:when><c:otherwise>🌎 Công khai</c:otherwise></c:choose></small></div><c:if test="${post.userId eq sessionScope.user.userId}"><form action="${pageContext.request.contextPath}/dump/action" method="post" onsubmit="return confirm('Bạn chắc chắn muốn xóa bài viết này?');"><input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}"><input type="hidden" name="postId" value="${post.postId}"><input type="hidden" name="action" value="delete"><button class="btn btn-sm btn-outline-secondary" type="submit">Xóa</button></form></c:if></div>
+                    <div class="dump-post-head"><div class="dump-avatar"><c:out value="${post.fullName.substring(0,1)}"/></div><div class="dump-post-author"><strong><c:out value="${post.fullName}"/></strong><small><fmt:formatDate value="${post.createdAt}" pattern="dd/MM/yyyy HH:mm"/> · <c:choose><c:when test="${post.visibility eq 'FRIENDS'}">👥 Friends</c:when><c:otherwise>🌎 Public</c:otherwise></c:choose></small></div><c:if test="${post.userId eq sessionScope.user.userId}"><form action="${pageContext.request.contextPath}/dump/action" method="post" onsubmit="return confirm('Permanently delete this post?');"><input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}"><input type="hidden" name="postId" value="${post.postId}"><input type="hidden" name="action" value="delete"><button class="btn btn-sm btn-outline-secondary" type="submit">Delete</button></form></c:if></div>
                     <c:if test="${not empty post.content}"><p class="dump-post-content"><c:out value="${post.content}"/></p></c:if>
                     <c:if test="${not empty post.placeName}"><p class="dump-place-tag">📍 <c:out value="${post.placeName}"/></p></c:if>
-                    <c:if test="${not empty post.rating}"><p class="dump-rating"><c:forEach begin="1" end="${post.rating}">★</c:forEach><span> Đánh giá địa điểm</span></p></c:if>
-                    <c:if test="${not empty post.images}"><div class="dump-image-grid count-${post.images.size()}"><c:forEach items="${post.images}" var="image"><a href="${pageContext.request.contextPath}/dump/image?id=${image.imageId}" target="_blank" rel="noopener"><img src="${pageContext.request.contextPath}/dump/image?id=${image.imageId}" alt="Ảnh trong bài nhật ký" loading="lazy"></a></c:forEach></div></c:if>
-                    <div class="dump-post-stats"><span>♥ ${post.likeCount} lượt thích</span><span>💬 ${post.commentCount} bình luận</span></div>
-                    <div class="dump-post-actions"><form action="${pageContext.request.contextPath}/dump/action" method="post"><input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}"><input type="hidden" name="postId" value="${post.postId}"><input type="hidden" name="action" value="like"><button type="submit" class="dump-action ${post.liked?'is-active':''}">${post.liked?'♥ Đã thích':'♡ Thích'}</button></form><form action="${pageContext.request.contextPath}/dump/action" method="post"><input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}"><input type="hidden" name="postId" value="${post.postId}"><input type="hidden" name="action" value="bookmark"><input type="hidden" name="returnTo" value="${bookmarksOnly?'BOOKMARKS':'ALL'}"><button type="submit" class="dump-action">${post.bookmarked?'🔖 Đã lưu':'♧ Lưu bài'}</button></form><details class="dump-report"><summary>⋯</summary><form action="${pageContext.request.contextPath}/dump/action" method="post"><input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}"><input type="hidden" name="postId" value="${post.postId}"><input type="hidden" name="action" value="report"><label class="form-label">Lý do báo cáo</label><input class="form-control form-control-sm" name="reason" maxlength="500" required><button class="btn btn-sm btn-outline-danger mt-2" type="submit">Gửi báo cáo</button></form></details></div>
-                    <div class="dump-comments"><c:forEach items="${post.comments}" var="comment"><p><strong><c:out value="${comment.fullName}"/></strong> <c:out value="${comment.content}"/></p></c:forEach><form class="dump-comment-form" action="${pageContext.request.contextPath}/dump/action" method="post"><input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}"><input type="hidden" name="postId" value="${post.postId}"><input type="hidden" name="action" value="comment"><input class="form-control" name="content" maxlength="1000" placeholder="Viết bình luận..." required><button class="btn btn-brand" type="submit">Gửi</button></form></div>
+                    <c:if test="${not empty post.rating}"><p class="dump-rating"><c:forEach begin="1" end="${post.rating}">★</c:forEach><span> Destination rating</span></p></c:if>
+                    <c:if test="${not empty post.images}"><div class="dump-image-grid count-${post.images.size()}"><c:forEach items="${post.images}" var="image"><a href="${pageContext.request.contextPath}/dump/image?id=${image.imageId}" target="_blank" rel="noopener"><img src="${pageContext.request.contextPath}/dump/image?id=${image.imageId}" alt="Post image" loading="lazy"></a></c:forEach></div></c:if>
+                    <div class="dump-post-stats"><span>♥ ${post.likeCount} likes</span><span>💬 ${post.commentCount} comments</span></div>
+                    <div class="dump-post-actions"><form action="${pageContext.request.contextPath}/dump/action" method="post"><input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}"><input type="hidden" name="postId" value="${post.postId}"><input type="hidden" name="action" value="like"><button type="submit" class="dump-action ${post.liked?'is-active':''}">${post.liked?'♥ Liked':'♡ Like'}</button></form><form action="${pageContext.request.contextPath}/dump/action" method="post"><input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}"><input type="hidden" name="postId" value="${post.postId}"><input type="hidden" name="action" value="bookmark"><input type="hidden" name="returnTo" value="${bookmarksOnly?'BOOKMARKS':'ALL'}"><button type="submit" class="dump-action">${post.bookmarked?'🔖 Saved':'♧ Save'}</button></form><details class="dump-report"><summary>⋯</summary><form action="${pageContext.request.contextPath}/dump/action" method="post"><input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}"><input type="hidden" name="postId" value="${post.postId}"><input type="hidden" name="action" value="report"><label class="form-label">Report reason</label><input class="form-control form-control-sm" name="reason" maxlength="500" required><button class="btn btn-sm btn-outline-danger mt-2" type="submit">Submit report</button></form></details></div>
+                    <div class="dump-comments"><c:forEach items="${post.comments}" var="comment"><p><strong><c:out value="${comment.fullName}"/></strong> <c:out value="${comment.content}"/></p></c:forEach><form class="dump-comment-form" action="${pageContext.request.contextPath}/dump/action" method="post"><input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}"><input type="hidden" name="postId" value="${post.postId}"><input type="hidden" name="action" value="comment"><input class="form-control" name="content" maxlength="1000" placeholder="Write a comment..." required><button class="btn btn-brand" type="submit">Send</button></form></div>
                     </article>
             </c:forEach>
         </main>

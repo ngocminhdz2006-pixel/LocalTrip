@@ -2,10 +2,10 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<c:set var="pageTitle" value="Thêm vào lịch trình" scope="request"/>
+<c:set var="pageTitle" value="Add to itinerary" scope="request"/>
 <c:set var="currentTrip" value="${trip}" scope="request"/>
 
-<fmt:setLocale value="vi_VN" scope="page"/>
+<fmt:setLocale value="en_US" scope="page"/>
 <%@ include file="/WEB-INF/jspf/header.jspf" %>
 <%@ include file="/WEB-INF/jspf/trip-hero.jspf" %>
 <%@ include file="/WEB-INF/jspf/trip-tabs.jspf" %>
@@ -96,7 +96,6 @@
     }
 </style>
 
-
 <div class="row justify-content-center">
     <div class="col-lg-7">
 
@@ -104,15 +103,15 @@
             <div>
                 <div class="rd-activity-heading">
                     <div>
-                        <h2>Thêm hoạt động</h2>
+                        <h2>Add Activity</h2>
                         <p class="rd-sub">
-                            Chọn ngày, thời gian và chi phí cho địa điểm bạn muốn ghé thăm.
+                            Choose date, time, and estimated cost for your destination visit.
                         </p>
                     </div>
 
                     <a href="${pageContext.request.contextPath}/recommendations?tripId=${trip.id}"
                        class="btn btn-outline-secondary">
-                        Quay lại gợi ý
+                        Back to suggestions
                     </a>
                 </div>
 
@@ -126,16 +125,16 @@
 
                     <div class="rd-activity-place">
                         <div class="rd-activity-place-label">
-                            Địa điểm đã chọn
+                            Selected destination
                         </div>
 
                         <h3><c:out value="${place.name}"/></h3>
 
                         <p>
-                            Chi phí tham khảo:
+                            Estimated reference price:
                             <strong>
                                 <fmt:formatNumber value="${place.estimatedPrice}"
-                                                  maxFractionDigits="0"/> đ
+                                                  maxFractionDigits="0"/> VND
                             </strong>
                         </p>
                     </div>
@@ -153,7 +152,7 @@
 
                         <div class="mb-3">
                             <label class="form-label">
-                                Ngày tham quan
+                                Visit date
                             </label>
 
                             <input type="date"
@@ -165,15 +164,14 @@
                                    required>
 
                             <div class="form-text">
-                                Ngày phải nằm trong khoảng từ
-                                ${trip.startDate} đến ${trip.endDate}.
+                                Date must be within the trip range (${trip.startDate} to ${trip.endDate}).
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">
-                                    Giờ bắt đầu
+                                    Start time
                                 </label>
 
                                 <input type="time"
@@ -185,7 +183,7 @@
 
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">
-                                    Giờ kết thúc
+                                    End time
                                 </label>
 
                                 <input type="time"
@@ -198,7 +196,7 @@
 
                         <div class="mb-3">
                             <label class="form-label">
-                                Chi phí dự kiến
+                                Estimated cost
                             </label>
 
                             <input type="number"
@@ -214,24 +212,24 @@
 
                         <div class="mb-4">
                             <label class="form-label">
-                                Ghi chú
+                                Note
                             </label>
 
                             <textarea name="note"
                                       class="form-control"
                                       rows="3"
                                       maxlength="500"
-                                      placeholder="Ví dụ: Chuẩn bị vé, tập trung trước 15 phút..."><c:out value="${param.note}"/></textarea>
+                                      placeholder="e.g. Bring tickets, gather 15 minutes early..."><c:out value="${param.note}"/></textarea>
                         </div>
 
                         <div class="rd-activity-actions">
                             <button type="submit" class="btn btn-brand">
-                                Thêm vào lịch trình
+                                Add to itinerary
                             </button>
 
                             <a href="${pageContext.request.contextPath}/itinerary?tripId=${trip.id}"
                                class="btn btn-outline-secondary">
-                                Hủy và quay lại
+                                Cancel
                             </a>
                         </div>
                     </form>

@@ -45,7 +45,7 @@ public class TripDeleteServlet extends HttpServlet {
 
         if (token == null || !token.equals(expectedToken)) {
             response.sendError(
-                    403, "Phiên thao tác không hợp lệ. Hãy tải lại trang."
+                    403, "Invalid session token. Please reload the page."
             );
             return;
         }
@@ -59,7 +59,7 @@ public class TripDeleteServlet extends HttpServlet {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException e) {
-            response.sendError(400, "Mã chuyến đi không hợp lệ.");
+            response.sendError(400, "Invalid trip ID.");
             return;
         }
 
@@ -71,16 +71,16 @@ public class TripDeleteServlet extends HttpServlet {
             if (deleted) {
                 session.setAttribute(
                         "successMessage",
-                        "Đã xóa chuyến đi."
+                        "Trip deleted successfully."
                 );
             } else {
                 session.setAttribute(
                         "errorMessage",
-                        "Không thể xóa chuyến đi này. "
-                        + "Chức năng xóa chỉ áp dụng cho chuyến đang lên kế hoạch "
-                        + "và chưa có khoản chi hoặc tiền đóng quỹ. "
-                        + "Nếu đã phát sinh giao dịch, hãy dùng Hủy chuyến đi "
-                        + "để giữ lại lịch sử tài chính."
+                        "Cannot delete this trip. "
+                        + "Deletion is only available for trips in PLANNING status "
+                        + "without any recorded expenses or group fund deposits. "
+                        + "If transactions already exist, please Cancel the trip "
+                        + "to preserve financial history."
                 );
             }
 
@@ -97,7 +97,7 @@ public class TripDeleteServlet extends HttpServlet {
 
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể xóa chuyến đi.", e
+                    "Cannot delete trip.", e
             );
         }
     }

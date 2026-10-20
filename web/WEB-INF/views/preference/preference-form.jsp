@@ -2,9 +2,9 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<c:set var="pageTitle" value="Sở thích của tôi" scope="request"/>
+<c:set var="pageTitle" value="My Preferences" scope="request"/>
 <c:set var="currentTrip" value="${trip}" scope="request"/>
-<fmt:setLocale value="vi_VN" scope="page"/>
+<fmt:setLocale value="en_US" scope="page"/>
 
 <%@ include file="/WEB-INF/jspf/header.jspf" %>
 
@@ -18,9 +18,9 @@
     <section class="rd-card" aria-labelledby="preferences-title">
         <div class="rd-card-heading">
             <div>
-                <h2 id="preferences-title">Sở thích của tôi</h2>
+                <h2 id="preferences-title">My Preferences</h2>
                 <p class="rd-sub">
-                    Chọn những trải nghiệm bạn muốn có trong chuyến đi này.
+                    Select the travel experiences you want to enjoy on this trip.
                 </p>
             </div>
 
@@ -29,7 +29,7 @@
                   aria-live="polite"
                   aria-atomic="true">
                 <span id="selectedCount"><c:out value="${empty selectedIds ? 0 : selectedIds.size()}"/></span>
-                đã chọn
+                selected
             </span>
         </div>
 
@@ -42,7 +42,7 @@
                 <c:when test="${not empty categories}">
                     <fieldset class="rd-preference-fieldset">
                         <legend class="visually-hidden">
-                            Các danh mục sở thích
+                            Preference categories
                         </legend>
 
                         <div class="rd-preference-options">
@@ -73,58 +73,47 @@
 
                 <c:otherwise>
                     <div class="rd-preference-empty">
-                        <h3>Chưa có danh mục sở thích</h3>
+                        <h3>No preference categories available</h3>
                         <p>
-                            Hiện chưa có danh mục để chọn.
-                            Bạn có thể xem sở thích nhóm và quay lại sau.
+                            No categories are currently configured.
+                            You can explore group preferences and return later.
                         </p>
                     </div>
                 </c:otherwise>
             </c:choose>
 
             <p class="rd-help mt-3">
-                Bạn có thể chọn nhiều danh mục hoặc bỏ chọn
-                để cập nhật sở thích đã lưu.
+                You can select multiple categories or deselect
+                to update your saved preferences.
             </p>
 
             <div class="rd-preference-actions">
                 <button type="submit" class="btn btn-brand">
-                    Lưu sở thích
+                    Save preferences
                 </button>
 
                 <a href="${pageContext.request.contextPath}/preferences/group?tripId=${trip.id}"
                    class="btn btn-outline-secondary">
-                    Xem sở thích nhóm
+                    View group preferences
                 </a>
             </div>
         </form>
     </section>
-
-    <aside class="rd-card rd-preference-guide"
-           aria-labelledby="preference-guide-title">
-
-        <span class="rd-count">Cùng nhau lên kế hoạch</span>
-
-        <h2 id="preference-guide-title">
-            Hành trình hợp với cả nhóm
-        </h2>
-
-        <p class="rd-sub">
-            Sở thích của bạn được tổng hợp cùng các thành viên
-            để nhóm tìm những địa điểm phù hợp.
-        </p>
-
-        <ol>
-            <li>Chọn những trải nghiệm bạn quan tâm.</li>
-            <li>Lưu để cập nhật lựa chọn của bạn.</li>
-            <li>Xem sở thích nhóm trước khi chọn địa điểm.</li>
-        </ol>
-
-        <p class="rd-help">
-            Lưu sở thích không thay thế lịch trình đang có.
-            Nhóm có thể xem và điều chỉnh lịch trước khi xác nhận.
-        </p>
-    </aside>
 </div>
+
+<script>
+(function() {
+    const checkboxes = document.querySelectorAll('.preference-checkbox');
+    const counter = document.getElementById('selectedCount');
+    if (!counter) return;
+
+    function updateCount() {
+        const checked = document.querySelectorAll('.preference-checkbox:checked').length;
+        counter.textContent = checked;
+    }
+
+    checkboxes.forEach(cb => cb.addEventListener('change', updateCount));
+})();
+</script>
 
 <%@ include file="/WEB-INF/views/common/footer.jsp" %>
