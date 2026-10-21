@@ -1309,9 +1309,7 @@ public class AutoItineraryServlet extends HttpServlet {
         item.setNote(
                 note
                 + " - structured milestone; match score: "
-                + Math.round(
-                + Math.round(
-                        recommendation.getScore())
+                + Math.round(recommendation.getScore())
                 + ".");
 
         item.setPlaceName(recommendation.getPlace().getPlaceName());
