@@ -1960,13 +1960,18 @@ button {
 /* Khối Bản đồ Leaflet chuẩn app */
 .lt-itinerary-map-card {
     position: relative;
-    height: 155px;
+    height: 270px;
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid #dce7df;
     background: #edf2ee;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+@media (min-width: 576px) {
+    .lt-itinerary-map-card {
+        height: 320px;
+    }
 }
 
 .lt-itinerary-map-card .localtrip-map {
@@ -2126,6 +2131,139 @@ button {
 .lt-add-stop-btn:hover {
     background: rgba(227, 240, 232, 0.7);
     color: #114231;
+}
+
+/* Quick Planning Hub (Thêm địa điểm & Xếp lịch) */
+.lt-itinerary-actions-hub {
+    margin-bottom: 14px;
+}
+.lt-actions-hub-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+@media (min-width: 576px) {
+    .lt-actions-hub-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+.lt-action-hub-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    border: 1px solid #dce7df;
+    background: #ffffff;
+}
+.lt-action-hub-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(23, 91, 67, 0.1);
+}
+.lt-action-hub-btn.primary {
+    background: #175b43;
+    border-color: #175b43;
+    color: #ffffff;
+}
+.lt-action-hub-btn.primary .lt-action-hub-text strong {
+    color: #ffffff;
+}
+.lt-action-hub-btn.primary .lt-action-hub-text small {
+    color: rgba(255, 255, 255, 0.85);
+}
+.lt-action-hub-btn.secondary {
+    background: #f8fafc;
+    color: #1e293b;
+}
+.lt-action-hub-btn.secondary:hover {
+    background: #f1f5f9;
+}
+.lt-action-hub-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+.lt-action-hub-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.lt-action-hub-text strong {
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.lt-action-hub-text small {
+    font-size: 9px;
+    color: #64748b;
+    line-height: 1.2;
+}
+
+/* Map Controls & Legs Filter */
+.lt-map-controls-card {
+    background: #ffffff;
+    border: 1px solid #dce7df;
+    border-radius: 14px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+}
+.lt-route-info-box {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f1f8f4;
+    border: 1px solid #cce5d6;
+    border-radius: 10px;
+    font-size: 12px;
+    color: #165b43;
+    font-weight: 600;
+}
+
+/* Stop Card Directions Button */
+.lt-stop-directions-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #175b43;
+    background: #eef7f2;
+    border: 1px solid #cbe6d5;
+    padding: 3px 7px;
+    border-radius: 6px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.lt-stop-directions-link:hover {
+    background: #175b43;
+    color: #ffffff;
+}
+
+/* Weather Forecast Card & Items */
+.lt-card-weather {
+    background: #ffffff;
+    border: 1px solid #dce7df;
+    border-radius: 16px;
+    padding: 16px;
+    margin-top: 18px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.lt-weather-item-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px;
+    height: 100%;
+    transition: transform 0.15s ease;
+}
+.lt-weather-item-card:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
 }
 
 /* Thanh xác nhận cố định phía dưới (Bottom Action Bar) */

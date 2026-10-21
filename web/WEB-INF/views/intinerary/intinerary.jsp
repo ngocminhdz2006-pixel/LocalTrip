@@ -3,79 +3,97 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>  
 
-<c:set var="pageTitle" value="Itinerary" scope="request"/>
+<c:set var="pageTitle" value="Lịch trình chuyến đi" scope="request"/>
 <c:set var="currentTrip" value="${trip}" scope="request"/>
 
 <fmt:setLocale value="en_US" scope="page"/>
 <%@ include file="/WEB-INF/jspf/header.jspf" %>
+<%@ include file="/WEB-INF/jspf/trip-hero.jspf" %>
+<%@ include file="/WEB-INF/jspf/trip-tabs.jspf" %>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <div class="lt-itinerary-container">
 
-    <%-- 1. App-style Mobile Header (‹, Title, •••) --%>
-    <div class="lt-itinerary-header">
-        <a href="${pageContext.request.contextPath}/trips" class="lt-btn-circle" aria-label="Back to trips">‹</a>
-        <h1 class="lt-itinerary-header-title"><c:out value="${trip.name}"/></h1>
-        <div class="dropdown">
-            <button class="lt-btn-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="More options">•••</button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
-                <li><a class="dropdown-item py-2" href="${pageContext.request.contextPath}/trip/detail?tripId=${trip.id}">Trip details</a></li>
-                <c:if test="${trip.role == 'OWNER' and (trip.status == 'PLANNING' or trip.status == 'ONGOING')}">
-                    <li><a class="dropdown-item py-2" href="${pageContext.request.contextPath}/itinerary/add?tripId=${trip.id}">+ Add destination</a></li>
-                </c:if>
-                <li><a class="dropdown-item py-2" href="${pageContext.request.contextPath}/expenses?tripId=${trip.id}">Expenses</a></li>
-            </ul>
+    <%-- 1. Quick Planning Actions Hub (Thêm địa điểm & Xếp lịch) --%>
+    <div class="lt-itinerary-actions-hub">
+        <div class="lt-actions-hub-grid">
+            <a href="${pageContext.request.contextPath}/places?tripId=${trip.id}" class="lt-action-hub-btn primary">
+                <span class="lt-action-hub-icon">📍</span>
+                <div class="lt-action-hub-text">
+                    <strong>+ Thêm địa điểm</strong>
+                    <small>Chọn từ danh mục</small>
+                </div>
+            </a>
+            <c:if test="${trip.role == 'OWNER' and (trip.status == 'PLANNING' or trip.status == 'ONGOING')}">
+                <a href="${pageContext.request.contextPath}/itinerary/auto?tripId=${trip.id}" class="lt-action-hub-btn secondary">
+                    <span class="lt-action-hub-icon">✨</span>
+                    <div class="lt-action-hub-text">
+                        <strong>Tự xếp lịch AI</strong>
+                        <small>Theo sở thích nhóm</small>
+                    </div>
+                </a>
+            </c:if>
+            <a href="${pageContext.request.contextPath}/combos?tripId=${trip.id}" class="lt-action-hub-btn secondary">
+                <span class="lt-action-hub-icon">🍱</span>
+                <div class="lt-action-hub-text">
+                    <strong>Chọn Combo</strong>
+                    <small>Lịch trình gợi ý sẵn</small>
+                </div>
+            </a>
+            <a href="${pageContext.request.contextPath}/recommendations?tripId=${trip.id}" class="lt-action-hub-btn secondary">
+                <span class="lt-action-hub-icon">💡</span>
+                <div class="lt-action-hub-text">
+                    <strong>Gợi ý điểm đến</strong>
+                    <small>Top bình chọn nhóm</small>
+                </div>
+            </a>
         </div>
     </div>
 
-    <%-- 2. Members Bar & NFC Share --%>
-    <div class="lt-itinerary-member-bar">
-        <div class="lt-member-cluster">
-            <div class="lt-avatar-stack">
-                <c:forEach var="m" items="${members}" varStatus="mStatus">
-                    <c:if test="${mStatus.index < 3}">
-                        <span class="lt-member-avatar" title="<c:out value='${m.fullName}'/>">
-                            <c:out value="${fn:substring(m.fullName, 0, 1)}"/>
-                        </span>
-                    </c:if>
-                </c:forEach>
-                <c:if test="${empty members}">
-                    <span class="lt-member-avatar">M</span>
-                    <span class="lt-member-avatar">L</span>
-                    <span class="lt-member-avatar">N</span>
-                </c:if>
-            </div>
-            <span class="lt-member-count">
-                <c:choose>
-                    <c:when test="${not empty members}">${fn:length(members)} members</c:when>
-                    <c:otherwise>3 members</c:otherwise>
-                </c:choose>
-            </span>
-        </div>
-        <button type="button" class="lt-nfc-share-btn" onclick="shareTripViaNFC()">
-            <span>🔗</span> Share trip
-        </button>
-    </div>
-
-    <%-- 3. Day Tabs --%>
+    <%-- 2. Day Tabs Navigation --%>
     <div class="lt-day-tabs-wrap">
         <nav class="lt-day-tabs" id="itineraryDayTabs" aria-label="Itinerary days">
             <button type="button" class="lt-day-tab is-active" data-day="ALL">
-                <span>All days</span>
-                <small>Overview</small>
+                <span>Tất cả ngày</span>
+                <small>Toàn cảnh</small>
             </button>
         </nav>
     </div>
 
-    <%-- 4. Leaflet Map --%>
+    <%-- 3. Leaflet Map --%>
     <div class="lt-itinerary-map-card">
         <div id="itineraryMap" class="localtrip-map"></div>
     </div>
 
-    <%-- Ẩn các control kỹ thuật của Map để Leaflet JS vẫn đọc được mà không vỡ UI --%>
+    <%-- 4. Chặng đường theo ngày & Nút mở chỉ đường Google Maps --%>
+    <div class="lt-map-controls-card">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2 flex-grow-1">
+                <span style="font-size: 13px; font-weight: 700; color: #143b2d; white-space: nowrap;">🛣️ Chặng:</span>
+                <select id="mapLegFilter" class="form-select form-select-sm" style="max-width: 280px; font-size: 12px; border-radius: 8px;">
+                    <option value="ALL">Toàn bộ trong ngày</option>
+                </select>
+            </div>
+
+            <a id="mapDirectionsLink"
+               class="btn btn-sm d-none"
+               style="background: #175b43; color: #ffffff; font-size: 12px; font-weight: 600; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;"
+               target="_blank"
+               rel="noopener noreferrer">
+                🗺️ Chỉ đường (Google Maps) ↗
+            </a>
+        </div>
+
+        <div id="mapRouteInfo" class="lt-route-info-box d-none"></div>
+        <div id="mapEmptyState" class="alert alert-light border mt-2 mb-0 d-none" style="font-size: 12px;">
+            Ngày này chưa có địa điểm nào có tọa độ GPS để vẽ lộ trình.
+        </div>
+    </div>
+
+    <%-- Bộ lọc ngày ngầm đồng bộ với Map --%>
     <select id="mapDayFilter" class="d-none" aria-hidden="true">
-        <option value="ALL">All</option>
+        <option value="ALL">ALL</option>
         <c:set var="prevMapDate" value=""/>
         <c:forEach var="item" items="${items}">
             <c:if test="${item.date != prevMapDate}">
@@ -84,21 +102,17 @@
             </c:if>
         </c:forEach>
     </select>
-    <select id="mapLegFilter" class="d-none" aria-hidden="true"><option value="ALL">Full day</option></select>
-    <div id="mapRouteInfo" class="d-none" aria-hidden="true"></div>
-    <a id="mapDirectionsLink" class="d-none" aria-hidden="true"></a>
     <span id="mapPointCount" class="d-none" aria-hidden="true"></span>
-    <div id="mapEmptyState" class="d-none" aria-hidden="true"></div>
 
     <%-- 5. Timeline List (Cards + Travel Connectors) --%>
     <div class="lt-timeline-list" id="itineraryTimelineList">
         <c:choose>
             <c:when test="${empty items}">
-                <div class="app-card text-center p-4">
-                    <p class="text-muted mb-2">No activities in this itinerary yet.</p>
+                <div class="app-card text-center p-4" style="background:#ffffff; border:1px dashed #cbd5e1; border-radius:16px;">
+                    <p class="text-muted mb-2">Chưa có hoạt động nào trong lịch trình.</p>
                     <c:if test="${trip.role == 'OWNER' and (trip.status == 'PLANNING' or trip.status == 'ONGOING')}">
-                        <a href="${pageContext.request.contextPath}/itinerary/add?tripId=${trip.id}" class="btn btn-sm btn-brand">
-                            + Add first destination
+                        <a href="${pageContext.request.contextPath}/places?tripId=${trip.id}" class="btn btn-sm" style="background:#175b43; color:#fff;">
+                            + Thêm địa điểm đầu tiên
                         </a>
                     </c:if>
                 </div>
@@ -107,7 +121,7 @@
                 <c:forEach var="item" items="${items}" varStatus="status">
                     <div class="lt-stop-card lt-activity-row" data-activity-date="${item.date}" data-lat="${item.latitude}" data-lng="${item.longitude}">
                         <div class="lt-stop-left">
-                            <span class="lt-drag-handle" title="Drag to reorder">⋮⋮</span>
+                            <span class="lt-drag-handle" title="Thứ tự">⋮⋮</span>
                             <span class="lt-stop-badge">${status.index + 1}</span>
                             <img src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=100&auto=format&fit=crop&q=80"
                                  class="lt-stop-thumb"
@@ -122,7 +136,7 @@
                                                 – <fmt:formatDate value="${item.endTime}" pattern="HH:mm"/>
                                             </c:if>
                                         </c:when>
-                                        <c:otherwise>All day</c:otherwise>
+                                        <c:otherwise>Cả ngày</c:otherwise>
                                     </c:choose>
                                 </div>
                                 <div class="lt-stop-name" title="<c:out value='${item.placeName}'/>">
@@ -138,9 +152,20 @@
                             <c:if test="${item.activityStatus == 'IN_PROGRESS'}">
                                 <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size:9px;">Ongoing</span>
                             </c:if>
+
+                            <%-- Nút chỉ đường 1 chạm tới từng địa điểm trên Google Maps --%>
+                            <c:if test="${not empty item.latitude and not empty item.longitude}">
+                                <a class="lt-stop-directions-link"
+                                   href="https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}&travelmode=driving"
+                                   target="_blank" rel="noopener noreferrer"
+                                   title="Chỉ đường Google Maps đến địa điểm này">
+                                    🧭 Chỉ đường
+                                </a>
+                            </c:if>
+
                             <c:if test="${trip.role == 'OWNER' and (trip.status == 'PLANNING' or trip.status == 'ONGOING')}">
                                 <a class="lt-stop-change-link" href="${pageContext.request.contextPath}/itinerary/edit?tripId=${trip.id}&amp;itemId=${item.id}">
-                                    Change
+                                    Sửa
                                 </a>
                             </c:if>
                         </div>
@@ -156,32 +181,61 @@
         </c:choose>
 
         <c:if test="${trip.role == 'OWNER' and (trip.status == 'PLANNING' or trip.status == 'ONGOING')}">
-            <a id="addDestinationBtn" href="${pageContext.request.contextPath}/itinerary/add?tripId=${trip.id}" class="lt-add-stop-btn">
-                + Add destination
+            <a id="addDestinationBtn" href="${pageContext.request.contextPath}/places?tripId=${trip.id}" class="lt-add-stop-btn">
+                + Thêm địa điểm vào lịch trình
             </a>
         </c:if>
     </div>
 
-    <%-- 6. Bottom Action Bar --%>
+    <%-- 6. Dự báo thời tiết theo lịch trình --%>
+    <div class="lt-card-weather" id="itineraryWeatherCard">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+                <h3 style="font-size: 15px; font-weight: 700; color: #143b2d; margin: 0; display: flex; align-items: center; gap: 6px;">
+                    <span>🌤️</span> Dự báo thời tiết theo lịch trình
+                </h3>
+                <span style="font-size: 11px; color: #64748b;">Nhiệt độ &amp; khả năng mưa theo tọa độ và giờ ghé thăm</span>
+            </div>
+            <span class="badge" id="weatherStatus" style="background: #e2f5ea; color: #175b43; border: 1px solid #a7f3d0; font-size: 11px; padding: 4px 8px;">
+                Đang tải...
+            </span>
+        </div>
+
+        <div id="weatherNotice" class="alert alert-light border d-none mb-3" style="font-size: 12px; border-radius: 10px; background: #f8fafc;">
+        </div>
+
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <label for="weatherDayFilter" style="font-size: 12px; font-weight: 600; color: #334155; margin: 0; white-space: nowrap;">
+                Xem ngày:
+            </label>
+            <select id="weatherDayFilter" class="form-select form-select-sm" style="max-width: 200px; font-size: 12px; border-radius: 8px;">
+                <option value="ALL">Tất cả các ngày</option>
+            </select>
+        </div>
+
+        <div id="weatherList" class="row g-2"></div>
+    </div>
+
+    <%-- 7. Bottom Action Bar --%>
     <div class="lt-itinerary-footer-bar">
         <div class="lt-group-status-box">
-            <span class="lt-group-status-lbl">Itinerary status</span>
+            <span class="lt-group-status-lbl">Trạng thái lịch trình</span>
             <c:choose>
                 <c:when test="${trip.status == 'ONGOING'}">
-                    <span class="lt-group-status-cnt" style="color: #059669;">✓ Confirmed &amp; Ongoing</span>
+                    <span class="lt-group-status-cnt" style="color: #059669;">✓ Đã xác nhận &amp; Đang đi</span>
                 </c:when>
                 <c:when test="${trip.status == 'COMPLETED'}">
-                    <span class="lt-group-status-cnt" style="color: #64748b;">Completed</span>
+                    <span class="lt-group-status-cnt" style="color: #64748b;">Đã hoàn thành</span>
                 </c:when>
                 <c:when test="${trip.status == 'CANCELLED'}">
-                    <span class="lt-group-status-cnt" style="color: #ef4444;">Cancelled</span>
+                    <span class="lt-group-status-cnt" style="color: #ef4444;">Đã hủy</span>
                 </c:when>
                 <c:when test="${empty items}">
-                    <span class="lt-group-status-cnt" style="color: #f59e0b;">No activities yet</span>
+                    <span class="lt-group-status-cnt" style="color: #f59e0b;">Chưa có hoạt động</span>
                 </c:when>
                 <c:otherwise>
                     <span class="lt-group-status-cnt" style="color: #165b43;">
-                        ${fn:length(items)} ${fn:length(items) == 1 ? 'activity' : 'activities'} scheduled
+                        ${fn:length(items)} hoạt động đã lưu
                     </span>
                 </c:otherwise>
             </c:choose>
@@ -190,38 +244,38 @@
         <c:choose>
             <c:when test="${trip.status == 'ONGOING'}">
                 <button type="button" class="lt-btn-confirm-action" style="background: #059669; opacity: 0.95;" disabled>
-                    ✓ Schedule Active
+                    ✓ Lịch trình đang chạy
                 </button>
             </c:when>
             <c:when test="${trip.status == 'COMPLETED' or trip.status == 'CANCELLED'}">
                 <button type="button" class="lt-btn-confirm-action" style="background: #94a3b8;" disabled>
-                    Trip ${trip.status}
+                    Chuyến đi ${trip.status}
                 </button>
             </c:when>
             <c:when test="${empty items}">
                 <a href="${pageContext.request.contextPath}/places?tripId=${trip.id}" class="lt-btn-confirm-action" style="text-decoration: none; text-align: center; display: inline-flex; align-items: center; justify-content: center;">
-                    + Add activity first
+                    + Thêm địa điểm trước
                 </a>
             </c:when>
             <c:when test="${trip.role == 'OWNER'}">
                 <form method="post" action="${pageContext.request.contextPath}/itinerary/confirm" style="margin: 0;"
-                      onsubmit="return confirm('Confirm and finalize this itinerary schedule for the group?');">
+                      onsubmit="return confirm('Xác nhận chốt lịch trình này cho cả nhóm?');">
                     <input type="hidden" name="tripId" value="${trip.id}">
                     <button id="confirmItineraryBtn" type="submit" class="lt-btn-confirm-action">
-                        ✓ Confirm itinerary
+                        ✓ Chốt lịch trình
                     </button>
                 </form>
             </c:when>
             <c:otherwise>
-                <button type="button" class="lt-btn-confirm-action" style="opacity: 0.75; cursor: default;" title="Only the Trip Lead can confirm the itinerary" disabled>
-                    Awaiting Trip Lead
+                <button type="button" class="lt-btn-confirm-action" style="opacity: 0.75; cursor: default;" title="Chỉ Trưởng nhóm mới có quyền chốt lịch trình" disabled>
+                    Chờ Trưởng nhóm chốt
                 </button>
             </c:otherwise>
         </c:choose>
     </div>
 </div>
 
-<%-- Dữ liệu tọa độ cho Leaflet Map --%>
+<%-- Dữ liệu tọa độ cho Leaflet Map & Weather --%>
 <div id="itineraryMapData" class="d-none" aria-hidden="true">
     <c:forEach var="item" items="${items}">
         <c:if test="${item.activityStatus != 'CANCELLED' and item.placeId > 0 and not empty item.latitude and not empty item.longitude}">
@@ -238,9 +292,10 @@
     </c:forEach>
 </div>
 
-<script src="${pageContext.request.contextPath}/js/itinerary-data.js?v=1"></script>
+<script src="${pageContext.request.contextPath}/js/itinerary-data.js?v=2"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+<%-- SCRIPT 1: BẢN ĐỒ, TÍNH CHẶNG ĐƯỜNG THEO NGÀY (OSRM) & CHỈ ĐƯỜNG GOOGLE MAPS --%>
 <script>
     (function () {
         const mapElement = document.getElementById('itineraryMap');
@@ -258,7 +313,7 @@
         const allPoints = Array.from(document.querySelectorAll('.itinerary-map-point')).map(LocalTripSchedule.readPoint);
 
         const map = L.map(mapElement, {
-            zoomControl: false,
+            zoomControl: true,
             attributionControl: false
         }).setView([10.8231, 106.6297], 12);
 
@@ -268,63 +323,235 @@
 
         const markersLayer = L.layerGroup().addTo(map);
         const linesLayer = L.layerGroup().addTo(map);
+        let requestController = null;
+        let renderVersion = 0;
 
         function clearMapLayers() {
+            if (requestController) {
+                requestController.abort();
+            }
+            requestController = null;
             markersLayer.clearLayers();
             linesLayer.clearLayers();
+
+            if (routeInfo) {
+                routeInfo.classList.add('d-none');
+                routeInfo.innerHTML = '';
+            }
+            if (directionsLink) {
+                directionsLink.classList.add('d-none');
+                directionsLink.removeAttribute('href');
+            }
         }
 
         function pointsForDay(day) {
             return LocalTripSchedule.pointsForDay(allPoints, day);
         }
 
+        function updateLegOptions(day) {
+            if (!legFilter) return;
+            const points = pointsForDay(day);
+
+            legFilter.innerHTML = '<option value="ALL">Toàn bộ trong ngày (Tất cả chặng)</option>';
+            legFilter.disabled = (day === 'ALL' || points.length < 2);
+
+            if (day !== 'ALL') {
+                for (let i = 0; i < points.length - 1; i++) {
+                    const label = 'Chặng ' + (i + 1) + ': ' + points[i].name + ' → ' + points[i + 1].name;
+                    const opt = document.createElement('option');
+                    opt.value = String(i);
+                    opt.textContent = label;
+                    legFilter.appendChild(opt);
+                }
+            }
+        }
+
         function showMapForDay(day) {
             clearMapLayers();
+            const version = ++renderVersion;
+
             let points = pointsForDay(day);
+            const dayPoints = points.slice();
+
+            if (day !== 'ALL' && legFilter && legFilter.value !== 'ALL') {
+                const index = Number(legFilter.value);
+                points = points.slice(index, index + 2);
+            }
+
+            if (countElement) {
+                countElement.textContent = points.length + ' điểm';
+            }
 
             if (!points.length) {
+                if (emptyState) emptyState.classList.remove('d-none');
                 map.setView([10.8231, 106.6297], 12);
                 return;
             }
 
+            if (emptyState) emptyState.classList.add('d-none');
+
             const latLngs = points.map(p => [p.lat, p.lng]);
 
             points.forEach((point, index) => {
-                const number = index + 1;
+                const number = (day === 'ALL') ? (index + 1) : (dayPoints.indexOf(point) + 1);
+
                 const icon = L.divIcon({
                     className: 'lt-map-pin-container',
                     html: '<div class="lt-map-pin">' + number + '</div>',
-                    iconSize: [22, 22],
-                    iconAnchor: [11, 11]
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
                 });
+
+                const directUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(point.lat + ',' + point.lng) + '&travelmode=driving';
+
+                const popupHtml = '<div style="font-size:12px; line-height:1.4;">'
+                                + '<strong>' + number + '. ' + point.name + '</strong><br>'
+                                + '<span style="color:#64748b;">' + point.date + (point.start ? ' (' + point.start + ')' : '') + '</span><br>'
+                                + '<a href="' + directUrl + '" target="_blank" rel="noopener noreferrer" style="color:#175b43; font-weight:700; text-decoration:none;">🧭 Chỉ đường Google Maps ↗</a>'
+                                + '</div>';
 
                 L.marker([point.lat, point.lng], {icon: icon})
                     .addTo(markersLayer)
-                    .bindPopup('<strong>' + number + '. ' + point.name + '</strong>');
+                    .bindPopup(popupHtml);
             });
 
-            if (latLngs.length > 1) {
-                const polyline = L.polyline(latLngs, {
-                    color: '#175b43',
-                    weight: 3,
-                    dashArray: '5, 5'
-                }).addTo(linesLayer);
-                map.fitBounds(polyline.getBounds(), {padding: [20, 20]});
-            } else if (latLngs.length === 1) {
-                map.setView(latLngs[0], 14);
+            map.fitBounds(L.latLngBounds(latLngs), {padding: [30, 30], maxZoom: 16});
+
+            if (routeInfo) routeInfo.classList.remove('d-none');
+
+            // TRƯỜNG HỢP: TẤT CẢ NGÀY (ALL)
+            if (day === 'ALL') {
+                const groups = new Map();
+                points.forEach(point => {
+                    if (!groups.has(point.date)) groups.set(point.date, []);
+                    groups.get(point.date).push([point.lat, point.lng]);
+                });
+
+                const colors = ['#175b43', '#1a73e8', '#c06721', '#8254a0', '#059669'];
+                let cIdx = 0;
+                groups.forEach(coords => {
+                    if (coords.length > 1) {
+                        L.polyline(coords, {
+                            color: colors[cIdx % colors.length],
+                            weight: 3.5,
+                            dashArray: '6, 6'
+                        }).addTo(linesLayer);
+                    }
+                    cIdx++;
+                });
+
+                if (directionsLink && points.length > 0) {
+                    directionsLink.href = LocalTripSchedule.directionsUrl(points);
+                    directionsLink.innerHTML = '🗺️ Chỉ đường toàn bộ (Google Maps) ↗';
+                    directionsLink.classList.remove('d-none');
+                }
+
+                if (routeInfo) {
+                    routeInfo.innerHTML = '🗺️ Đang hiển thị tuyến nối các ngày. Chọn từng ngày ở trên để xem chi tiết từng chặng đường.';
+                }
+                return;
             }
+
+            // TRƯỜNG HỢP: 1 ĐỊA ĐIỂM
+            if (points.length === 1) {
+                const dest = points[0];
+                if (directionsLink) {
+                    directionsLink.href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(dest.lat + ',' + dest.lng) + '&travelmode=driving';
+                    directionsLink.innerHTML = '🗺️ Chỉ đường từ vị trí hiện tại (Google Maps) ↗';
+                    directionsLink.classList.remove('d-none');
+                }
+                if (routeInfo) {
+                    routeInfo.innerHTML = '📍 1 điểm đến. Bấm nút <strong>Chỉ đường</strong> để Google Maps dẫn từ vị trí hiện tại của bạn.';
+                }
+                return;
+            }
+
+            // TRƯỜNG HỢP: NHIỀU ĐỊA ĐIỂM TRONG NGÀY HOẶC CHẶNG CỤ THỂ
+            if (directionsLink) {
+                directionsLink.href = LocalTripSchedule.directionsUrl(points);
+                directionsLink.innerHTML = (legFilter && legFilter.value === 'ALL')
+                    ? '🗺️ Chỉ đường cả ngày (Google Maps) ↗'
+                    : '🗺️ Chỉ đường chặng này (Google Maps) ↗';
+                directionsLink.classList.remove('d-none');
+            }
+
+            const fallback = L.polyline(latLngs, {
+                color: '#175b43',
+                weight: 4,
+                dashArray: '6, 6',
+                opacity: 0.6
+            }).addTo(linesLayer);
+
+            if (routeInfo) {
+                routeInfo.innerHTML = '⏳ Đang tính toán khoảng cách và thời gian di chuyển đường bộ...';
+            }
+
+            requestController = new AbortController();
+            const coordinates = points.map(p => p.lng + ',' + p.lat).join(';');
+
+            fetch('https://router.project-osrm.org/route/v1/driving/' + coordinates + '?overview=full&geometries=geojson', {
+                signal: requestController.signal
+            }).then(resp => {
+                if (!resp.ok) throw new Error('OSRM error');
+                return resp.json();
+            }).then(data => {
+                if (version !== renderVersion) return;
+                if (!data.routes || !data.routes.length) throw new Error('No route');
+
+                const route = data.routes[0];
+                linesLayer.removeLayer(fallback);
+
+                const line = L.geoJSON(route.geometry, {
+                    style: {
+                        color: '#175b43',
+                        weight: 4.5
+                    }
+                }).addTo(linesLayer);
+
+                const km = (route.distance / 1000).toFixed(1);
+                const mins = Math.max(2, Math.round(route.duration / 60));
+
+                if (routeInfo) {
+                    const labelPrefix = (legFilter && legFilter.value !== 'ALL') ? 'Chặng đã chọn: ' : 'Tuyến trong ngày: ';
+                    routeInfo.innerHTML = '🚗 <strong>' + labelPrefix + '</strong>' + km + ' km · thời gian di chuyển khoảng <strong>' + mins + ' phút</strong>.';
+                }
+
+                map.fitBounds(line.getBounds(), {padding: [30, 30]});
+            }).catch(err => {
+                if (err.name === 'AbortError' || version !== renderVersion) return;
+                if (routeInfo) {
+                    routeInfo.innerHTML = '🛣️ Đang hiển thị đường nối dự kiến giữa các địa điểm.';
+                }
+            });
         }
 
         if (dayFilter) {
             dayFilter.addEventListener('change', function () {
+                updateLegOptions(this.value);
                 showMapForDay(this.value);
             });
         }
 
+        if (legFilter) {
+            legFilter.addEventListener('change', function () {
+                showMapForDay(dayFilter ? dayFilter.value : 'ALL');
+            });
+        }
+
+        updateLegOptions('ALL');
         showMapForDay('ALL');
+
+        window.itineraryMapApi = {
+            setDay: function(d) {
+                if (dayFilter) dayFilter.value = d;
+                updateLegOptions(d);
+                showMapForDay(d);
+            }
+        };
     })();
 </script>
 
+<%-- SCRIPT 2: ĐIỀU HƯỚNG DAY TABS & ĐO KHOẢNG CÁCH CHẶNG GIỮA CÁC ĐỊA ĐIỂM --%>
 <script>
     (function () {
         const tabs = document.getElementById('itineraryDayTabs');
@@ -333,6 +560,7 @@
         const rows = Array.from(document.querySelectorAll('.lt-stop-card.lt-activity-row'));
         const connectors = Array.from(document.querySelectorAll('.lt-travel-connector.lt-connector-row'));
         const mapDayFilter = document.getElementById('mapDayFilter');
+        const weatherDayFilter = document.getElementById('weatherDayFilter');
         const addBtn = document.getElementById('addDestinationBtn');
         const dates = [...new Set(rows.map(row => row.dataset.activityDate).filter(Boolean))];
 
@@ -345,7 +573,7 @@
             const parts = date.split('-');
             const dateLabel = parts.length === 3 ? parts[2] + '/' + parts[1] : date;
 
-            button.innerHTML = '<span>Day ' + (index + 1) + '</span><small>• ' + dateLabel + '</small>';
+            button.innerHTML = '<span>Ngày ' + (index + 1) + '</span><small>• ' + dateLabel + '</small>';
             tabs.appendChild(button);
         });
 
@@ -398,14 +626,14 @@
                         if (dist && dist > 0) {
                             if (dist < 1000) {
                                 const mins = Math.max(3, Math.round(dist / 80));
-                                textEl.textContent = '🚶 ' + Math.round(dist) + 'm • ' + mins + ' mins walk';
+                                textEl.textContent = '🚶 ' + Math.round(dist) + 'm • ' + mins + ' phút đi bộ';
                             } else {
                                 const km = (dist / 1000).toFixed(1);
                                 const mins = Math.max(4, Math.round(dist / 350));
-                                textEl.textContent = '🚕 ' + km + ' km • ' + mins + ' mins taxi';
+                                textEl.textContent = '🚕 ' + km + ' km • ' + mins + ' phút taxi';
                             }
                         } else {
-                            textEl.textContent = '🚶 800m • 10 mins walk';
+                            textEl.textContent = '🚶 800m • 10 phút đi bộ';
                         }
                     }
                 }
@@ -414,9 +642,9 @@
             if (addBtn) {
                 if (selectedDay !== 'ALL') {
                     const dayIdx = dates.indexOf(selectedDay) + 1;
-                    addBtn.textContent = '+ Add place to Day ' + (dayIdx > 0 ? dayIdx : '');
+                    addBtn.textContent = '+ Thêm địa điểm vào Ngày ' + (dayIdx > 0 ? dayIdx : '');
                 } else {
-                    addBtn.textContent = '+ Add destination';
+                    addBtn.textContent = '+ Thêm địa điểm vào lịch trình';
                 }
             }
         }
@@ -435,33 +663,229 @@
 
             updateConnectorsAndIndices(selectedDay);
 
-            if (mapDayFilter) {
-                const optionExists = Array.from(mapDayFilter.options).some(option => option.value === selectedDay);
-                mapDayFilter.value = selectedDay === 'ALL' || optionExists ? selectedDay : 'ALL';
-                mapDayFilter.dispatchEvent(new Event('change', {bubbles: true}));
+            if (window.itineraryMapApi) {
+                window.itineraryMapApi.setDay(selectedDay);
+            }
+
+            if (weatherDayFilter) {
+                weatherDayFilter.value = selectedDay;
+                weatherDayFilter.dispatchEvent(new Event('change', {bubbles: true}));
             }
         });
 
         updateConnectorsAndIndices('ALL');
     })();
+</script>
 
+<%-- SCRIPT 3: DỰ BÁO THỜI TIẾT OPEN-METEO THEO LỊCH TRÌNH --%>
+<script>
+    (function () {
+        const list = document.getElementById('weatherList');
+        const status = document.getElementById('weatherStatus');
+        const notice = document.getElementById('weatherNotice');
+        const dayFilter = document.getElementById('weatherDayFilter');
+        const weatherCache = new Map();
+        let weatherRenderVersion = 0;
 
+        if (!list || !status || !notice) return;
 
-    function shareTripViaNFC() {
-        if (navigator.share) {
-            navigator.share({
-                title: '${fn:escapeXml(trip.name)} - LocalTrip',
-                text: 'Join our trip on LocalTrip!',
-                url: window.location.href
-            }).catch(() => {});
-        } else if (navigator.clipboard) {
-            navigator.clipboard.writeText(window.location.href).then(() => {
-                alert('Trip link copied to clipboard! Share it with friends or tap an NFC tag.');
-            });
-        } else {
-            alert('Trip link: ' + window.location.href);
+        const points = Array.from(document.querySelectorAll('.itinerary-map-point')).map(LocalTripSchedule.readPoint);
+
+        function escapeHtml(value) {
+            return String(value == null ? '' : value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
         }
-    }
+
+        function hourKey(start) { return LocalTripSchedule.hourKey(start); }
+        function dateDiffDays(dateString) { return LocalTripSchedule.dateDiffDays(dateString); }
+
+        function formatWeatherDate(value) {
+            const parts = value.split('-');
+            return parts.length === 3 ? parts[2] + '/' + parts[1] + '/' + parts[0] : value;
+        }
+
+        function createCard(point, data) {
+            const temperature = data.temperature_2m;
+            const rain = data.precipitation_probability;
+            let weatherEmoji = '☀️';
+            let weatherLabel = 'Nắng ráo';
+            if (rain != null && rain > 50) {
+                weatherEmoji = '🌧️';
+                weatherLabel = 'Có mưa (' + rain + '%)';
+            } else if (rain != null && rain > 20) {
+                weatherEmoji = '⛅';
+                weatherLabel = 'Mây rải rác (' + rain + '%)';
+            }
+
+            return '<div class="col-12 col-sm-6">'
+                    + '<div class="lt-weather-item-card">'
+                    + '<div class="d-flex justify-content-between align-items-start mb-2">'
+                    + '<div class="fw-bold text-truncate" style="font-size: 13px; color: #143b2d; max-width: 80%;">'
+                    + escapeHtml(point.name)
+                    + '</div>'
+                    + '<span style="font-size: 18px;" title="' + weatherLabel + '">' + weatherEmoji + '</span>'
+                    + '</div>'
+                    + '<div class="d-flex justify-content-between align-items-center py-1 border-bottom" style="font-size: 12px; border-color: #f1f5f9;">'
+                    + '<span style="color: #64748b;">Thời gian</span>'
+                    + '<strong style="color: #334155;">' + escapeHtml(formatWeatherDate(point.date)) + ' (' + escapeHtml(point.start) + (point.end ? ' – ' + escapeHtml(point.end) : '') + ')</strong>'
+                    + '</div>'
+                    + '<div class="d-flex justify-content-between align-items-center py-1 border-bottom" style="font-size: 12px; border-color: #f1f5f9;">'
+                    + '<span style="color: #64748b;">Nhiệt độ</span>'
+                    + '<strong style="color: #175b43; font-size: 14px;">' + (temperature == null ? '--' : Number(temperature).toFixed(0) + '°C') + '</strong>'
+                    + '</div>'
+                    + '<div class="d-flex justify-content-between align-items-center pt-1" style="font-size: 12px;">'
+                    + '<span style="color: #64748b;">Khả năng mưa</span>'
+                    + '<strong style="color: ' + (rain > 40 ? '#dc2626' : '#2563eb') + ';">' + (rain == null ? '--' : Number(rain) + '%') + '</strong>'
+                    + '</div>'
+                    + '</div>'
+                    + '</div>';
+        }
+
+        function createUnavailableCard(point, message) {
+            return '<div class="col-12 col-sm-6">'
+                    + '<div class="lt-weather-item-card" style="opacity: 0.85;">'
+                    + '<div class="fw-bold text-truncate mb-2" style="font-size: 13px; color: #143b2d;">'
+                    + escapeHtml(point.name)
+                    + '</div>'
+                    + '<div class="d-flex justify-content-between align-items-center py-1 border-bottom" style="font-size: 12px; border-color: #f1f5f9;">'
+                    + '<span style="color: #64748b;">Thời gian</span>'
+                    + '<strong style="color: #334155;">' + escapeHtml(formatWeatherDate(point.date)) + ' (' + escapeHtml(point.start) + ')</strong>'
+                    + '</div>'
+                    + '<p class="text-muted small mt-2 mb-0" style="font-size: 11px;">'
+                    + escapeHtml(message)
+                    + '</p>'
+                    + '</div>'
+                    + '</div>';
+        }
+
+        async function fetchWeather(point) {
+            if (!LocalTripSchedule.hasCoordinates(point)) {
+                return {unavailable: true, reason: 'Địa điểm chưa có tọa độ GPS hợp lệ.'};
+            }
+            if (!Number.isFinite(dateDiffDays(point.date))) {
+                return {unavailable: true, reason: 'Ngày hoạt động không hợp lệ.'};
+            }
+            const hour = hourKey(point.start);
+            if (!hour) {
+                return {unavailable: true, reason: 'Chưa có khung giờ hợp lệ.'};
+            }
+
+            const diff = dateDiffDays(point.date);
+            if (diff < 0 || diff > 15) {
+                return {
+                    unavailable: true,
+                    reason: diff < 0 ? 'Ngày hoạt động đã qua.' : 'Ngày đi còn quá xa (ngoài phạm vi dự báo 16 ngày).'
+                };
+            }
+
+            const url = 'https://api.open-meteo.com/v1/forecast'
+                      + '?latitude=' + encodeURIComponent(point.lat)
+                      + '&longitude=' + encodeURIComponent(point.lng)
+                      + '&hourly=temperature_2m,precipitation_probability'
+                      + '&timezone=Asia%2FHo_Chi_Minh'
+                      + '&start_date=' + encodeURIComponent(point.date)
+                      + '&end_date=' + encodeURIComponent(point.date);
+
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 12000);
+            let response, data;
+            try {
+                response = await fetch(url, {signal: controller.signal});
+                if (!response.ok) throw new Error('Weather API HTTP Error');
+                data = await response.json();
+            } finally {
+                clearTimeout(timeout);
+            }
+
+            const hourly = data.hourly;
+            if (!hourly || !Array.isArray(hourly.time)) {
+                throw new Error('Dữ liệu thời tiết không hợp lệ.');
+            }
+
+            const index = hourly.time.findIndex(value => value === point.date + 'T' + hour);
+            if (index < 0) {
+                throw new Error('Không tìm thấy giờ dự báo.');
+            }
+
+            return {
+                temperature_2m: (hourly.temperature_2m ? hourly.temperature_2m[index] : null),
+                precipitation_probability: (hourly.precipitation_probability ? hourly.precipitation_probability[index] : null)
+            };
+        }
+
+        function getCachedWeather(point) {
+            const key = [point.lat, point.lng, point.date, hourKey(point.start)].join('|');
+            if (!weatherCache.has(key)) {
+                const pending = fetchWeather(point).catch(err => {
+                    weatherCache.delete(key);
+                    throw err;
+                });
+                weatherCache.set(key, pending);
+            }
+            return weatherCache.get(key);
+        }
+
+        async function loadWeather() {
+            const currentVersion = ++weatherRenderVersion;
+            const selectedDay = dayFilter ? dayFilter.value : 'ALL';
+
+            const selectedPoints = points.filter(p => selectedDay === 'ALL' || p.date === selectedDay);
+
+            list.innerHTML = '';
+            notice.textContent = '';
+            notice.classList.add('d-none');
+
+            if (!selectedPoints.length) {
+                status.textContent = 'Chưa có dữ liệu';
+                notice.classList.remove('d-none');
+                notice.textContent = 'Chưa có hoạt động đủ tọa độ và khung giờ để dự báo thời tiết.';
+                return;
+            }
+
+            status.textContent = 'Đang tải dự báo...';
+
+            let successCount = 0;
+            const fragments = [];
+
+            for (const point of selectedPoints) {
+                if (currentVersion !== weatherRenderVersion) return;
+                try {
+                    const data = await getCachedWeather(point);
+                    if (currentVersion !== weatherRenderVersion) return;
+                    if (data.unavailable) {
+                        fragments.push(createUnavailableCard(point, data.reason));
+                    } else {
+                        successCount++;
+                        fragments.push(createCard(point, data));
+                    }
+                } catch (error) {
+                    if (currentVersion !== weatherRenderVersion) return;
+                    fragments.push(createUnavailableCard(point, 'Chưa tải được thời tiết lúc này. Hãy thử lại sau.'));
+                }
+            }
+
+            if (currentVersion !== weatherRenderVersion) return;
+
+            list.innerHTML = fragments.join('');
+            status.textContent = successCount + '/' + selectedPoints.length + ' địa điểm có dự báo';
+        }
+
+        // Khởi tạo các tùy chọn ngày cho weatherDayFilter
+        const dates = [...new Set(points.map(p => p.date).filter(Boolean))];
+        dates.forEach((date, idx) => {
+            const opt = document.createElement('option');
+            opt.value = date;
+            opt.textContent = 'Ngày ' + (idx + 1) + ' (' + formatWeatherDate(date) + ')';
+            dayFilter.appendChild(opt);
+        });
+
+        dayFilter.addEventListener('change', loadWeather);
+        loadWeather();
+    })();
 </script>
 
 <%@ include file="/WEB-INF/views/common/footer.jsp" %>
