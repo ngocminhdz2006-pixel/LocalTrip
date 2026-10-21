@@ -3,7 +3,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>  
 
-<c:set var="pageTitle" value="Lịch trình chuyến đi" scope="request"/>
+<c:set var="pageTitle" value="Trip Itinerary" scope="request"/>
 <c:set var="currentTrip" value="${trip}" scope="request"/>
 
 <fmt:setLocale value="en_US" scope="page"/>
@@ -15,37 +15,37 @@
 
 <div class="lt-itinerary-container">
 
-    <%-- 1. Quick Planning Actions Hub (Thêm địa điểm & Xếp lịch) --%>
+    <%-- 1. Quick Planning Actions Hub (Add Destinations & Auto-Schedule) --%>
     <div class="lt-itinerary-actions-hub">
         <div class="lt-actions-hub-grid">
             <a href="${pageContext.request.contextPath}/places?tripId=${trip.id}" class="lt-action-hub-btn primary">
                 <span class="lt-action-hub-icon">📍</span>
                 <div class="lt-action-hub-text">
-                    <strong>+ Thêm địa điểm</strong>
-                    <small>Chọn từ danh mục</small>
+                    <strong>+ Add Destination</strong>
+                    <small>Browse catalog</small>
                 </div>
             </a>
             <c:if test="${trip.role == 'OWNER' and (trip.status == 'PLANNING' or trip.status == 'ONGOING')}">
                 <a href="${pageContext.request.contextPath}/itinerary/auto?tripId=${trip.id}" class="lt-action-hub-btn secondary">
                     <span class="lt-action-hub-icon">✨</span>
                     <div class="lt-action-hub-text">
-                        <strong>Tự xếp lịch AI</strong>
-                        <small>Theo sở thích nhóm</small>
+                        <strong>✨ AI Auto-Schedule</strong>
+                        <small>Group smart generator</small>
                     </div>
                 </a>
             </c:if>
             <a href="${pageContext.request.contextPath}/combos?tripId=${trip.id}" class="lt-action-hub-btn secondary">
                 <span class="lt-action-hub-icon">🍱</span>
                 <div class="lt-action-hub-text">
-                    <strong>Chọn Combo</strong>
-                    <small>Lịch trình gợi ý sẵn</small>
+                    <strong>🍱 Curated Combos</strong>
+                    <small>Explore day-plans</small>
                 </div>
             </a>
             <a href="${pageContext.request.contextPath}/recommendations?tripId=${trip.id}" class="lt-action-hub-btn secondary">
                 <span class="lt-action-hub-icon">💡</span>
                 <div class="lt-action-hub-text">
-                    <strong>Gợi ý điểm đến</strong>
-                    <small>Top bình chọn nhóm</small>
+                    <strong>💡 Top Suggestions</strong>
+                    <small>Group favorites</small>
                 </div>
             </a>
         </div>
@@ -55,8 +55,8 @@
     <div class="lt-day-tabs-wrap">
         <nav class="lt-day-tabs" id="itineraryDayTabs" aria-label="Itinerary days">
             <button type="button" class="lt-day-tab is-active" data-day="ALL">
-                <span>Tất cả ngày</span>
-                <small>Toàn cảnh</small>
+                <span>All Days</span>
+                <small>Overview</small>
             </button>
         </nav>
     </div>
@@ -66,13 +66,13 @@
         <div id="itineraryMap" class="localtrip-map"></div>
     </div>
 
-    <%-- 4. Chặng đường theo ngày & Nút mở chỉ đường Google Maps --%>
+    <%-- 4. Daily Legs & Google Maps Directions --%>
     <div class="lt-map-controls-card">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div class="d-flex align-items-center gap-2 flex-grow-1">
-                <span style="font-size: 13px; font-weight: 700; color: #143b2d; white-space: nowrap;">🛣️ Chặng:</span>
+                <span style="font-size: 13px; font-weight: 700; color: #143b2d; white-space: nowrap;">🛣️ Route Leg:</span>
                 <select id="mapLegFilter" class="form-select form-select-sm" style="max-width: 280px; font-size: 12px; border-radius: 8px;">
-                    <option value="ALL">Toàn bộ trong ngày</option>
+                    <option value="ALL">Full day route (All legs)</option>
                 </select>
             </div>
 
@@ -81,17 +81,17 @@
                style="background: #175b43; color: #ffffff; font-size: 12px; font-weight: 600; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;"
                target="_blank"
                rel="noopener noreferrer">
-                🗺️ Chỉ đường (Google Maps) ↗
+                🗺️ Google Maps Directions ↗
             </a>
         </div>
 
         <div id="mapRouteInfo" class="lt-route-info-box d-none"></div>
         <div id="mapEmptyState" class="alert alert-light border mt-2 mb-0 d-none" style="font-size: 12px;">
-            Ngày này chưa có địa điểm nào có tọa độ GPS để vẽ lộ trình.
+            No GPS coordinates available for this day to draw routes.
         </div>
     </div>
 
-    <%-- Bộ lọc ngày ngầm đồng bộ với Map --%>
+    <%-- Hidden day filter synchronized with Map --%>
     <select id="mapDayFilter" class="d-none" aria-hidden="true">
         <option value="ALL">ALL</option>
         <c:set var="prevMapDate" value=""/>
@@ -109,10 +109,10 @@
         <c:choose>
             <c:when test="${empty items}">
                 <div class="app-card text-center p-4" style="background:#ffffff; border:1px dashed #cbd5e1; border-radius:16px;">
-                    <p class="text-muted mb-2">Chưa có hoạt động nào trong lịch trình.</p>
+                    <p class="text-muted mb-2">No activities scheduled yet.</p>
                     <c:if test="${trip.role == 'OWNER' and (trip.status == 'PLANNING' or trip.status == 'ONGOING')}">
                         <a href="${pageContext.request.contextPath}/places?tripId=${trip.id}" class="btn btn-sm" style="background:#175b43; color:#fff;">
-                            + Thêm địa điểm đầu tiên
+                            + Add First Destination
                         </a>
                     </c:if>
                 </div>
@@ -121,7 +121,7 @@
                 <c:forEach var="item" items="${items}" varStatus="status">
                     <div class="lt-stop-card lt-activity-row" data-activity-date="${item.date}" data-lat="${item.latitude}" data-lng="${item.longitude}">
                         <div class="lt-stop-left">
-                            <span class="lt-drag-handle" title="Thứ tự">⋮⋮</span>
+                            <span class="lt-drag-handle" title="Order">⋮⋮</span>
                             <span class="lt-stop-badge">${status.index + 1}</span>
                             <img src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=100&auto=format&fit=crop&q=80"
                                  class="lt-stop-thumb"
@@ -136,7 +136,7 @@
                                                 – <fmt:formatDate value="${item.endTime}" pattern="HH:mm"/>
                                             </c:if>
                                         </c:when>
-                                        <c:otherwise>Cả ngày</c:otherwise>
+                                        <c:otherwise>All day</c:otherwise>
                                     </c:choose>
                                 </div>
                                 <div class="lt-stop-name" title="<c:out value='${item.placeName}'/>">
@@ -153,25 +153,25 @@
                                 <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size:9px;">Ongoing</span>
                             </c:if>
 
-                            <%-- Nút chỉ đường 1 chạm tới từng địa điểm trên Google Maps --%>
+                            <%-- One-click Google Maps directions button --%>
                             <c:if test="${not empty item.latitude and not empty item.longitude}">
                                 <a class="lt-stop-directions-link"
                                    href="https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}&travelmode=driving"
                                    target="_blank" rel="noopener noreferrer"
-                                   title="Chỉ đường Google Maps đến địa điểm này">
-                                    🧭 Chỉ đường
+                                   title="Google Maps directions to this place">
+                                    🧭 Directions
                                 </a>
                             </c:if>
 
                             <c:if test="${trip.role == 'OWNER' and (trip.status == 'PLANNING' or trip.status == 'ONGOING')}">
                                 <a class="lt-stop-change-link" href="${pageContext.request.contextPath}/itinerary/edit?tripId=${trip.id}&amp;itemId=${item.id}">
-                                    Sửa
+                                    Edit
                                 </a>
                             </c:if>
                         </div>
                     </div>
 
-                    <%-- Chặng di chuyển nối giữa 2 địa điểm --%>
+                    <%-- Travel connector between 2 stops --%>
                     <div class="lt-travel-connector lt-connector-row" data-activity-date="${item.date}">
                         <span class="lt-connector-line"></span>
                         <span class="lt-connector-text">🚶 800m • 10 mins walk</span>
@@ -182,22 +182,22 @@
 
         <c:if test="${trip.role == 'OWNER' and (trip.status == 'PLANNING' or trip.status == 'ONGOING')}">
             <a id="addDestinationBtn" href="${pageContext.request.contextPath}/places?tripId=${trip.id}" class="lt-add-stop-btn">
-                + Thêm địa điểm vào lịch trình
+                + Add Destination to Itinerary
             </a>
         </c:if>
     </div>
 
-    <%-- 6. Dự báo thời tiết theo lịch trình --%>
+    <%-- 6. Scheduled Weather Forecast --%>
     <div class="lt-card-weather" id="itineraryWeatherCard">
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <div>
                 <h3 style="font-size: 15px; font-weight: 700; color: #143b2d; margin: 0; display: flex; align-items: center; gap: 6px;">
-                    <span>🌤️</span> Dự báo thời tiết theo lịch trình
+                    <span>🌤️</span> Scheduled Weather Forecast
                 </h3>
-                <span style="font-size: 11px; color: #64748b;">Nhiệt độ &amp; khả năng mưa theo tọa độ và giờ ghé thăm</span>
+                <span style="font-size: 11px; color: #64748b;">Temperature &amp; precipitation forecast by GPS coordinates and visit hours</span>
             </div>
             <span class="badge" id="weatherStatus" style="background: #e2f5ea; color: #175b43; border: 1px solid #a7f3d0; font-size: 11px; padding: 4px 8px;">
-                Đang tải...
+                Loading...
             </span>
         </div>
 
@@ -206,10 +206,10 @@
 
         <div class="d-flex align-items-center gap-2 mb-3">
             <label for="weatherDayFilter" style="font-size: 12px; font-weight: 600; color: #334155; margin: 0; white-space: nowrap;">
-                Xem ngày:
+                Filter by day:
             </label>
             <select id="weatherDayFilter" class="form-select form-select-sm" style="max-width: 200px; font-size: 12px; border-radius: 8px;">
-                <option value="ALL">Tất cả các ngày</option>
+                <option value="ALL">All Days</option>
             </select>
         </div>
 
@@ -219,23 +219,23 @@
     <%-- 7. Bottom Action Bar --%>
     <div class="lt-itinerary-footer-bar">
         <div class="lt-group-status-box">
-            <span class="lt-group-status-lbl">Trạng thái lịch trình</span>
+            <span class="lt-group-status-lbl">Itinerary Status</span>
             <c:choose>
                 <c:when test="${trip.status == 'ONGOING'}">
-                    <span class="lt-group-status-cnt" style="color: #059669;">✓ Đã xác nhận &amp; Đang đi</span>
+                    <span class="lt-group-status-cnt" style="color: #059669;">✓ Confirmed &amp; Ongoing</span>
                 </c:when>
                 <c:when test="${trip.status == 'COMPLETED'}">
-                    <span class="lt-group-status-cnt" style="color: #64748b;">Đã hoàn thành</span>
+                    <span class="lt-group-status-cnt" style="color: #64748b;">Completed</span>
                 </c:when>
                 <c:when test="${trip.status == 'CANCELLED'}">
-                    <span class="lt-group-status-cnt" style="color: #ef4444;">Đã hủy</span>
+                    <span class="lt-group-status-cnt" style="color: #ef4444;">Cancelled</span>
                 </c:when>
                 <c:when test="${empty items}">
-                    <span class="lt-group-status-cnt" style="color: #f59e0b;">Chưa có hoạt động</span>
+                    <span class="lt-group-status-cnt" style="color: #f59e0b;">No activities</span>
                 </c:when>
                 <c:otherwise>
                     <span class="lt-group-status-cnt" style="color: #165b43;">
-                        ${fn:length(items)} hoạt động đã lưu
+                        ${fn:length(items)} saved activities
                     </span>
                 </c:otherwise>
             </c:choose>
@@ -244,38 +244,38 @@
         <c:choose>
             <c:when test="${trip.status == 'ONGOING'}">
                 <button type="button" class="lt-btn-confirm-action" style="background: #059669; opacity: 0.95;" disabled>
-                    ✓ Lịch trình đang chạy
+                    ✓ Schedule Active
                 </button>
             </c:when>
             <c:when test="${trip.status == 'COMPLETED' or trip.status == 'CANCELLED'}">
                 <button type="button" class="lt-btn-confirm-action" style="background: #94a3b8;" disabled>
-                    Chuyến đi ${trip.status}
+                    Trip ${trip.status}
                 </button>
             </c:when>
             <c:when test="${empty items}">
                 <a href="${pageContext.request.contextPath}/places?tripId=${trip.id}" class="lt-btn-confirm-action" style="text-decoration: none; text-align: center; display: inline-flex; align-items: center; justify-content: center;">
-                    + Thêm địa điểm trước
+                    + Add Places First
                 </a>
             </c:when>
             <c:when test="${trip.role == 'OWNER'}">
                 <form method="post" action="${pageContext.request.contextPath}/itinerary/confirm" style="margin: 0;"
-                      onsubmit="return confirm('Xác nhận chốt lịch trình này cho cả nhóm?');">
+                      onsubmit="return confirm('Confirm and finalize this itinerary for the entire group?');">
                     <input type="hidden" name="tripId" value="${trip.id}">
                     <button id="confirmItineraryBtn" type="submit" class="lt-btn-confirm-action">
-                        ✓ Chốt lịch trình
+                        ✓ Confirm Itinerary
                     </button>
                 </form>
             </c:when>
             <c:otherwise>
-                <button type="button" class="lt-btn-confirm-action" style="opacity: 0.75; cursor: default;" title="Chỉ Trưởng nhóm mới có quyền chốt lịch trình" disabled>
-                    Chờ Trưởng nhóm chốt
+                <button type="button" class="lt-btn-confirm-action" style="opacity: 0.75; cursor: default;" title="Only the trip owner can confirm the itinerary" disabled>
+                    Awaiting Owner Confirmation
                 </button>
             </c:otherwise>
         </c:choose>
     </div>
 </div>
 
-<%-- Dữ liệu tọa độ cho Leaflet Map & Weather --%>
+<%-- GPS coordinates for Leaflet Map & Weather --%>
 <div id="itineraryMapData" class="d-none" aria-hidden="true">
     <c:forEach var="item" items="${items}">
         <c:if test="${item.activityStatus != 'CANCELLED' and item.placeId > 0 and not empty item.latitude and not empty item.longitude}">
@@ -295,7 +295,7 @@
 <script src="${pageContext.request.contextPath}/js/itinerary-data.js?v=2"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<%-- SCRIPT 1: BẢN ĐỒ, TÍNH CHẶNG ĐƯỜNG THEO NGÀY (OSRM) & CHỈ ĐƯỜNG GOOGLE MAPS --%>
+<%-- SCRIPT 1: Map, OSRM Route Calculation & Google Maps Directions --%>
 <script>
     (function () {
         const mapElement = document.getElementById('itineraryMap');
@@ -352,12 +352,12 @@
             if (!legFilter) return;
             const points = pointsForDay(day);
 
-            legFilter.innerHTML = '<option value="ALL">Toàn bộ trong ngày (Tất cả chặng)</option>';
+            legFilter.innerHTML = '<option value="ALL">Full day route (All legs)</option>';
             legFilter.disabled = (day === 'ALL' || points.length < 2);
 
             if (day !== 'ALL') {
                 for (let i = 0; i < points.length - 1; i++) {
-                    const label = 'Chặng ' + (i + 1) + ': ' + points[i].name + ' → ' + points[i + 1].name;
+                    const label = 'Leg ' + (i + 1) + ': ' + points[i].name + ' → ' + points[i + 1].name;
                     const opt = document.createElement('option');
                     opt.value = String(i);
                     opt.textContent = label;
@@ -379,7 +379,7 @@
             }
 
             if (countElement) {
-                countElement.textContent = points.length + ' điểm';
+                countElement.textContent = points.length + ' stops';
             }
 
             if (!points.length) {
@@ -407,7 +407,7 @@
                 const popupHtml = '<div style="font-size:12px; line-height:1.4;">'
                                 + '<strong>' + number + '. ' + point.name + '</strong><br>'
                                 + '<span style="color:#64748b;">' + point.date + (point.start ? ' (' + point.start + ')' : '') + '</span><br>'
-                                + '<a href="' + directUrl + '" target="_blank" rel="noopener noreferrer" style="color:#175b43; font-weight:700; text-decoration:none;">🧭 Chỉ đường Google Maps ↗</a>'
+                                + '<a href="' + directUrl + '" target="_blank" rel="noopener noreferrer" style="color:#175b43; font-weight:700; text-decoration:none;">🧭 Directions Google Maps ↗</a>'
                                 + '</div>';
 
                 L.marker([point.lat, point.lng], {icon: icon})
@@ -419,7 +419,7 @@
 
             if (routeInfo) routeInfo.classList.remove('d-none');
 
-            // TRƯỜNG HỢP: TẤT CẢ NGÀY (ALL)
+            // ALL DAYS OVERVIEW
             if (day === 'ALL') {
                 const groups = new Map();
                 points.forEach(point => {
@@ -442,36 +442,36 @@
 
                 if (directionsLink && points.length > 0) {
                     directionsLink.href = LocalTripSchedule.directionsUrl(points);
-                    directionsLink.innerHTML = '🗺️ Chỉ đường toàn bộ (Google Maps) ↗';
+                    directionsLink.innerHTML = '🗺️ Full Route Directions (Google Maps) ↗';
                     directionsLink.classList.remove('d-none');
                 }
 
                 if (routeInfo) {
-                    routeInfo.innerHTML = '🗺️ Đang hiển thị tuyến nối các ngày. Chọn từng ngày ở trên để xem chi tiết từng chặng đường.';
+                    routeInfo.innerHTML = '🗺️ Showing routes between days. Select a specific day above to view leg details.';
                 }
                 return;
             }
 
-            // TRƯỜNG HỢP: 1 ĐỊA ĐIỂM
+            // SINGLE STOP
             if (points.length === 1) {
                 const dest = points[0];
                 if (directionsLink) {
                     directionsLink.href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(dest.lat + ',' + dest.lng) + '&travelmode=driving';
-                    directionsLink.innerHTML = '🗺️ Chỉ đường từ vị trí hiện tại (Google Maps) ↗';
+                    directionsLink.innerHTML = '🗺️ Directions from current location (Google Maps) ↗';
                     directionsLink.classList.remove('d-none');
                 }
                 if (routeInfo) {
-                    routeInfo.innerHTML = '📍 1 điểm đến. Bấm nút <strong>Chỉ đường</strong> để Google Maps dẫn từ vị trí hiện tại của bạn.';
+                    routeInfo.innerHTML = '📍 1 stop. Click <strong>Directions</strong> to navigate from your current location with Google Maps.';
                 }
                 return;
             }
 
-            // TRƯỜNG HỢP: NHIỀU ĐỊA ĐIỂM TRONG NGÀY HOẶC CHẶNG CỤ THỂ
+            // MULTIPLE STOPS / SPECIFIC LEG
             if (directionsLink) {
                 directionsLink.href = LocalTripSchedule.directionsUrl(points);
                 directionsLink.innerHTML = (legFilter && legFilter.value === 'ALL')
-                    ? '🗺️ Chỉ đường cả ngày (Google Maps) ↗'
-                    : '🗺️ Chỉ đường chặng này (Google Maps) ↗';
+                    ? '🗺️ Full Day Directions (Google Maps) ↗'
+                    : '🗺️ Leg Directions (Google Maps) ↗';
                 directionsLink.classList.remove('d-none');
             }
 
@@ -483,7 +483,7 @@
             }).addTo(linesLayer);
 
             if (routeInfo) {
-                routeInfo.innerHTML = '⏳ Đang tính toán khoảng cách và thời gian di chuyển đường bộ...';
+                routeInfo.innerHTML = '⏳ Calculating driving distance and duration...';
             }
 
             requestController = new AbortController();
@@ -512,15 +512,15 @@
                 const mins = Math.max(2, Math.round(route.duration / 60));
 
                 if (routeInfo) {
-                    const labelPrefix = (legFilter && legFilter.value !== 'ALL') ? 'Chặng đã chọn: ' : 'Tuyến trong ngày: ';
-                    routeInfo.innerHTML = '🚗 <strong>' + labelPrefix + '</strong>' + km + ' km · thời gian di chuyển khoảng <strong>' + mins + ' phút</strong>.';
+                    const labelPrefix = (legFilter && legFilter.value !== 'ALL') ? 'Selected leg: ' : 'Full day route: ';
+                    routeInfo.innerHTML = '🚗 <strong>' + labelPrefix + '</strong>' + km + ' km · approx. <strong>' + mins + ' mins</strong> drive.';
                 }
 
                 map.fitBounds(line.getBounds(), {padding: [30, 30]});
             }).catch(err => {
                 if (err.name === 'AbortError' || version !== renderVersion) return;
                 if (routeInfo) {
-                    routeInfo.innerHTML = '🛣️ Đang hiển thị đường nối dự kiến giữa các địa điểm.';
+                    routeInfo.innerHTML = '🛣️ Showing estimated route between stops.';
                 }
             });
         }
@@ -551,7 +551,7 @@
     })();
 </script>
 
-<%-- SCRIPT 2: ĐIỀU HƯỚNG DAY TABS & ĐO KHOẢNG CÁCH CHẶNG GIỮA CÁC ĐỊA ĐIỂM --%>
+<%-- SCRIPT 2: Day Tabs Navigation & Inter-stop Distance Measurement --%>
 <script>
     (function () {
         const tabs = document.getElementById('itineraryDayTabs');
@@ -573,7 +573,7 @@
             const parts = date.split('-');
             const dateLabel = parts.length === 3 ? parts[2] + '/' + parts[1] : date;
 
-            button.innerHTML = '<span>Ngày ' + (index + 1) + '</span><small>• ' + dateLabel + '</small>';
+            button.innerHTML = '<span>Day ' + (index + 1) + '</span><small>• ' + dateLabel + '</small>';
             tabs.appendChild(button);
         });
 
@@ -626,14 +626,14 @@
                         if (dist && dist > 0) {
                             if (dist < 1000) {
                                 const mins = Math.max(3, Math.round(dist / 80));
-                                textEl.textContent = '🚶 ' + Math.round(dist) + 'm • ' + mins + ' phút đi bộ';
+                                textEl.textContent = '🚶 ' + Math.round(dist) + 'm • ' + mins + ' mins walk';
                             } else {
                                 const km = (dist / 1000).toFixed(1);
                                 const mins = Math.max(4, Math.round(dist / 350));
-                                textEl.textContent = '🚕 ' + km + ' km • ' + mins + ' phút taxi';
+                                textEl.textContent = '🚕 ' + km + ' km • ' + mins + ' mins taxi';
                             }
                         } else {
-                            textEl.textContent = '🚶 800m • 10 phút đi bộ';
+                            textEl.textContent = '🚶 800m • 10 mins walk';
                         }
                     }
                 }
@@ -642,9 +642,9 @@
             if (addBtn) {
                 if (selectedDay !== 'ALL') {
                     const dayIdx = dates.indexOf(selectedDay) + 1;
-                    addBtn.textContent = '+ Thêm địa điểm vào Ngày ' + (dayIdx > 0 ? dayIdx : '');
+                    addBtn.textContent = '+ Add Destination to Day ' + (dayIdx > 0 ? dayIdx : '');
                 } else {
-                    addBtn.textContent = '+ Thêm địa điểm vào lịch trình';
+                    addBtn.textContent = '+ Add Destination to Itinerary';
                 }
             }
         }
@@ -677,7 +677,7 @@
     })();
 </script>
 
-<%-- SCRIPT 3: DỰ BÁO THỜI TIẾT OPEN-METEO THEO LỊCH TRÌNH --%>
+<%-- SCRIPT 3: Open-Meteo Weather Forecast --%>
 <script>
     (function () {
         const list = document.getElementById('weatherList');
@@ -712,13 +712,13 @@
             const temperature = data.temperature_2m;
             const rain = data.precipitation_probability;
             let weatherEmoji = '☀️';
-            let weatherLabel = 'Nắng ráo';
+            let weatherLabel = 'Clear & Sunny';
             if (rain != null && rain > 50) {
                 weatherEmoji = '🌧️';
-                weatherLabel = 'Có mưa (' + rain + '%)';
+                weatherLabel = 'Rain expected (' + rain + '%)';
             } else if (rain != null && rain > 20) {
                 weatherEmoji = '⛅';
-                weatherLabel = 'Mây rải rác (' + rain + '%)';
+                weatherLabel = 'Partly Cloudy (' + rain + '%)';
             }
 
             return '<div class="col-12 col-sm-6">'
@@ -730,15 +730,15 @@
                     + '<span style="font-size: 18px;" title="' + weatherLabel + '">' + weatherEmoji + '</span>'
                     + '</div>'
                     + '<div class="d-flex justify-content-between align-items-center py-1 border-bottom" style="font-size: 12px; border-color: #f1f5f9;">'
-                    + '<span style="color: #64748b;">Thời gian</span>'
+                    + '<span style="color: #64748b;">Time</span>'
                     + '<strong style="color: #334155;">' + escapeHtml(formatWeatherDate(point.date)) + ' (' + escapeHtml(point.start) + (point.end ? ' – ' + escapeHtml(point.end) : '') + ')</strong>'
                     + '</div>'
                     + '<div class="d-flex justify-content-between align-items-center py-1 border-bottom" style="font-size: 12px; border-color: #f1f5f9;">'
-                    + '<span style="color: #64748b;">Nhiệt độ</span>'
+                    + '<span style="color: #64748b;">Temperature</span>'
                     + '<strong style="color: #175b43; font-size: 14px;">' + (temperature == null ? '--' : Number(temperature).toFixed(0) + '°C') + '</strong>'
                     + '</div>'
                     + '<div class="d-flex justify-content-between align-items-center pt-1" style="font-size: 12px;">'
-                    + '<span style="color: #64748b;">Khả năng mưa</span>'
+                    + '<span style="color: #64748b;">Precipitation</span>'
                     + '<strong style="color: ' + (rain > 40 ? '#dc2626' : '#2563eb') + ';">' + (rain == null ? '--' : Number(rain) + '%') + '</strong>'
                     + '</div>'
                     + '</div>'
@@ -752,7 +752,7 @@
                     + escapeHtml(point.name)
                     + '</div>'
                     + '<div class="d-flex justify-content-between align-items-center py-1 border-bottom" style="font-size: 12px; border-color: #f1f5f9;">'
-                    + '<span style="color: #64748b;">Thời gian</span>'
+                    + '<span style="color: #64748b;">Time</span>'
                     + '<strong style="color: #334155;">' + escapeHtml(formatWeatherDate(point.date)) + ' (' + escapeHtml(point.start) + ')</strong>'
                     + '</div>'
                     + '<p class="text-muted small mt-2 mb-0" style="font-size: 11px;">'
@@ -764,21 +764,21 @@
 
         async function fetchWeather(point) {
             if (!LocalTripSchedule.hasCoordinates(point)) {
-                return {unavailable: true, reason: 'Địa điểm chưa có tọa độ GPS hợp lệ.'};
+                return {unavailable: true, reason: 'Destination has no valid GPS coordinates.'};
             }
             if (!Number.isFinite(dateDiffDays(point.date))) {
-                return {unavailable: true, reason: 'Ngày hoạt động không hợp lệ.'};
+                return {unavailable: true, reason: 'Invalid activity date.'};
             }
             const hour = hourKey(point.start);
             if (!hour) {
-                return {unavailable: true, reason: 'Chưa có khung giờ hợp lệ.'};
+                return {unavailable: true, reason: 'No valid scheduled time.'};
             }
 
             const diff = dateDiffDays(point.date);
             if (diff < 0 || diff > 15) {
                 return {
                     unavailable: true,
-                    reason: diff < 0 ? 'Ngày hoạt động đã qua.' : 'Ngày đi còn quá xa (ngoài phạm vi dự báo 16 ngày).'
+                    reason: diff < 0 ? 'Activity date is in the past.' : 'Trip date is outside the 16-day forecast range.'
                 };
             }
 
@@ -803,12 +803,12 @@
 
             const hourly = data.hourly;
             if (!hourly || !Array.isArray(hourly.time)) {
-                throw new Error('Dữ liệu thời tiết không hợp lệ.');
+                throw new Error('Weather data unavailable.');
             }
 
             const index = hourly.time.findIndex(value => value === point.date + 'T' + hour);
             if (index < 0) {
-                throw new Error('Không tìm thấy giờ dự báo.');
+                throw new Error('Forecast hour not found.');
             }
 
             return {
@@ -840,13 +840,13 @@
             notice.classList.add('d-none');
 
             if (!selectedPoints.length) {
-                status.textContent = 'Chưa có dữ liệu';
+                status.textContent = 'No forecast data';
                 notice.classList.remove('d-none');
-                notice.textContent = 'Chưa có hoạt động đủ tọa độ và khung giờ để dự báo thời tiết.';
+                notice.textContent = 'No activities with valid coordinates and scheduled time to forecast.';
                 return;
             }
 
-            status.textContent = 'Đang tải dự báo...';
+            status.textContent = 'Loading weather forecast...';
 
             let successCount = 0;
             const fragments = [];
@@ -864,22 +864,22 @@
                     }
                 } catch (error) {
                     if (currentVersion !== weatherRenderVersion) return;
-                    fragments.push(createUnavailableCard(point, 'Chưa tải được thời tiết lúc này. Hãy thử lại sau.'));
+                    fragments.push(createUnavailableCard(point, 'Weather unavailable at the moment. Please try again later.'));
                 }
             }
 
             if (currentVersion !== weatherRenderVersion) return;
 
             list.innerHTML = fragments.join('');
-            status.textContent = successCount + '/' + selectedPoints.length + ' địa điểm có dự báo';
+            status.textContent = successCount + '/' + selectedPoints.length + ' stops forecasted';
         }
 
-        // Khởi tạo các tùy chọn ngày cho weatherDayFilter
+        // Initialize day filter options for weatherDayFilter
         const dates = [...new Set(points.map(p => p.date).filter(Boolean))];
         dates.forEach((date, idx) => {
             const opt = document.createElement('option');
             opt.value = date;
-            opt.textContent = 'Ngày ' + (idx + 1) + ' (' + formatWeatherDate(date) + ')';
+            opt.textContent = 'Day ' + (idx + 1) + ' (' + formatWeatherDate(date) + ')';
             dayFilter.appendChild(opt);
         });
 

@@ -269,7 +269,7 @@ public class ItineraryServlet extends HttpServlet {
         if (trip == null) {
             response.sendError(
                     HttpServletResponse.SC_NOT_FOUND,
-                    "Không tìm thấy Trip hoặc bạn không có quyền truy cập."
+                    "Trip not found or access denied."
             );
             return;
         }
@@ -316,7 +316,7 @@ public class ItineraryServlet extends HttpServlet {
         if (trip == null) {
             response.sendError(
                     HttpServletResponse.SC_NOT_FOUND,
-                    "Không tìm thấy Trip hoặc bạn không có quyền truy cập."
+                    "Trip not found or access denied."
             );
             return;
         }
@@ -324,7 +324,7 @@ public class ItineraryServlet extends HttpServlet {
         if (!"OWNER".equalsIgnoreCase(trip.getRole())) {
             response.sendError(
                     HttpServletResponse.SC_FORBIDDEN,
-                    "Chỉ Owner mới có thể thêm lịch trình."
+                    "Only the trip owner can add items to the itinerary."
             );
             return;
         }
@@ -333,7 +333,7 @@ public class ItineraryServlet extends HttpServlet {
 
             response.sendError(
                     HttpServletResponse.SC_FORBIDDEN,
-                    "Không thể thay đổi lịch trình của chuyến đi đã hoàn thành hoặc đã hủy."
+                    "Cannot modify itinerary of a completed or cancelled trip."
             );
             return;
         }
@@ -388,7 +388,7 @@ public class ItineraryServlet extends HttpServlet {
         if (trip == null) {
             response.sendError(
                     HttpServletResponse.SC_NOT_FOUND,
-                    "Không tìm thấy Trip hoặc bạn không có quyền truy cập."
+                    "Trip not found or access denied."
             );
             return;
         }
@@ -396,7 +396,7 @@ public class ItineraryServlet extends HttpServlet {
         if (!"OWNER".equalsIgnoreCase(trip.getRole())) {
             response.sendError(
                     HttpServletResponse.SC_FORBIDDEN,
-                    "Chỉ Owner mới có thể thêm lịch trình."
+                    "Only the trip owner can add items to the itinerary."
             );
             return;
         }
@@ -405,7 +405,7 @@ public class ItineraryServlet extends HttpServlet {
 
             response.sendError(
                     HttpServletResponse.SC_FORBIDDEN,
-                    "Không thể thay đổi lịch trình của chuyến đi đã hoàn thành hoặc đã hủy."
+                    "Cannot modify itinerary of a completed or cancelled trip."
             );
             return;
         }
@@ -415,7 +415,7 @@ public class ItineraryServlet extends HttpServlet {
         if (place == null) {
             response.sendError(
                     HttpServletResponse.SC_NOT_FOUND,
-                    "Không tìm thấy địa điểm."
+                    "Place not found."
             );
             return;
         }
@@ -591,7 +591,7 @@ public class ItineraryServlet extends HttpServlet {
         if (trip == null) {
             response.sendError(
                     HttpServletResponse.SC_NOT_FOUND,
-                    "Không tìm thấy Trip hoặc bạn không có quyền truy cập."
+                    "Trip not found or access denied."
             );
             return;
         }
@@ -599,7 +599,7 @@ public class ItineraryServlet extends HttpServlet {
         if (!"OWNER".equalsIgnoreCase(trip.getRole())) {
             response.sendError(
                     HttpServletResponse.SC_FORBIDDEN,
-                    "Chỉ Owner mới có thể xóa lịch trình."
+                    "Only the trip owner can delete itinerary items."
             );
             return;
         }
@@ -608,7 +608,7 @@ public class ItineraryServlet extends HttpServlet {
 
             response.sendError(
                     HttpServletResponse.SC_FORBIDDEN,
-                    "Không thể thay đổi lịch trình của chuyến đi đã hoàn thành hoặc đã hủy."
+                    "Cannot modify itinerary of a completed or cancelled trip."
             );
             return;
         }
@@ -664,7 +664,7 @@ public class ItineraryServlet extends HttpServlet {
         if (!"USER".equalsIgnoreCase(currentUser.getRole())) {
             response.sendError(
                     HttpServletResponse.SC_FORBIDDEN,
-                    "Bạn không có quyền sử dụng chức năng này."
+                    "You do not have permission to use this feature."
             );
             return null;
         }

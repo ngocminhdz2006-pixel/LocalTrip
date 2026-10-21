@@ -44,8 +44,20 @@ public class RecommendationDAO {
                 + "INNER JOIN Categories c "
                 + "ON c.category_id = p.category_id "
                 + "WHERE t.trip_id = ? "
-                + "AND t.destination = "
-                + "(p.district_name + N', ' + p.city_name) "
+                       + "AND ("
+                + "    t.destination IS NULL OR LTRIM(RTRIM(t.destination)) = '' "
+                + "    OR t.destination = (p.district_name + N', ' + p.city_name) "
+                + "    OR t.destination = p.city_name "
+                + "    OR t.destination LIKE N'%' + p.city_name + N'%' "
+                + "    OR p.city_name LIKE N'%' + t.destination + N'%' "
+                + "    OR t.destination LIKE N'%' + p.district_name + N'%' "
+                + "    OR NOT EXISTS ("
+                + "        SELECT 1 FROM Places p2 WHERE p2.is_active = 1 "
+                + "        AND (t.destination = (p2.district_name + N', ' + p2.city_name) "
+                + "             OR t.destination LIKE N'%' + p2.city_name + N'%' "
+                + "             OR p2.city_name LIKE N'%' + t.destination + N'%') "
+                + "    )"
+                + ") "
                 + "GROUP BY p.place_id, p.category_id, "
                 + "c.category_name, p.place_name, "
                 + "p.address, p.description, "
@@ -93,7 +105,7 @@ public class RecommendationDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể tạo danh sách gợi ý.",
+                    "Unable to generate recommendations.",
                     e
             );
         }
@@ -143,8 +155,20 @@ public class RecommendationDAO {
                 + "WHERE t.trip_id = ? "
                 + "AND p.is_active = 1 "
                 + "AND c.category_code = ? "
-                + "AND t.destination = "
-                + "(p.district_name + N', ' + p.city_name) "
+                       + "AND ("
+                + "    t.destination IS NULL OR LTRIM(RTRIM(t.destination)) = '' "
+                + "    OR t.destination = (p.district_name + N', ' + p.city_name) "
+                + "    OR t.destination = p.city_name "
+                + "    OR t.destination LIKE N'%' + p.city_name + N'%' "
+                + "    OR p.city_name LIKE N'%' + t.destination + N'%' "
+                + "    OR t.destination LIKE N'%' + p.district_name + N'%' "
+                + "    OR NOT EXISTS ("
+                + "        SELECT 1 FROM Places p2 WHERE p2.is_active = 1 "
+                + "        AND (t.destination = (p2.district_name + N', ' + p2.city_name) "
+                + "             OR t.destination LIKE N'%' + p2.city_name + N'%' "
+                + "             OR p2.city_name LIKE N'%' + t.destination + N'%') "
+                + "    )"
+                + ") "
                 + "GROUP BY p.place_id, p.category_id, c.category_name, "
                 + "p.place_name, p.address, p.description, p.estimated_cost, "
                 + "p.rating, p.opening_time, p.closing_time, p.latitude, "
@@ -168,7 +192,7 @@ public class RecommendationDAO {
             }
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể tạo danh sách gợi ý theo danh mục.", e);
+                    "Unable to generate recommendations by category.", e);
         }
 
         Collections.sort(recommendations, new Comparator<Recommendation>() {

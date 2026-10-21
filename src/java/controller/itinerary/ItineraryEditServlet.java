@@ -38,22 +38,22 @@ public class ItineraryEditServlet extends HttpServlet {
             Trip trip = trips.findByIdForUser(tripId, user.getUserId());
             if (trip == null) { resp.sendError(404); return; }
             if (!"OWNER".equals(trip.getRole()) || !("PLANNING".equals(trip.getStatus()) || "ONGOING".equals(trip.getStatus()))) {
-                resp.sendError(403, "Bạn không có quyền sửa hoạt động của chuyến đi này."); return;
+                resp.sendError(403, "You do not have permission to edit activities for this trip."); return;
             }
             ItineraryItem original = null;
             for (ItineraryItem item : itinerary.findByTrip(tripId)) if (item.getItemId() == itemId) original = item;
-            if (original == null) { resp.sendError(404, "Hoạt động đã bị xóa hoặc thay thế. Hãy mở lại lịch trình."); return; }
-            if(!"UPCOMING".equals(original.getActivityStatus())) { resp.sendError(403,"Chỉ được sửa hoạt động sắp tới."); return; }
+            if (original == null) { resp.sendError(404, "Activity was removed or replaced. Please reload the itinerary."); return; }
+            if(!"UPCOMING".equals(original.getActivityStatus())) { resp.sendError(403,"Only upcoming activities can be edited."); return; }
             boolean restWithoutPlace="REST".equals(original.getActivityType()) && original.getPlaceId()==0;
             req.setAttribute("restWithoutPlace",restWithoutPlace);
             Date today = Date.valueOf(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")));
-            if (original.getVisitDate().before(today)) { resp.sendError(403, "Không thể sửa hoạt động của ngày đã qua."); return; }
+            if (original.getVisitDate().before(today)) { resp.sendError(403, "Cannot edit activities for past dates."); return; }
             List<Place> candidates = places.findForDestination(trip.getDestination());
             if (session.getAttribute("itineraryEditToken") == null) session.setAttribute("itineraryEditToken", UUID.randomUUID().toString());
             req.setAttribute("trip", trip); req.setAttribute("item", original); req.setAttribute("candidates", candidates);
             req.setAttribute("minimumDate", trip.getStartDate().after(today) ? trip.getStartDate() : today);
             if (save) {
-                if (!session.getAttribute("itineraryEditToken").equals(req.getParameter("editToken"))) { resp.sendError(403, "Phiên biểu mẫu đã hết hạn. Hãy tải lại trang."); return; }
+                if (!session.getAttribute("itineraryEditToken").equals(req.getParameter("editToken"))) { resp.sendError(403, "Form session expired. Please reload the page."); return; }
                 req.setAttribute("submitted", Boolean.TRUE);
                 req.setAttribute("revision", req.getParameter("revision"));
                 req.setAttribute("submittedPlaceId", 0);
@@ -71,15 +71,15 @@ public class ItineraryEditServlet extends HttpServlet {
                     for (Place place : candidates) if (place.getPlaceId() == edited.getPlaceId()) selected = place;
                     ItineraryEditValidation.validate(trip, original, edited, selected, today);
                     itinerary.updateItemAuthorized(edited, user.getUserId(), req.getParameter("revision"));
-                    session.setAttribute("successMessage", "Đã cập nhật hoạt động. Bản đồ và thời tiết sử dụng lịch trình mới.");
+                    session.setAttribute("successMessage", "Activity updated successfully.");
                     resp.sendRedirect(req.getContextPath() + "/itinerary?tripId=" + tripId); return;
                 } catch (IllegalArgumentException ex) { req.setAttribute("error", ex.getMessage()); }
-                catch (java.time.DateTimeException ex) { req.setAttribute("error", "Ngày hoặc giờ không hợp lệ."); }
-                catch (NullPointerException ex) { req.setAttribute("error", "Vui lòng nhập đầy đủ ngày, giờ, địa điểm và chi phí."); }
+                catch (java.time.DateTimeException ex) { req.setAttribute("error", "Invalid date or time."); }
+                catch (NullPointerException ex) { req.setAttribute("error", "Please enter date, time, destination and estimated cost."); }
             } else req.setAttribute("revision", itinerary.revisionForTrip(tripId));
             req.getRequestDispatcher("/WEB-INF/views/intinerary/intinerary-edit.jsp").forward(req, resp);
-        } catch (IllegalArgumentException ex) { resp.sendError(400, "Mã chuyến đi hoặc hoạt động không hợp lệ."); }
-        catch (RuntimeException ex) { throw new ServletException("Không thể cập nhật hoạt động. Hãy mở lại lịch trình.", ex); }
+        } catch (IllegalArgumentException ex) { resp.sendError(400, "Invalid trip or activity ID."); }
+        catch (RuntimeException ex) { throw new ServletException("Unable to update activity. Please reload the itinerary.", ex); }
     }
     private int id(String value) { int result = Integer.parseInt(value); if (result <= 0) throw new IllegalArgumentException(); return result; }
 }

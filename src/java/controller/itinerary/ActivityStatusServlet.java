@@ -24,16 +24,16 @@ public class ActivityStatusServlet extends HttpServlet {
             ActivityLifecycleDAO dao=new ActivityLifecycleDAO();
             if("endTime".equals(req.getParameter("action"))) {
                 String value=req.getParameter("endTime");
-                if(value==null || !value.matches("\\d{2}:\\d{2}")) throw new IllegalArgumentException("Giờ kết thúc không hợp lệ.");
+                if(value==null || !value.matches("\\d{2}:\\d{2}")) throw new IllegalArgumentException("Invalid end time.");
                 java.time.LocalTime time=java.time.LocalTime.parse(value);
                 dao.updateRunningEnd(tripId,itemId,user.getUserId(),req.getParameter("expectedEnd"),java.sql.Time.valueOf(time));
             } else {
                 dao.changeStatus(tripId,itemId,user.getUserId(),req.getParameter("expectedStatus"),req.getParameter("nextStatus"));
             }
-            session.setAttribute("successMessage","Đã cập nhật trạng thái hoạt động.");
+            session.setAttribute("successMessage","Activity status updated successfully.");
         } catch(IllegalArgumentException e) { session.setAttribute("errorMessage",e.getMessage()); }
-        catch(java.time.DateTimeException e) { session.setAttribute("errorMessage","Giờ kết thúc không hợp lệ."); }
-        catch(RuntimeException e) { log("Activity state update failed",e); session.setAttribute("errorMessage","Không thể cập nhật hoạt động. Hãy tải lại lịch."); }
+        catch(java.time.DateTimeException e) { session.setAttribute("errorMessage","Invalid end time."); }
+        catch(RuntimeException e) { log("Activity state update failed",e); session.setAttribute("errorMessage","Unable to update activity. Please reload the itinerary."); }
         resp.sendRedirect(req.getContextPath()+"/itinerary?tripId="+tripId);
     }
 }
