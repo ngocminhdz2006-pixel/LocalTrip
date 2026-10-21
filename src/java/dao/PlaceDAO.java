@@ -33,15 +33,30 @@ public class PlaceDAO {
 
     public List<Place> findForDestination(String destination) {
         List<Place> result = new ArrayList<Place>();
-        String sql = SELECT_BASE + "WHERE p.is_active = 1 AND "
-                + "(p.district_name + N', ' + p.city_name) = ? ORDER BY p.place_name";
+        String sql = SELECT_BASE + "WHERE p.is_active = 1 AND ("
+                + "? IS NULL OR LTRIM(RTRIM(?)) = '' "
+                + "OR (p.district_name + N', ' + p.city_name) = ? "
+                + "OR p.city_name = ? "
+                + "OR ? LIKE N'%' + p.city_name + N'%' "
+                + "OR p.city_name LIKE N'%' + ? + N'%' "
+                + "OR ? LIKE N'%' + p.district_name + N'%' "
+                + "OR NOT EXISTS (SELECT 1 FROM Places p2 WHERE p2.is_active = 1 AND ((p2.district_name + N', ' + p2.city_name) = ? OR p2.city_name = ?))"
+                + ") ORDER BY p.place_name";
         try (Connection connection = DBContext.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, destination);
+            statement.setString(2, destination);
+            statement.setString(3, destination);
+            statement.setString(4, destination);
+            statement.setString(5, destination);
+            statement.setString(6, destination);
+            statement.setString(7, destination);
+            statement.setString(8, destination);
+            statement.setString(9, destination);
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) result.add(mapPlace(rs));
             }
-        } catch (SQLException ex) { throw new RuntimeException("Không thể tải địa điểm trong khu vực chuyến đi.", ex); }
+        } catch (SQLException ex) { throw new RuntimeException("Unable to load places for destination.", ex); }
         return result;
     }
 

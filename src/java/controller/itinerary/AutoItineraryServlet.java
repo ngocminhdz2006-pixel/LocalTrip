@@ -365,6 +365,7 @@ public class AutoItineraryServlet extends HttpServlet {
                                 plan.food,
                                 plan.foodStart,
                                 FOOD_MINUTES,
+                                "MEAL",
                                 "Dining - Slot "
                                 + milestoneLabel(plan))) {
                     scheduledPlaceIds.add(plan.food.getPlace().getId());
@@ -377,6 +378,7 @@ public class AutoItineraryServlet extends HttpServlet {
                                 plan.cafe,
                                 plan.cafeStart,
                                 CAFE_MINUTES,
+                                "CAFE",
                                 "Cafe & Drinks - Slot "
                                 + milestoneLabel(plan))) {
                     scheduledPlaceIds.add(plan.cafe.getPlace().getId());
@@ -389,6 +391,7 @@ public class AutoItineraryServlet extends HttpServlet {
                                 plan.activity,
                                 plan.activityStart,
                                 ACTIVITY_MINUTES,
+                                "VISIT",
                                 "Activity ("
                                 + plan.activity.getPlace().getCategoryName()
                                 + ") - Slot "
@@ -412,7 +415,14 @@ public class AutoItineraryServlet extends HttpServlet {
                 while (!currentDate.isAfter(endDate)) {
                     for (int s = 0; s < defaultStarts.length && pIdx < allRecs.size(); s++) {
                         Recommendation r = allRecs.get(pIdx % allRecs.size());
-                        addItem(draftItems, tripId, currentDate, r, defaultStarts[s], 90, "Suggested Activity (" + r.getPlace().getCategoryName() + ")");
+                        String actType = "VISIT";
+                        String catName = r.getPlace() != null ? r.getPlace().getCategoryName() : null;
+                        if (catName != null) {
+                            String lower = catName.toLowerCase();
+                            if (lower.contains("ăn") || lower.contains("food") || lower.contains("dining")) actType = "MEAL";
+                            else if (lower.contains("cafe") || lower.contains("cà phê") || lower.contains("drink")) actType = "CAFE";
+                        }
+                        addItem(draftItems, tripId, currentDate, r, defaultStarts[s], 90, actType, "Suggested Activity (" + (catName != null ? catName : "Sightseeing") + ")");
                         pIdx++;
                     }
                     currentDate = currentDate.plusDays(1);
@@ -1264,6 +1274,7 @@ public class AutoItineraryServlet extends HttpServlet {
             Recommendation recommendation,
             LocalTime start,
             int minutes,
+            String activityType,
             String note) {
 
         if (recommendation == null
@@ -1305,6 +1316,10 @@ public class AutoItineraryServlet extends HttpServlet {
                 recommendation
                         .getPlace()
                         .getEstimatedPrice());
+
+        item.setActivityType(activityType != null ? activityType : "VISIT");
+        item.setActivityTitle(recommendation.getPlace().getPlaceName());
+        item.setActivityStatus("UPCOMING");
 
         item.setNote(
                 note

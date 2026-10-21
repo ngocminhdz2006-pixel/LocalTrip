@@ -11,22 +11,22 @@ public final class ItineraryEditValidation {
     private ItineraryEditValidation() { }
     public static void validate(Trip trip, ItineraryItem original, ItineraryItem edited, Place place, Date today) {
         if (!"OWNER".equals(trip.getRole()) || !("PLANNING".equals(trip.getStatus()) || "ONGOING".equals(trip.getStatus())))
-            throw new IllegalArgumentException("Chỉ trưởng nhóm được sửa lịch của chuyến đi đang lên kế hoạch hoặc đang diễn ra.");
-        if (!"UPCOMING".equals(original.getActivityStatus())) throw new IllegalArgumentException("Chỉ được sửa hoạt động sắp tới.");
-        if (original.getVisitDate().before(today)) throw new IllegalArgumentException("Không thể sửa hoạt động của ngày đã qua.");
+            throw new IllegalArgumentException("Only the trip owner can edit activities for planned or ongoing trips.");
+        if (!"UPCOMING".equals(original.getActivityStatus())) throw new IllegalArgumentException("Only upcoming activities can be edited.");
+        if (original.getVisitDate().before(today)) throw new IllegalArgumentException("Cannot edit activities for past dates.");
         if (edited.getVisitDate().before(today) || edited.getVisitDate().before(trip.getStartDate()) || edited.getVisitDate().after(trip.getEndDate()))
-            throw new IllegalArgumentException("Ngày hoạt động phải nằm trong chuyến đi và không được là ngày quá khứ.");
-        if (!edited.getEndTime().after(edited.getStartTime())) throw new IllegalArgumentException("Giờ kết thúc phải sau giờ bắt đầu.");
+            throw new IllegalArgumentException("Activity date must be within trip duration and not in the past.");
+        if (!edited.getEndTime().after(edited.getStartTime())) throw new IllegalArgumentException("End time must be after start time.");
         BigDecimal cost = edited.getEstimatedCost();
         if (cost == null || cost.signum() < 0 || cost.compareTo(new BigDecimal("9999999999999999.99")) > 0 || cost.stripTrailingZeros().scale() > 2)
-            throw new IllegalArgumentException("Chi phí không hợp lệ; nhập số không âm và tối đa hai chữ số thập phân.");
-        if (edited.getNote() != null && edited.getNote().length() > 500) throw new IllegalArgumentException("Ghi chú không được vượt quá 500 ký tự.");
+            throw new IllegalArgumentException("Invalid estimated cost; enter a non-negative number with at most two decimals.");
+        if (edited.getNote() != null && edited.getNote().length() > 500) throw new IllegalArgumentException("Note cannot exceed 500 characters.");
         if ("REST".equals(original.getActivityType()) && original.getPlaceId()==0 && edited.getPlaceId()==0) return;
-        if (place == null || !place.isActive()) throw new IllegalArgumentException("Địa điểm không còn hoạt động.");
+        if (place == null || !place.isActive()) throw new IllegalArgumentException("Destination is no longer active.");
         Time open = place.getOpeningTime(), close = place.getClosingTime();
         boolean overnight = open != null && close != null && close.before(open);
         boolean valid = overnight ? (!edited.getStartTime().before(open) || !edited.getEndTime().after(close))
                 : (open == null || !edited.getStartTime().before(open)) && (close == null || !edited.getEndTime().after(close));
-        if (!valid) throw new IllegalArgumentException("Giờ hoạt động phải nằm trong giờ mở cửa của địa điểm.");
+        if (!valid) throw new IllegalArgumentException("Activity hours must be within venue operating hours.");
     }
 }
