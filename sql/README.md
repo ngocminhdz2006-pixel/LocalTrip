@@ -1,42 +1,72 @@
-# Hướng dẫn khởi tạo Database — LocalTrip
+# Hướng dẫn Khởi tạo & Kích hoạt Database — LocalTrip
 
-Thư mục này chứa toàn bộ các script SQL cần thiết cho hệ sinh thái **LocalTripDB** (Microsoft SQL Server).
+Thư mục này chứa toàn bộ các tập lệnh SQL Server cho hệ sinh thái **LocalTripDB** (Microsoft SQL Server 2017+ / 2019 / 2022).
 
 ---
 
-## 🚀 Cách 1: Thiết lập nhanh nhất (Khuyên dùng)
+## 🎯 BẠN NÊN CHẠY SCRIPT NÀO?
 
-Chạy **DUY NHẤT** một file:
+Hệ thống cung cấp **2 lựa chọn linh hoạt** tùy vào trạng thái database hiện tại của bạn:
+
+### 🌟 LỰA CHỌN 1: Cài mới / Reset sạch sẽ toàn bộ từ đầu (KHUYÊN DÙNG)
+> **Phù hợp khi:** Bạn muốn đưa dự án về trạng thái chuẩn nhất, xóa sạch dữ liệu rác cũ và nạp đầy đủ 100% tính năng mới (Combo mẫu, Sở thích Profile, Vibe Match %, Check-in GPS, Huy hiệu Hộ chiếu, 47 địa điểm du lịch TP.HCM).
+
+👉 Mở và chạy **DUY NHẤT 1 FILE**:
 ```sql
-LocalTripDB_RESET.sql
+sql/LocalTripDB_RESET.sql
 ```
-* **Thao tác:** Mở file này trong SQL Server Management Studio (SSMS) và nhấn **Execute (F5)**.
-* **Tác dụng:** File sẽ tự động khởi tạo database `LocalTripDB`, tạo toàn bộ bảng (Users, Trips, ItineraryItems, Places, Categories, Expenses, GroupFund, Passport, CheckIn, Dump...), tạo toàn bộ chỉ mục, ràng buộc khóa ngoại và nạp đầy đủ dữ liệu mẫu (Seed Data) chuẩn.
+* **Cách chạy:** 
+  1. Mở **SQL Server Management Studio (SSMS)** (hoặc VS Code mssql).
+  2. Mở file `sql/LocalTripDB_RESET.sql`.
+  3. Nhấn **Execute (F5)**.
+* **Kết quả:** File sẽ tự động DROP và khởi tạo lại `LocalTripDB`, tạo trọn vẹn 31 bảng hệ thống, tạo mọi khóa ngoại, chỉ mục, và nạp sẵn toàn bộ seed data chuẩn nhất.
 
 ---
 
-## 🛠️ Cách 2: Chạy theo thứ tự từng Migration (Nâng cấp tuần tự)
+### 🔄 LỰA CHỌN 2: Giữ nguyên dữ liệu hiện tại (Chỉ chạy Migration nâng cấp V2)
+> **Phù hợp khi:** Database `LocalTripDB` của bạn đã có sẵn các chuyến đi hoặc bài viết và bạn **không muốn xóa dữ liệu cũ**.
 
-Nếu bạn muốn chạy từng file theo thứ tự phát triển:
+👉 Mở và chạy file:
+```sql
+sql/upgrade_v2_product.sql
+```
+* **Nội dung cập nhật:**
+  1. Tạo bảng `UserPreferences` (Lưu sở thích du lịch tại Profile cá nhân).
+  2. Thêm cột `applied_combo_id` vào bảng `Trips`.
+  3. Tạo bảng `ComboReviews` (Đánh giá Combo sau khi chuyến đi hoàn thành).
+  4. Tự động chuẩn hóa Quận/Huyện (`district_name`) cho 47 địa điểm du lịch.
+  5. Tự động nạp mẫu sở thích cho các tài khoản test (`minh@localtrip.vn`, `lananh@localtrip.vn`, `thanh@localtrip.vn`) để hiển thị huy hiệu `Vibe Match %` ngay lập tức.
+  6. Tự động nạp 1 gói Combo chuẩn tại Quận 1 (`1-Day Iconic Saigon: Cafe & Heritage`) kèm lịch trình mẫu 6 hoạt động và đánh giá 5 sao.
 
-1. `01_schema.sql` — Tạo cấu trúc các bảng cốt lõi (Users, Trips, Places, Categories, Preferences).
-2. `02_seed_data.sql` — Nạp dữ liệu mẫu ban đầu.
-3. `03_auth_role_migration.sql` — Phân quyền vai trò USER / ADMIN.
-4. `04_auth_recovery.sql` — Bảng token đặt lại mật khẩu (PasswordResetTokens).
-5. `05_admin_audit_log.sql` — Nhật ký kiểm toán thao tác quản trị (AdminAuditLogs).
-6. `06_group_fund.sql` — Bảng quỹ nhóm và giao dịch quỹ (GroupFundContributions, GroupFundTransactions).
-7. `06b_login_history.sql` — Nhật ký đăng nhập tài khoản (LoginLogs).
-8. `07_more_places.sql` — Bổ sung các địa điểm ăn uống, vui chơi TP.HCM.
-9. `08_place_regions.sql` — Phân chia khu vực địa phương (Quận 1, Thủ Đức...).
-10. `09_fund_settlement_diagnostics.sql` — Hỗ trợ chẩn đoán và đồng bộ hóa chia tiền quỹ nhóm.
-11. `10_seasonal_combos.sql` — Dữ liệu gói Combo gợi ý 4 mùa.
-12. `11_dump_checkin_passport_badges.sql` — Mạng xã hội Dump, GPS Check-in và Huy hiệu Hộ chiếu.
-13. `12_admin_combo_templates.sql` — Quản trị template Combo của ADMIN.
-14. `13_itinerary_activity_lifecycle.sql` — Vòng đời trạng thái hoạt động lịch trình (UPCOMING, IN_PROGRESS, COMPLETED, CANCELLED).
+*(Ghi chú: Nếu database của bạn đã rất lâu chưa chạy các bản cập nhật mạng xã hội Dump & Combo Template, hãy chạy theo thứ tự: `11_dump_checkin_passport_badges.sql` ➡️ `12_admin_combo_templates.sql` ➡️ `13_itinerary_activity_lifecycle.sql` ➡️ `upgrade_v2_product.sql`).*
 
 ---
 
-## 📌 Tài khoản mẫu đăng nhập mặc định (Seed Account):
-* **Admin:** `admin@localtrip.local` / Mật khẩu: `Admin@123`
-* **User (Lan Anh):** `lananh@gmail.com` / Mật khẩu: `User@123`
-* **User (Ngọc Minh):** `ngocminh@gmail.com` / Mật khẩu: `User@123`
+## 🔑 DANH SÁCH TÀI KHOẢN MẪU (TEST ACCOUNTS)
+
+Mọi tài khoản mẫu đều dùng chung mật khẩu: **`123456`**
+
+| Vai trò (Role) | Họ và tên | Email đăng nhập | Mật khẩu | Đặc điểm |
+| :--- | :--- | :--- | :--- | :--- |
+| **ADMIN** | Nguyễn Ngọc Minh | `minh@localtrip.vn` | `123456` | Toàn quyền Quản trị, duyệt bài, tạo Combo Template |
+| **USER** | Nguyễn Lan Anh | `lananh@localtrip.vn` | `123456` | Có sở thích Ẩm thực & Cafe, đã kết bạn với Minh |
+| **USER** | Thanh | `thanh@localtrip.vn` | `123456` | Chủ chuyến đi mẫu `LocalTrip Demo - TP.HCM` |
+| **USER** | Hoàng Nam | `hoangnam@localtrip.vn` | `123456` | Yêu thích Giải trí & Tham quan |
+
+---
+
+## ⚙️ CẤU HÌNH KẾT NỐI DATABASE (`DBContext.java`)
+
+Theo mặc định, ứng dụng kết nối tới:
+- **Server:** `localhost:1433`
+- **Database:** `LocalTripDB`
+- **User:** `sa`
+- **Password:** `12345`
+
+### Tùy biến qua biến môi trường (Environment Variables)
+Nếu bạn deploy Cloud (Azure / AWS / Render) hoặc máy bạn dùng mật khẩu `sa` khác, bạn có thể thiết lập các biến môi trường sau mà không cần sửa code Java:
+- `DB_SERVER` hoặc `DB_HOST`: Tên server / IP (Mặc định: `localhost`)
+- `DB_PORT`: Cổng SQL Server (Mặc định: `1433`)
+- `DB_NAME`: Tên database (Mặc định: `LocalTripDB`)
+- `DB_USER`: Tên đăng nhập (Mặc định: `sa`)
+- `DB_PASSWORD`: Mật khẩu (Mặc định: `12345`)

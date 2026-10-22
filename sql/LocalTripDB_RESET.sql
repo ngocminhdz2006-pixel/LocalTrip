@@ -48,6 +48,7 @@ CREATE TABLE Trips (
     budget DECIMAL(18,2) NOT NULL DEFAULT 0,
     description NVARCHAR(1000) NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'PLANNING',
+    applied_combo_id INT NULL,
     created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
 
     CONSTRAINT FK_Trips_Owner
@@ -142,6 +143,8 @@ CREATE TABLE Places (
     place_type VARCHAR(20) NOT NULL DEFAULT 'INDOOR',
     is_active BIT NOT NULL DEFAULT 1,
     seasonal_tags NVARCHAR(100) NOT NULL DEFAULT N'ALL',
+    city_name NVARCHAR(100) NULL,
+    district_name NVARCHAR(100) NULL,
 
     CONSTRAINT FK_Places_Category
         FOREIGN KEY (category_id)
@@ -181,17 +184,23 @@ GO
 CREATE TABLE dbo.ItineraryItems (
     item_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     trip_id INT NOT NULL,
-    place_id INT NOT NULL,
+    place_id INT NULL,
     visit_date DATE NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     note NVARCHAR(1000) NULL,
     estimated_cost DECIMAL(18,2) NOT NULL CONSTRAINT DF_ItineraryItems_Cost DEFAULT 0,
+    activity_type VARCHAR(20) NOT NULL CONSTRAINT DF_ItineraryItems_ActivityType DEFAULT 'VISIT',
+    activity_title NVARCHAR(200) NULL,
+    activity_status VARCHAR(20) NOT NULL CONSTRAINT DF_ItineraryItems_ActivityStatus DEFAULT 'UPCOMING',
     created_at DATETIME2 NOT NULL CONSTRAINT DF_ItineraryItems_CreatedAt DEFAULT SYSDATETIME(),
     CONSTRAINT FK_ItineraryItems_Trip FOREIGN KEY (trip_id) REFERENCES dbo.Trips(trip_id),
     CONSTRAINT FK_ItineraryItems_Place FOREIGN KEY (place_id) REFERENCES dbo.Places(place_id),
     CONSTRAINT CK_ItineraryItems_Time CHECK (end_time > start_time),
-    CONSTRAINT CK_ItineraryItems_Cost CHECK (estimated_cost >= 0)
+    CONSTRAINT CK_ItineraryItems_Cost CHECK (estimated_cost >= 0),
+    CONSTRAINT CK_ItineraryItems_ActivityType CHECK (activity_type IN ('VISIT','MEAL','CAFE','REST')),
+    CONSTRAINT CK_ItineraryItems_ActivityStatus CHECK (activity_status IN ('UPCOMING','IN_PROGRESS','COMPLETED','CANCELLED')),
+    CONSTRAINT CK_ItineraryItems_ActivityPlace CHECK (place_id IS NOT NULL OR (activity_type = 'REST' AND NULLIF(LTRIM(RTRIM(activity_title)), N'') IS NOT NULL))
 );
 GO
 CREATE INDEX IX_ItineraryItems_TripDateTime ON dbo.ItineraryItems(trip_id, visit_date, start_time, end_time);
@@ -868,6 +877,41 @@ GROUP BY c.category_code, c.category_name
 ORDER BY c.category_code;
 GO
 
+/* =========================================================
+   SEASONAL PLACES & COMBO ATTRACTIONS (from 10_seasonal_combos.sql)
+   ========================================================= */
+UPDATE dbo.Places SET seasonal_tags = N'SPRING,AUTUMN'
+WHERE place_name IN (N'Bưu điện Trung tâm Sài Gòn', N'Dinh Độc Lập', N'Nhà thờ Đức Bà Sài Gòn', N'Bảo tàng Mỹ thuật TP.HCM');
+UPDATE dbo.Places SET seasonal_tags = N'SUMMER,WINTER'
+WHERE place_name IN (N'Bảo tàng Chứng tích Chiến tranh', N'CGV Vincom Đồng Khởi', N'Saigon Skydeck', N'AEON Mall Tân Phú Celadon', N'GIGAMALL Thủ Đức', N'Vạn Hạnh Mall');
+UPDATE dbo.Places SET seasonal_tags = N'SPRING,WINTER'
+WHERE place_name IN (N'Phố đi bộ Nguyễn Huệ', N'Nguyễn Huệ Walking Street', N'Chợ Bến Thành');
+UPDATE dbo.Places SET seasonal_tags = N'SPRING,SUMMER,AUTUMN,WINTER'
+WHERE place_name IN (N'The Workshop Coffee', N'Bosgaurus Coffee Roasters', N'43 Factory Coffee Roaster', N'Highlands Coffee Nguyễn Huệ', N'Phúc Long Coffee & Tea Nguyễn Huệ');
+GO
+
+INSERT INTO dbo.Places (
+    category_id, place_name, address, description, estimated_cost, rating,
+    opening_time, closing_time, latitude, longitude, place_type, is_active, seasonal_tags
+)
+SELECT c.category_id, v.place_name, v.address, v.description, v.estimated_cost, v.rating,
+       v.opening_time, v.closing_time, v.latitude, v.longitude, v.place_type, 1, v.seasonal_tags
+FROM (VALUES
+    ('SIGHTSEEING', N'Công viên Tao Đàn', N'55C Nguyễn Thị Minh Khai, Quận 1, TP.HCM', N'Công viên nhiều cây xanh; phù hợp đi dạo và trải nghiệm không khí du xuân.', 0, 4.40, '05:00', '22:00', 10.7755, 106.6920, 'OUTDOOR', N'SPRING,AUTUMN'),
+    ('SIGHTSEEING', N'Đường hoa Nguyễn Huệ', N'Phố đi bộ Nguyễn Huệ, Quận 1, TP.HCM', N'Không gian đường hoa thường được tổ chức dịp Tết; cần kiểm tra lịch tổ chức từng năm.', 0, 4.50, '08:00', '22:00', 10.7733, 106.7040, 'OUTDOOR', N'SPRING'),
+    ('SIGHTSEEING', N'Bảo tàng Thành phố Hồ Chí Minh', N'65 Lý Tự Trọng, Quận 1, TP.HCM', N'Bảo tàng trong công trình kiến trúc lịch sử; phù hợp tham quan khi nắng nóng hoặc mưa.', 30000, 4.30, '08:00', '17:00', 10.7769, 106.7009, 'INDOOR', N'SUMMER,AUTUMN'),
+    ('SIGHTSEEING', N'Bến Bạch Đằng', N'2 Tôn Đức Thắng, Quận 1, TP.HCM', N'Khu vực ven sông để ngắm cảnh và dạo bộ vào sáng sớm hoặc chiều tối.', 0, 4.40, '05:00', '23:00', 10.7720, 106.7060, 'OUTDOOR', N'AUTUMN,WINTER'),
+    ('ENTERTAINMENT', N'Suối Tiên', N'120 Xa lộ Hà Nội, TP Thủ Đức, TP.HCM', N'Khu du lịch văn hóa và giải trí; nên kiểm tra lịch hoạt động và thời tiết trước chuyến đi.', 350000, 4.20, '08:00', '17:00', 10.8678, 106.8020, 'OUTDOOR', N'SPRING,WINTER'),
+    ('ENTERTAINMENT', N'Đầm Sen', N'3 Hòa Bình, Quận 11, TP.HCM', N'Công viên văn hóa và giải trí với nhiều hoạt động ngoài trời; phù hợp ngày ít mưa.', 250000, 4.20, '08:00', '18:00', 10.7667, 106.6350, 'OUTDOOR', N'SPRING,WINTER'),
+    ('ENTERTAINMENT', N'Landmark 81 SkyView', N'720A Điện Biên Phủ, Bình Thạnh, TP.HCM', N'Đài quan sát trong tòa nhà cao tầng để ngắm thành phố; kiểm tra giờ hoạt động trước khi đi.', 300000, 4.30, '09:30', '22:00', 10.7953, 106.7218, 'INDOOR', N'SUMMER,AUTUMN,WINTER'),
+    ('SHOPPING', N'Saigon Centre', N'65 Lê Lợi, Quận 1, TP.HCM', N'Trung tâm mua sắm và ăn uống trong nhà, thích hợp tránh nắng hoặc mưa.', 200000, 4.40, '09:30', '21:30', 10.7740, 106.7010, 'INDOOR', N'SUMMER,WINTER'),
+    ('CAFE', N'Cafe Apartments Nguyễn Huệ', N'42 Nguyễn Huệ, Quận 1, TP.HCM', N'Tòa nhà có nhiều quán cà phê và cửa hàng nhỏ; phù hợp ngắm phố đi bộ từ trên cao.', 90000, 4.20, '08:00', '22:00', 10.7737, 106.7043, 'INDOOR', N'SPRING,AUTUMN,WINTER')
+) AS v(category_code, place_name, address, description, estimated_cost, rating, opening_time, closing_time, latitude, longitude, place_type, seasonal_tags)
+INNER JOIN dbo.Categories c ON c.category_code = v.category_code
+WHERE NOT EXISTS (SELECT 1 FROM dbo.Places p WHERE p.place_name = v.place_name);
+GO
+
+
 
 /* =========================================================
    SAMPLE TRIP FOR LOGIN/ITINERARY TESTING
@@ -914,7 +958,465 @@ BEGIN
 END;
 GO
 
-/* Final verification summary */
+
+/* =========================================================
+   7. SOCIAL DUMP, FRIENDSHIPS, CHECK-INS, PASSPORT & BADGES
+   ========================================================= */
+IF OBJECT_ID('dbo.Friendships','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Friendships (
+        friendship_id INT IDENTITY(1,1) PRIMARY KEY,
+        requester_id INT NOT NULL,
+        addressee_id INT NOT NULL,
+        status VARCHAR(12) NOT NULL CONSTRAINT DF_Friendships_Status DEFAULT 'PENDING',
+        created_at DATETIME2 NOT NULL CONSTRAINT DF_Friendships_Created DEFAULT SYSDATETIME(),
+        updated_at DATETIME2 NOT NULL CONSTRAINT DF_Friendships_Updated DEFAULT SYSDATETIME(),
+        CONSTRAINT FK_Friendships_Requester FOREIGN KEY (requester_id) REFERENCES dbo.Users(user_id),
+        CONSTRAINT FK_Friendships_Addressee FOREIGN KEY (addressee_id) REFERENCES dbo.Users(user_id),
+        CONSTRAINT CK_Friendships_NoSelf CHECK (requester_id <> addressee_id),
+        CONSTRAINT CK_Friendships_Status CHECK (status IN ('PENDING','ACCEPTED','DECLINED'))
+    );
+    CREATE INDEX IX_Friendships_AddresseeStatus ON dbo.Friendships(addressee_id, status);
+    CREATE INDEX IX_Friendships_RequesterStatus ON dbo.Friendships(requester_id, status);
+END;
+GO
+
+IF OBJECT_ID('dbo.Posts','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Posts (
+        post_id INT IDENTITY(1,1) PRIMARY KEY,
+        user_id INT NOT NULL,
+        place_id INT NULL,
+        trip_id INT NULL,
+        content NVARCHAR(2000) NULL,
+        rating TINYINT NULL,
+        visibility VARCHAR(10) NOT NULL CONSTRAINT DF_Posts_Visibility DEFAULT 'PUBLIC',
+        created_at DATETIME2 NOT NULL CONSTRAINT DF_Posts_Created DEFAULT SYSDATETIME(),
+        updated_at DATETIME2 NOT NULL CONSTRAINT DF_Posts_Updated DEFAULT SYSDATETIME(),
+        is_deleted BIT NOT NULL CONSTRAINT DF_Posts_Deleted DEFAULT 0,
+        CONSTRAINT FK_Posts_User FOREIGN KEY (user_id) REFERENCES dbo.Users(user_id),
+        CONSTRAINT FK_Posts_Place FOREIGN KEY (place_id) REFERENCES dbo.Places(place_id),
+        CONSTRAINT FK_Posts_Trip FOREIGN KEY (trip_id) REFERENCES dbo.Trips(trip_id),
+        CONSTRAINT CK_Posts_Rating CHECK (rating IS NULL OR rating BETWEEN 1 AND 5),
+        CONSTRAINT CK_Posts_Visibility CHECK (visibility IN ('PUBLIC','FRIENDS'))
+    );
+    CREATE INDEX IX_Posts_Created ON dbo.Posts(is_deleted, created_at DESC);
+    CREATE INDEX IX_Posts_User ON dbo.Posts(user_id, created_at DESC);
+END;
+GO
+
+IF OBJECT_ID('dbo.PostImages','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.PostImages (
+        image_id INT IDENTITY(1,1) PRIMARY KEY,
+        post_id INT NOT NULL,
+        stored_name NVARCHAR(180) NOT NULL,
+        original_name NVARCHAR(255) NULL,
+        content_type VARCHAR(50) NOT NULL,
+        display_order INT NOT NULL DEFAULT 0,
+        created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+        CONSTRAINT FK_PostImages_Post FOREIGN KEY (post_id) REFERENCES dbo.Posts(post_id) ON DELETE CASCADE
+    );
+    CREATE INDEX IX_PostImages_Post ON dbo.PostImages(post_id, display_order);
+END;
+GO
+
+IF OBJECT_ID('dbo.PostLikes','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.PostLikes (
+        post_id INT NOT NULL,
+        user_id INT NOT NULL,
+        created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+        CONSTRAINT PK_PostLikes PRIMARY KEY (post_id,user_id),
+        CONSTRAINT FK_PostLikes_Post FOREIGN KEY (post_id) REFERENCES dbo.Posts(post_id) ON DELETE CASCADE,
+        CONSTRAINT FK_PostLikes_User FOREIGN KEY (user_id) REFERENCES dbo.Users(user_id)
+    );
+END;
+GO
+
+IF OBJECT_ID('dbo.PostComments','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.PostComments (
+        comment_id INT IDENTITY(1,1) PRIMARY KEY,
+        post_id INT NOT NULL,
+        user_id INT NOT NULL,
+        content NVARCHAR(1000) NOT NULL,
+        created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+        is_deleted BIT NOT NULL DEFAULT 0,
+        CONSTRAINT FK_PostComments_Post FOREIGN KEY (post_id) REFERENCES dbo.Posts(post_id) ON DELETE CASCADE,
+        CONSTRAINT FK_PostComments_User FOREIGN KEY (user_id) REFERENCES dbo.Users(user_id),
+        CONSTRAINT CK_PostComments_Content CHECK (LEN(LTRIM(RTRIM(content))) > 0)
+    );
+END;
+GO
+
+IF OBJECT_ID('dbo.PostBookmarks','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.PostBookmarks (
+        post_id INT NOT NULL,
+        user_id INT NOT NULL,
+        created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+        CONSTRAINT PK_PostBookmarks PRIMARY KEY (post_id,user_id),
+        CONSTRAINT FK_PostBookmarks_Post FOREIGN KEY (post_id) REFERENCES dbo.Posts(post_id) ON DELETE CASCADE,
+        CONSTRAINT FK_PostBookmarks_User FOREIGN KEY (user_id) REFERENCES dbo.Users(user_id)
+    );
+END;
+GO
+
+IF OBJECT_ID('dbo.PostReports','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.PostReports (
+        report_id INT IDENTITY(1,1) PRIMARY KEY,
+        post_id INT NOT NULL,
+        reporter_id INT NOT NULL,
+        reason NVARCHAR(500) NOT NULL,
+        status VARCHAR(12) NOT NULL DEFAULT 'OPEN',
+        created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+        CONSTRAINT FK_PostReports_Post FOREIGN KEY (post_id) REFERENCES dbo.Posts(post_id),
+        CONSTRAINT FK_PostReports_User FOREIGN KEY (reporter_id) REFERENCES dbo.Users(user_id),
+        CONSTRAINT UQ_PostReports_PostReporter UNIQUE (post_id,reporter_id),
+        CONSTRAINT CK_PostReports_Status CHECK (status IN ('OPEN','REVIEWED','DISMISSED'))
+    );
+END;
+GO
+
+IF OBJECT_ID('dbo.CheckIns','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.CheckIns (
+        checkin_id INT IDENTITY(1,1) PRIMARY KEY,
+        user_id INT NOT NULL,
+        place_id INT NOT NULL,
+        trip_id INT NULL,
+        checkin_time DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+        latitude DECIMAL(9,6) NOT NULL,
+        longitude DECIMAL(9,6) NOT NULL,
+        distance_meters DECIMAL(9,2) NOT NULL,
+        verification_method VARCHAR(12) NOT NULL DEFAULT 'GPS',
+        status VARCHAR(12) NOT NULL DEFAULT 'VERIFIED',
+        has_photo BIT NOT NULL DEFAULT 0,
+        note NVARCHAR(500) NULL,
+        CONSTRAINT FK_CheckIns_User FOREIGN KEY (user_id) REFERENCES dbo.Users(user_id),
+        CONSTRAINT FK_CheckIns_Place FOREIGN KEY (place_id) REFERENCES dbo.Places(place_id),
+        CONSTRAINT FK_CheckIns_Trip FOREIGN KEY (trip_id) REFERENCES dbo.Trips(trip_id),
+        CONSTRAINT UQ_CheckIns_UserPlace UNIQUE (user_id,place_id),
+        CONSTRAINT CK_CheckIns_Distance CHECK (distance_meters >= 0),
+        CONSTRAINT CK_CheckIns_Method CHECK (verification_method IN ('GPS')),
+        CONSTRAINT CK_CheckIns_Status CHECK (status IN ('VERIFIED','REJECTED'))
+    );
+    CREATE INDEX IX_CheckIns_UserTime ON dbo.CheckIns(user_id, checkin_time DESC);
+END;
+GO
+
+IF OBJECT_ID('dbo.CheckInImages','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.CheckInImages (
+        checkin_image_id INT IDENTITY(1,1) PRIMARY KEY,
+        checkin_id INT NOT NULL,
+        stored_name NVARCHAR(180) NOT NULL,
+        original_name NVARCHAR(255) NULL,
+        content_type VARCHAR(50) NOT NULL,
+        created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+        CONSTRAINT FK_CheckInImages_CheckIn FOREIGN KEY (checkin_id) REFERENCES dbo.CheckIns(checkin_id) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF OBJECT_ID('dbo.TravelPassportSettings','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.TravelPassportSettings (
+        user_id INT NOT NULL PRIMARY KEY,
+        visibility VARCHAR(10) NOT NULL DEFAULT 'PRIVATE',
+        updated_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+        CONSTRAINT FK_TravelPassportSettings_User FOREIGN KEY (user_id) REFERENCES dbo.Users(user_id) ON DELETE CASCADE,
+        CONSTRAINT CK_TravelPassportSettings_Visibility CHECK (visibility IN ('PRIVATE','PUBLIC'))
+    );
+END;
+GO
+
+IF OBJECT_ID('dbo.TravelBadges','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.TravelBadges (
+        badge_id INT IDENTITY(1,1) PRIMARY KEY,
+        badge_code VARCHAR(60) NOT NULL UNIQUE,
+        badge_name NVARCHAR(120) NOT NULL,
+        description NVARCHAR(500) NOT NULL,
+        icon NVARCHAR(20) NOT NULL DEFAULT N'🏅',
+        criteria_type VARCHAR(30) NOT NULL,
+        threshold INT NOT NULL,
+        is_active BIT NOT NULL DEFAULT 1,
+        display_order INT NOT NULL DEFAULT 0,
+        CONSTRAINT CK_TravelBadges_Threshold CHECK (threshold > 0),
+        CONSTRAINT CK_TravelBadges_Criteria CHECK (criteria_type IN ('UNIQUE_PLACES','PHOTO_CHECKINS','CATEGORY_PLACES'))
+    );
+END;
+GO
+
+IF OBJECT_ID('dbo.UserBadges','U') IS NULL
+BEGIN
+    CREATE TABLE dbo.UserBadges (
+        user_id INT NOT NULL,
+        badge_id INT NOT NULL,
+        earned_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+        CONSTRAINT PK_UserBadges PRIMARY KEY (user_id,badge_id),
+        CONSTRAINT FK_UserBadges_User FOREIGN KEY (user_id) REFERENCES dbo.Users(user_id),
+        CONSTRAINT FK_UserBadges_Badge FOREIGN KEY (badge_id) REFERENCES dbo.TravelBadges(badge_id)
+    );
+END;
+GO
+
+/* =========================================================
+   8. ADMIN COMBO TEMPLATES
+   ========================================================= */
+IF OBJECT_ID(N'dbo.ComboTemplates', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.ComboTemplates (
+        combo_id INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_ComboTemplates PRIMARY KEY,
+        combo_name NVARCHAR(150) NOT NULL,
+        description NVARCHAR(1000) NULL,
+        image_url NVARCHAR(500) NULL,
+        city_name NVARCHAR(100) NOT NULL,
+        district_name NVARCHAR(100) NOT NULL,
+        duration_days INT NOT NULL,
+        status VARCHAR(20) NOT NULL CONSTRAINT DF_ComboTemplates_Status DEFAULT 'DRAFT',
+        created_by INT NOT NULL,
+        created_at DATETIME2 NOT NULL CONSTRAINT DF_ComboTemplates_CreatedAt DEFAULT SYSDATETIME(),
+        updated_at DATETIME2 NOT NULL CONSTRAINT DF_ComboTemplates_UpdatedAt DEFAULT SYSDATETIME(),
+        CONSTRAINT FK_ComboTemplates_Creator FOREIGN KEY (created_by) REFERENCES dbo.Users(user_id),
+        CONSTRAINT CK_ComboTemplates_Duration CHECK (duration_days >= 1),
+        CONSTRAINT CK_ComboTemplates_Status CHECK (status IN ('DRAFT','ACTIVE','INACTIVE'))
+    );
+    CREATE INDEX IX_ComboTemplates_Search ON dbo.ComboTemplates (status, city_name, district_name, duration_days);
+END;
+GO
+
+IF OBJECT_ID(N'dbo.ComboTemplateCategories', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.ComboTemplateCategories (
+        combo_id INT NOT NULL,
+        category_id INT NOT NULL,
+        CONSTRAINT PK_ComboTemplateCategories PRIMARY KEY (combo_id, category_id),
+        CONSTRAINT FK_ComboTemplateCategories_Combo FOREIGN KEY (combo_id) REFERENCES dbo.ComboTemplates(combo_id) ON DELETE CASCADE,
+        CONSTRAINT FK_ComboTemplateCategories_Category FOREIGN KEY (category_id) REFERENCES dbo.Categories(category_id) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF OBJECT_ID(N'dbo.ComboTemplateItems', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.ComboTemplateItems (
+        combo_item_id INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_ComboTemplateItems PRIMARY KEY,
+        combo_id INT NOT NULL,
+        day_number INT NOT NULL,
+        sort_order INT NOT NULL,
+        activity_type VARCHAR(20) NOT NULL,
+        place_id INT NULL,
+        activity_title NVARCHAR(200) NOT NULL,
+        start_time TIME(0) NOT NULL,
+        end_time TIME(0) NOT NULL,
+        estimated_cost_per_person DECIMAL(18,2) NOT NULL CONSTRAINT DF_ComboTemplateItems_Cost DEFAULT 0,
+        note NVARCHAR(500) NULL,
+        CONSTRAINT FK_ComboTemplateItems_Combo FOREIGN KEY (combo_id) REFERENCES dbo.ComboTemplates(combo_id) ON DELETE CASCADE,
+        CONSTRAINT FK_ComboTemplateItems_Place FOREIGN KEY (place_id) REFERENCES dbo.Places(place_id),
+        CONSTRAINT UQ_ComboTemplateItems_Order UNIQUE (combo_id, day_number, sort_order),
+        CONSTRAINT CK_ComboTemplateItems_Day CHECK (day_number >= 1),
+        CONSTRAINT CK_ComboTemplateItems_Order CHECK (sort_order >= 1),
+        CONSTRAINT CK_ComboTemplateItems_Time CHECK (end_time > start_time),
+        CONSTRAINT CK_ComboTemplateItems_Cost CHECK (estimated_cost_per_person >= 0),
+        CONSTRAINT CK_ComboTemplateItems_Type CHECK (activity_type IN ('VISIT','MEAL','CAFE','REST')),
+        CONSTRAINT CK_ComboTemplateItems_Place CHECK (activity_type = 'REST' OR place_id IS NOT NULL)
+    );
+END;
+GO
+
+IF OBJECT_ID(N'dbo.FK_Trips_AppliedCombo', N'F') IS NULL
+   AND OBJECT_ID(N'dbo.Trips', N'U') IS NOT NULL
+   AND OBJECT_ID(N'dbo.ComboTemplates', N'U') IS NOT NULL
+BEGIN
+    ALTER TABLE dbo.Trips
+    ADD CONSTRAINT FK_Trips_AppliedCombo
+    FOREIGN KEY (applied_combo_id) REFERENCES dbo.ComboTemplates(combo_id);
+END;
+GO
+
+/* =========================================================
+   9. PRODUCT V2: USER PREFERENCES & COMBO REVIEWS
+   ========================================================= */
+IF OBJECT_ID(N'dbo.UserPreferences', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.UserPreferences (
+        user_id INT NOT NULL,
+        category_id INT NOT NULL,
+        created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+        CONSTRAINT PK_UserPreferences PRIMARY KEY (user_id, category_id),
+        CONSTRAINT FK_UserPreferences_User FOREIGN KEY (user_id) REFERENCES dbo.Users(user_id) ON DELETE CASCADE,
+        CONSTRAINT FK_UserPreferences_Category FOREIGN KEY (category_id) REFERENCES dbo.Categories(category_id) ON DELETE CASCADE
+    );
+    CREATE INDEX IX_UserPreferences_User ON dbo.UserPreferences(user_id);
+END;
+GO
+
+IF OBJECT_ID(N'dbo.ComboReviews', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.ComboReviews (
+        review_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        combo_id INT NOT NULL,
+        trip_id INT NOT NULL,
+        user_id INT NOT NULL,
+        rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+        pace_feedback NVARCHAR(30) NULL,
+        budget_match BIT DEFAULT 1,
+        vibe_tags NVARCHAR(200) NULL,
+        comment NVARCHAR(1000) NULL,
+        created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+
+        CONSTRAINT UQ_ComboReviews_TripUser UNIQUE (trip_id, user_id),
+        CONSTRAINT FK_ComboReviews_Combo FOREIGN KEY (combo_id) REFERENCES dbo.ComboTemplates(combo_id),
+        CONSTRAINT FK_ComboReviews_Trip FOREIGN KEY (trip_id) REFERENCES dbo.Trips(trip_id),
+        CONSTRAINT FK_ComboReviews_User FOREIGN KEY (user_id) REFERENCES dbo.Users(user_id)
+    );
+    CREATE INDEX IX_ComboReviews_Combo ON dbo.ComboReviews(combo_id);
+    CREATE INDEX IX_ComboReviews_Trip ON dbo.ComboReviews(trip_id);
+END;
+GO
+
+/* =========================================================
+   10. NORMALIZE PLACES (City & District Recognition)
+   ========================================================= */
+UPDATE dbo.Places
+SET city_name = N'TP.HCM'
+WHERE city_name IS NULL
+  AND (address LIKE N'%TP.HCM%' OR address LIKE N'%TP. HCM%' OR address LIKE N'%Hồ Chí Minh%');
+
+UPDATE dbo.Places
+SET district_name =
+    CASE
+        WHEN address LIKE N'%Quận 1%' THEN N'Quận 1'
+        WHEN address LIKE N'%Quận 3%' THEN N'Quận 3'
+        WHEN address LIKE N'%Quận 4%' THEN N'Quận 4'
+        WHEN address LIKE N'%Quận 5%' THEN N'Quận 5'
+        WHEN address LIKE N'%Quận 10%' THEN N'Quận 10'
+        WHEN address LIKE N'%Quận 11%' THEN N'Quận 11'
+        WHEN address LIKE N'%Phú Nhuận%' THEN N'Phú Nhuận'
+        WHEN address LIKE N'%Bình Thạnh%' THEN N'Bình Thạnh'
+        WHEN address LIKE N'%Thủ Đức%' THEN N'Thủ Đức'
+        WHEN address LIKE N'%Tân Phú%' THEN N'Tân Phú'
+        ELSE district_name
+    END
+WHERE district_name IS NULL;
+GO
+
+/* =========================================================
+   11. SEED DATA FOR BADGES, PREFERENCES, SOCIAL & COMBOS
+   ========================================================= */
+IF NOT EXISTS (SELECT 1 FROM dbo.TravelBadges WHERE badge_code='FIRST_5')
+    INSERT dbo.TravelBadges(badge_code,badge_name,description,icon,criteria_type,threshold,display_order)
+    VALUES ('FIRST_5',N'Tân binh khám phá',N'Check-in hợp lệ tại 5 địa điểm khác nhau',N'🧭','UNIQUE_PLACES',5,1);
+IF NOT EXISTS (SELECT 1 FROM dbo.TravelBadges WHERE badge_code='PHOTO_5')
+    INSERT dbo.TravelBadges(badge_code,badge_name,description,icon,criteria_type,threshold,display_order)
+    VALUES ('PHOTO_5',N'Người lưu giữ kỷ niệm',N'Check-in có ảnh tại 5 địa điểm khác nhau',N'📸','PHOTO_CHECKINS',5,2);
+IF NOT EXISTS (SELECT 1 FROM dbo.TravelBadges WHERE badge_code='EXPLORE_10')
+    INSERT dbo.TravelBadges(badge_code,badge_name,description,icon,criteria_type,threshold,display_order)
+    VALUES ('EXPLORE_10',N'Nhà thám hiểm',N'Check-in hợp lệ tại 10 địa điểm khác nhau',N'🌍','UNIQUE_PLACES',10,3);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM dbo.UserPreferences)
+BEGIN
+    INSERT INTO dbo.UserPreferences (user_id, category_id)
+    SELECT u.user_id, c.category_id
+    FROM dbo.Users u
+    CROSS JOIN dbo.Categories c
+    WHERE (
+        (u.email = 'minh@localtrip.vn' AND c.category_code IN ('FOOD', 'CAFE', 'SIGHTSEEING'))
+        OR (u.email = 'thanh@localtrip.vn' AND c.category_code IN ('CAFE', 'SIGHTSEEING', 'FOOD'))
+        OR (u.email = 'lananh@localtrip.vn' AND c.category_code IN ('FOOD', 'CAFE', 'SHOPPING'))
+        OR (u.email = 'hoangnam@localtrip.vn' AND c.category_code IN ('FOOD', 'ENTERTAINMENT', 'SIGHTSEEING'))
+    );
+END;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM dbo.Friendships)
+BEGIN
+    DECLARE @uMinh INT = (SELECT user_id FROM dbo.Users WHERE email = 'minh@localtrip.vn');
+    DECLARE @uThanh INT = (SELECT user_id FROM dbo.Users WHERE email = 'thanh@localtrip.vn');
+    DECLARE @uLanAnh INT = (SELECT user_id FROM dbo.Users WHERE email = 'lananh@localtrip.vn');
+    DECLARE @uNam INT = (SELECT user_id FROM dbo.Users WHERE email = 'hoangnam@localtrip.vn');
+
+    IF @uMinh IS NOT NULL AND @uLanAnh IS NOT NULL
+        INSERT INTO dbo.Friendships (requester_id, addressee_id, status)
+        VALUES (@uLanAnh, @uMinh, 'ACCEPTED');
+
+    IF @uThanh IS NOT NULL AND @uLanAnh IS NOT NULL
+        INSERT INTO dbo.Friendships (requester_id, addressee_id, status)
+        VALUES (@uLanAnh, @uThanh, 'ACCEPTED');
+
+    IF @uNam IS NOT NULL AND @uLanAnh IS NOT NULL
+        INSERT INTO dbo.Friendships (requester_id, addressee_id, status)
+        VALUES (@uNam, @uLanAnh, 'PENDING');
+END;
+GO
+
+IF NOT EXISTS (SELECT 1 FROM dbo.ComboTemplates WHERE combo_name = N'1-Day Iconic Saigon: Cafe & Heritage')
+BEGIN
+    DECLARE @adminId INT = (SELECT TOP 1 user_id FROM dbo.Users WHERE role = 'ADMIN');
+    IF @adminId IS NULL SET @adminId = (SELECT TOP 1 user_id FROM dbo.Users);
+
+    INSERT INTO dbo.ComboTemplates (
+        combo_name, description, image_url, city_name, district_name,
+        duration_days, status, created_by
+    )
+    VALUES (
+        N'1-Day Iconic Saigon: Cafe & Heritage',
+        N'A curated 1-day exploration around District 1 highlights: morning specialty coffee, historic landmarks, art museum, and signature Vietnamese street food.',
+        N'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=800&q=80',
+        N'TP.HCM',
+        N'Quận 1',
+        1,
+        'ACTIVE',
+        @adminId
+    );
+
+    DECLARE @newComboId INT = SCOPE_IDENTITY();
+
+    INSERT INTO dbo.ComboTemplateCategories (combo_id, category_id)
+    SELECT @newComboId, category_id FROM dbo.Categories WHERE category_code IN ('FOOD', 'CAFE', 'SIGHTSEEING');
+
+    DECLARE @pCafe INT = (SELECT TOP 1 place_id FROM dbo.Places WHERE place_name LIKE N'%Highlands Coffee Nguyễn Huệ%');
+    DECLARE @pMuseum INT = (SELECT TOP 1 place_id FROM dbo.Places WHERE place_name LIKE N'%Bảo tàng Chứng tích Chiến tranh%');
+    DECLARE @pLunch INT = (SELECT TOP 1 place_id FROM dbo.Places WHERE place_name LIKE N'%Hủ Tiếu Thanh Xuân%');
+    DECLARE @pArt INT = (SELECT TOP 1 place_id FROM dbo.Places WHERE place_name LIKE N'%Bảo tàng Mỹ thuật%');
+    DECLARE @pDinner INT = (SELECT TOP 1 place_id FROM dbo.Places WHERE place_name LIKE N'%Bún thịt nướng Chị Tuyền%');
+
+    IF @pCafe IS NULL SET @pCafe = (SELECT TOP 1 place_id FROM dbo.Places WHERE category_id = 2);
+    IF @pMuseum IS NULL SET @pMuseum = (SELECT TOP 1 place_id FROM dbo.Places WHERE category_id = 3);
+    IF @pLunch IS NULL SET @pLunch = (SELECT TOP 1 place_id FROM dbo.Places WHERE category_id = 1);
+    IF @pArt IS NULL SET @pArt = (SELECT TOP 1 place_id FROM dbo.Places WHERE category_id = 3);
+    IF @pDinner IS NULL SET @pDinner = (SELECT TOP 1 place_id FROM dbo.Places WHERE category_id = 1);
+
+    INSERT INTO dbo.ComboTemplateItems (
+        combo_id, day_number, sort_order, activity_type, place_id,
+        activity_title, start_time, end_time, estimated_cost_per_person, note
+    )
+    VALUES
+    (@newComboId, 1, 1, 'CAFE', @pCafe, N'Morning Coffee at Nguyen Hue', '08:00', '09:30', 70000, N'Enjoy morning breeze and vibrant street atmosphere.'),
+    (@newComboId, 1, 2, 'VISIT', @pMuseum, N'War Remnants History Discovery', '10:00', '11:45', 40000, N'Tour historical exhibits and artifacts.'),
+    (@newComboId, 1, 3, 'MEAL', @pLunch, N'Authentic Saigon Lunch', '12:00', '13:30', 70000, N'Traditional savory noodles in downtown alley.'),
+    (@newComboId, 1, 4, 'REST', NULL, N'Midday Break & Hotel Chill', '13:45', '15:15', 0, N'Relax and recharge energy out of the noon sun.'),
+    (@newComboId, 1, 5, 'VISIT', @pArt, N'Fine Arts Museum Architecture Tour', '15:30', '17:30', 30000, N'Colonial French-era architectural wonder and galleries.'),
+    (@newComboId, 1, 6, 'MEAL', @pDinner, N'Local Crispy Spring Rolls & BBQ Pork', '18:00', '20:00', 85000, N'Hearty local dinner with signature Saigon sauces.');
+
+    DECLARE @sampleTrip INT = (SELECT TOP 1 trip_id FROM dbo.Trips);
+    DECLARE @sampleReviewer INT = (SELECT TOP 1 user_id FROM dbo.Users WHERE email = 'thanh@localtrip.vn');
+    IF @sampleTrip IS NOT NULL AND @sampleReviewer IS NOT NULL AND NOT EXISTS (SELECT 1 FROM dbo.ComboReviews WHERE combo_id = @newComboId)
+    BEGIN
+        INSERT INTO dbo.ComboReviews (combo_id, trip_id, user_id, rating, pace_feedback, budget_match, vibe_tags, comment)
+        VALUES (@newComboId, @sampleTrip, @sampleReviewer, 5, 'BALANCED', 1, N'Cafe,Local Bites,Culture,Great Value', N'Incredible route! The pace between museum visits and cafe stops was just right for our group.');
+    END;
+END;
+GO
+
+/* =========================================================
+   FINAL VERIFICATION SUMMARY (31 System Tables)
+   ========================================================= */
 SELECT 'Users' AS table_name, COUNT(*) AS row_count FROM dbo.Users
 UNION ALL SELECT 'Trips', COUNT(*) FROM dbo.Trips
 UNION ALL SELECT 'TripMembers', COUNT(*) FROM dbo.TripMembers
@@ -927,5 +1429,22 @@ UNION ALL SELECT 'GroupFundContributions', COUNT(*) FROM dbo.GroupFundContributi
 UNION ALL SELECT 'LoginLogs', COUNT(*) FROM dbo.LoginLogs
 UNION ALL SELECT 'AdminAuditLogs', COUNT(*) FROM dbo.AdminAuditLogs
 UNION ALL SELECT 'RememberMeTokens', COUNT(*) FROM dbo.RememberMeTokens
-UNION ALL SELECT 'PasswordResetTokens', COUNT(*) FROM dbo.PasswordResetTokens;
+UNION ALL SELECT 'PasswordResetTokens', COUNT(*) FROM dbo.PasswordResetTokens
+UNION ALL SELECT 'Friendships', COUNT(*) FROM dbo.Friendships
+UNION ALL SELECT 'Posts', COUNT(*) FROM dbo.Posts
+UNION ALL SELECT 'PostImages', COUNT(*) FROM dbo.PostImages
+UNION ALL SELECT 'PostLikes', COUNT(*) FROM dbo.PostLikes
+UNION ALL SELECT 'PostComments', COUNT(*) FROM dbo.PostComments
+UNION ALL SELECT 'PostBookmarks', COUNT(*) FROM dbo.PostBookmarks
+UNION ALL SELECT 'PostReports', COUNT(*) FROM dbo.PostReports
+UNION ALL SELECT 'CheckIns', COUNT(*) FROM dbo.CheckIns
+UNION ALL SELECT 'CheckInImages', COUNT(*) FROM dbo.CheckInImages
+UNION ALL SELECT 'TravelPassportSettings', COUNT(*) FROM dbo.TravelPassportSettings
+UNION ALL SELECT 'TravelBadges', COUNT(*) FROM dbo.TravelBadges
+UNION ALL SELECT 'UserBadges', COUNT(*) FROM dbo.UserBadges
+UNION ALL SELECT 'ComboTemplates', COUNT(*) FROM dbo.ComboTemplates
+UNION ALL SELECT 'ComboTemplateCategories', COUNT(*) FROM dbo.ComboTemplateCategories
+UNION ALL SELECT 'ComboTemplateItems', COUNT(*) FROM dbo.ComboTemplateItems
+UNION ALL SELECT 'UserPreferences', COUNT(*) FROM dbo.UserPreferences
+UNION ALL SELECT 'ComboReviews', COUNT(*) FROM dbo.ComboReviews;
 GO
