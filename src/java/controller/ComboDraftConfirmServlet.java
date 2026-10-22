@@ -159,7 +159,11 @@ public class ComboDraftConfirmServlet extends HttpServlet {
                         draft.getRevision(),
                         draft.getItems());
 
-                // Chỉ bỏ bản nháp sau khi lưu thành công.
+                if (draft.getComboId() > 0) {
+                    tripDAO.setAppliedCombo(tripId, draft.getComboId());
+                }
+
+                // Remove draft only after successful commit.
                 session.removeAttribute(draftKey);
 
                 session.setAttribute("successMessage",

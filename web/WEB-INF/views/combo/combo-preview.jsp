@@ -4,6 +4,8 @@
            uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt"
            uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn"
+           uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <fmt:setLocale value="en_US" scope="page"/>
 <%@ include file="/WEB-INF/jspf/header.jspf" %>
@@ -136,6 +138,25 @@
                 No positive budget is set for this trip.
             </p>
         </c:if>
+
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line);">
+            <span style="display: inline-flex; align-items: center; gap: 4px; background: #fef3c7; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 12px; font-size: 11.5px; font-weight: 700; color: #b45309;">
+                ⭐ <c:out value="${selectedCombo.avgRating > 0 ? selectedCombo.avgRating : 'New'}"/>
+                <c:if test="${selectedCombo.reviewCount > 0}">
+                    (${selectedCombo.reviewCount} reviews)
+                </c:if>
+            </span>
+            <c:if test="${selectedCombo.reviewCount > 0}">
+                <span style="font-size: 11px; color: #475569; background: #f1f5f9; padding: 2px 8px; border-radius: 12px; font-weight: 600;">
+                    💰 ${selectedCombo.budgetMatchPercent}% Budget Met
+                </span>
+            </c:if>
+            <c:if test="${selectedCombo.appliedTripsCount > 0}">
+                <span style="font-size: 11px; color: #1e40af; background: #eff6ff; padding: 2px 8px; border-radius: 12px; font-weight: 600;">
+                    🎯 Chosen by ${selectedCombo.appliedTripsCount} groups
+                </span>
+            </c:if>
+        </div>
     </section>
 
     <c:set var="previousDay" value="0"/>
@@ -215,6 +236,34 @@
         <c:param name="tripId" value="${trip.id}"/>
     </c:url>
 
+    <%-- Community Reviews for this Combo --%>
+    <section class="rd-card mt-4 mb-4">
+        <h3 class="h5 mb-2">Traveler Reviews (${fn:length(comboReviews)})</h3>
+        <c:choose>
+            <c:when test="${empty comboReviews}">
+                <p class="small text-muted mb-0">No reviews yet for this combo template. Be the first to try it and share feedback!</p>
+            </c:when>
+            <c:otherwise>
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                    <c:forEach var="rev" items="${comboReviews}">
+                        <div style="padding: 10px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <strong><c:out value="${rev.userName}"/></strong>
+                                <span style="color: #f59e0b; font-weight: 700;">${rev.rating} ⭐</span>
+                            </div>
+                            <div style="font-size: 11px; color: #64748b; margin-bottom: 4px;">
+                                Pace: <strong>${rev.paceFeedback}</strong> · Budget: <strong>${rev.budgetMatch ? 'Met' : 'Over'}</strong>
+                                <c:if test="${not empty rev.vibeTags}"> · Vibes: <em><c:out value="${rev.vibeTags}"/></em></c:if>
+                            </div>
+                            <c:if test="${not empty rev.comment}">
+                                <p style="font-size: 12px; color: #334155; margin: 4px 0 0; line-height: 1.4;"><c:out value="${rev.comment}"/></p>
+                            </c:if>
+                        </div>
+                    </c:forEach>
+                </div>
+            </c:otherwise>
+        </c:choose>
+    </section>
     <div class="my-4">
         <a href="${draftUrl}" class="btn btn-brand">
             Edit this draft

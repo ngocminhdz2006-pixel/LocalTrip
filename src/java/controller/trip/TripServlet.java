@@ -204,7 +204,7 @@ public class TripServlet extends HttpServlet {
 
             request.getSession().setAttribute(
                     "errorMessage",
-                    "Không thể sửa thông tin chuyến đi đã hoàn thành hoặc đã hủy."
+                    "Cannot edit a completed or cancelled trip."
             );
 
             redirectToDetail(request, response, tripId);
@@ -246,7 +246,7 @@ public class TripServlet extends HttpServlet {
             );
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể tải chuyến đi.",
+                    "Unable to load trip.",
                     e
             );
         }
@@ -290,6 +290,15 @@ public class TripServlet extends HttpServlet {
 
         request.setAttribute("availableFriends", availableFriends);
         request.setAttribute("itineraryCount", itineraryCount);
+
+        java.util.List<model.GroupPreference> groupMatchedPrefs = new dao.PreferenceDAO().findGroupPreferences(tripId);
+        request.setAttribute("groupMatchedPrefs", groupMatchedPrefs);
+
+        boolean hasReviewedAppliedCombo = false;
+        if (trip.getAppliedComboId() != null && trip.getAppliedComboId() > 0) {
+            hasReviewedAppliedCombo = new dao.ComboTemplateDAO().hasUserReviewed(tripId, user.getUserId());
+        }
+        request.setAttribute("hasReviewedAppliedCombo", hasReviewedAppliedCombo);
         request.setAttribute("hasUserPreference", hasUserPreference);
         request.setAttribute("viewCanStart", viewInDates && viewHasItinerary);
         request.setAttribute("viewStartReason", !viewHasItinerary ? "Please add or confirm itinerary activities before starting." : !viewInDates ? "Trips can only be started during the scheduled travel dates." : "");
@@ -325,7 +334,7 @@ public class TripServlet extends HttpServlet {
             forwardCreateError(
                     request,
                     response,
-                    "Vui lòng nhập đầy đủ thông tin."
+                    "Please fill in all required fields."
             );
             return;
         }
@@ -334,7 +343,7 @@ public class TripServlet extends HttpServlet {
             forwardCreateError(
                     request,
                     response,
-                    "Tên chuyến đi không được vượt quá 150 ký tự."
+                    "Trip name must not exceed 150 characters."
             );
             return;
         }
@@ -343,7 +352,7 @@ public class TripServlet extends HttpServlet {
             forwardCreateError(
                     request,
                     response,
-                    "Địa điểm không được vượt quá 200 ký tự."
+                    "Destination must not exceed 200 characters."
             );
             return;
         }
@@ -382,7 +391,7 @@ public class TripServlet extends HttpServlet {
             forwardCreateError(
                     request,
                     response,
-                    "Ngày kết thúc không được trước ngày bắt đầu."
+                    "End date cannot be earlier than start date."
             );
             return;
         }
@@ -391,7 +400,7 @@ public class TripServlet extends HttpServlet {
             forwardCreateError(
                     request,
                     response,
-                    "Ngân sách không được là số âm."
+                    "Budget cannot be negative."
             );
             return;
         }
@@ -399,7 +408,7 @@ public class TripServlet extends HttpServlet {
             forwardCreateError(
                     request,
                     response,
-                    "Hãy chọn khu vực có trong danh sách."
+                    "Please select a valid area from the list."
             );
             return;
         }
@@ -441,7 +450,7 @@ public class TripServlet extends HttpServlet {
 
                 request.getSession().setAttribute(
                         "errorMessage",
-                        "Không thể sửa thông tin chuyến đi đã hoàn thành hoặc đã hủy."
+                        "Cannot edit a completed or cancelled trip."
                 );
 
                 redirectToDetail(request, response, requestedTripId);
@@ -481,13 +490,13 @@ public class TripServlet extends HttpServlet {
                 forwardCreateError(
                         request,
                         response,
-                        "Không thể đổi thời gian chuyến đi. "
-                        + "Lịch trình hiện có hoạt động từ "
+                        "Cannot change travel dates. "
+                        + "Existing activities are scheduled from "
                         + firstActivityDate.toLocalDate().format(dateFormat)
                         + " đến "
                         + lastActivityDate.toLocalDate().format(dateFormat)
-                        + ". Ngày bắt đầu và kết thúc phải bao phủ "
-                        + "các hoạt động này."
+                        + ". Start and end dates must cover "
+                        + "all scheduled activities."
                 );
                 return;
             }
@@ -504,14 +513,14 @@ public class TripServlet extends HttpServlet {
                 forwardCreateError(
                         request,
                         response,
-                        "Không thể cập nhật chuyến đi."
+                        "Unable to update trip."
                 );
                 return;
             }
 
             request.getSession().setAttribute(
                     "successMessage",
-                    "Cập nhật chuyến đi thành công."
+                    "Trip updated successfully."
             );
 
             redirectToDetail(
@@ -537,14 +546,14 @@ public class TripServlet extends HttpServlet {
             forwardCreateError(
                     request,
                     response,
-                    "Không thể tạo chuyến đi."
+                    "Unable to create trip."
             );
             return;
         }
 
         request.getSession().setAttribute(
                 "successMessage",
-                "Tạo chuyến đi thành công."
+                "Trip created successfully."
         );
 
         response.sendRedirect(request.getContextPath() + "/trip/detail?tripId=" + createdTripId);

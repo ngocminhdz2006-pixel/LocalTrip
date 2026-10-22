@@ -70,6 +70,14 @@
                                 <div>
                                     <h4 class="lt-friend-name"><c:out value="${person.fullName}" /></h4>
                                     <p class="lt-friend-sub" style="color: #64748b;"><c:out value="${person.email}" /></p>
+                                    <c:if test="${not empty person.vibeMatchPercent and person.vibeMatchPercent > 0}">
+                                        <div class="lt-vibe-match-badge">
+                                            🔥 ${person.vibeMatchPercent}% Vibe Match
+                                            <c:if test="${not empty person.vibeMatchCommon}">
+                                                <span style="font-weight: 500; opacity: 0.9;">(${person.vibeMatchCommon})</span>
+                                            </c:if>
+                                        </div>
+                                    </c:if>
                                 </div>
                             </div>
 
@@ -191,6 +199,14 @@
                             <div>
                                 <h4 class="lt-friend-name"><c:out value="${f.fullName}" /></h4>
                                 <p class="lt-friend-sub">Connected via LocalTrip</p>
+                                <c:if test="${not empty f.vibeMatchPercent and f.vibeMatchPercent > 0}">
+                                    <div class="lt-vibe-match-badge">
+                                        🔥 ${f.vibeMatchPercent}% Vibe Match
+                                        <c:if test="${not empty f.vibeMatchCommon}">
+                                            <span style="font-weight: 500; opacity: 0.9;">(${f.vibeMatchCommon})</span>
+                                        </c:if>
+                                    </div>
+                                </c:if>
                             </div>
                         </div>
                         <div class="lt-friend-actions">
@@ -316,6 +332,19 @@
         display: flex;
         align-items: center;
         gap: 6px;
+    }
+    .lt-vibe-match-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 4px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: #fef3c7;
+        border: 1px solid #fde68a;
+        color: #b45309;
+        font-size: 10.5px;
+        font-weight: 700;
     }
     .lt-btn-invite-trip {
         background: #175b43 !important;

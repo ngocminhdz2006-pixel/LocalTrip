@@ -279,6 +279,7 @@ public class ComboPreviewServlet extends HttpServlet {
                     Date.valueOf(start),
                     itineraryRevision,
                     draftItems);
+            comboDraft.setComboId(selected.getId());
 
 // Tách bản nháp combo khỏi những luồng tạo lịch khác.
 // Mỗi chuyến có một bản nháp combo trong phiên đăng nhập.
@@ -290,6 +291,7 @@ public class ComboPreviewServlet extends HttpServlet {
             request.setAttribute("trip", trip);
             request.setAttribute("currentTrip", trip);
             request.setAttribute("selectedCombo", selected);
+            request.setAttribute("comboReviews", comboDAO.getReviewsForCombo(selected.getId()));
             request.setAttribute("previewActivities", activities);
             request.setAttribute("memberCount", memberCount);
             request.setAttribute("groupCost", groupCost);

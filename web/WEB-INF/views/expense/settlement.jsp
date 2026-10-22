@@ -126,9 +126,15 @@
                                 <strong style="color: #175b43;"><c:out value="${t.toMemberName}"/></strong>
                             </div>
 
-                            <strong style="font-size: 13px; font-weight: 800; color: #175b43;">
-                                <fmt:formatNumber value="${t.amount}" type="number" maxFractionDigits="0"/> VND
-                            </strong>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <strong style="font-size: 13px; font-weight: 800; color: #175b43;">
+                                    <fmt:formatNumber value="${t.amount}" type="number" maxFractionDigits="0"/> VND
+                                </strong>
+                                <button type="button" class="lt-btn-vietqr"
+                                        onclick="openVietQrModal('<c:out value="${t.fromMemberName}" escapeXml="true"/>', '<c:out value="${t.toMemberName}" escapeXml="true"/>', ${t.amount})">
+                                    📲 VietQR
+                                </button>
+                            </div>
                         </div>
                     </c:forEach>
                 </div>
@@ -141,5 +147,96 @@
     </div>
 
 </div>
+
+
+<%-- Dynamic VietQR Payment Modal --%>
+<div id="vietQrModal" class="lt-modal-backdrop" onclick="closeVietQrModal(event)">
+    <div class="lt-modal-card" onclick="event.stopPropagation()" style="max-width: 380px; text-align: center;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 18px;">📲</span>
+                <h3 style="font-size: 15px; font-weight: 800; color: #143b2d; margin: 0;">VietQR Instant Pay</h3>
+            </div>
+            <button type="button" onclick="document.getElementById('vietQrModal').style.display='none'"
+                    style="background: none; border: none; font-size: 18px; color: #64748b; cursor: pointer;">✕</button>
+        </div>
+        <p style="font-size: 11px; color: #64748b; margin: 0 0 14px;">Scan with Vietcombank, MB, Techcombank or any Banking App</p>
+
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; margin-bottom: 12px; font-size: 12px; text-align: left;">
+            <div style="margin-bottom: 4px;"><strong>Payer:</strong> <span id="vqrFrom"></span></div>
+            <div style="margin-bottom: 4px;"><strong>Recipient:</strong> <span id="vqrTo" style="color: #175b43; font-weight: 700;"></span></div>
+            <div style="margin-bottom: 4px;"><strong>Amount:</strong> <span id="vqrAmount" style="color: #e11d48; font-weight: 800;"></span></div>
+            <div><strong>Transfer Note:</strong> <span id="vqrNote" style="color: #64748b; font-size: 11px;"></span></div>
+        </div>
+
+        <div style="display: flex; justify-content: center; margin-bottom: 14px;">
+            <img id="vqrImage" src="" alt="VietQR Payment Code"
+                 style="width: 220px; height: 220px; border-radius: 12px; border: 1.5px solid #dce7df; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
+        </div>
+
+        <button type="button" class="lt-btn-action-secondary" style="width: 100%; border-radius: 12px; font-size: 12px; padding: 10px;"
+                onclick="document.getElementById('vietQrModal').style.display='none'">
+            Close
+        </button>
+    </div>
+</div>
+
+<style>
+    .lt-btn-vietqr {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        background: #ecfdf5;
+        border: 1px solid #10b981;
+        border-radius: 8px;
+        color: #047857;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .lt-btn-vietqr:hover {
+        background: #175b43;
+        color: #ffffff;
+    }
+    .lt-modal-backdrop {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(15, 23, 42, 0.6);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+    .lt-modal-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 20px;
+        width: 100%;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+</style>
+
+<script>
+    function openVietQrModal(fromName, toName, amount) {
+        document.getElementById('vqrFrom').innerText = fromName;
+        document.getElementById('vqrTo').innerText = toName;
+        document.getElementById('vqrAmount').innerText = new Intl.NumberFormat('vi-VN').format(amount) + ' VND';
+        const note = 'LocalTrip Trip ${trip.id} Settle';
+        document.getElementById('vqrNote').innerText = note;
+
+        const qrUrl = 'https://img.vietqr.io/image/970436-102870123456-compact2.png?amount=' + amount + '&addInfo=' + encodeURIComponent(note);
+        document.getElementById('vqrImage').src = qrUrl;
+        document.getElementById('vietQrModal').style.display = 'flex';
+    }
+
+    function closeVietQrModal(e) {
+        if (e.target.id === 'vietQrModal') {
+            e.target.style.display = 'none';
+        }
+    }
+</script>
 
 <%@ include file="/WEB-INF/views/common/footer.jsp" %>

@@ -289,4 +289,5 @@
     })();
 </script>
 
+<script src="${pageContext.request.contextPath}/js/image-compressor.js"></script>
 <%@ include file="/WEB-INF/views/common/footer.jsp" %>

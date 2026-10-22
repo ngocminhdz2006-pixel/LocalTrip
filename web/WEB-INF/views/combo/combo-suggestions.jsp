@@ -192,6 +192,40 @@
                                 <c:out value="${suggestion.combo.name}"/>
                             </h3>
 
+                            <%-- Community Review & Stats Metrics --%>
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 6px 0 10px;">
+                                <span style="display: inline-flex; align-items: center; gap: 4px; background: #fef3c7; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 12px; font-size: 11.5px; font-weight: 700; color: #b45309;">
+                                    ⭐ <c:out value="${suggestion.combo.avgRating > 0 ? suggestion.combo.avgRating : 'New'}"/>
+                                    <c:if test="${suggestion.combo.reviewCount > 0}">
+                                        (${suggestion.combo.reviewCount} reviews)
+                                    </c:if>
+                                </span>
+
+                                <c:if test="${suggestion.groupMatchPercent > 0}">
+                                    <span style="display: inline-flex; align-items: center; gap: 4px; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 12px; font-size: 11.5px; font-weight: 700; color: #047857;">
+                                        🔥 ${suggestion.groupMatchPercent}% Group Match
+                                    </span>
+                                </c:if>
+
+                                <c:if test="${suggestion.combo.reviewCount > 0}">
+                                    <span style="font-size: 11px; color: #475569; background: #f1f5f9; padding: 2px 8px; border-radius: 12px; font-weight: 600;">
+                                        💰 ${suggestion.combo.budgetMatchPercent}% Budget Met
+                                    </span>
+                                </c:if>
+
+                                <c:if test="${suggestion.combo.appliedTripsCount > 0}">
+                                    <span style="font-size: 11px; color: #1e40af; background: #eff6ff; padding: 2px 8px; border-radius: 12px; font-weight: 600;">
+                                        🎯 Used in ${suggestion.combo.appliedTripsCount} trips
+                                    </span>
+                                </c:if>
+                            </div>
+
+                            <c:if test="${not empty suggestion.combo.topVibeTags}">
+                                <div style="font-size: 11px; color: #64748b; margin-bottom: 8px;">
+                                    <span>Vibes: </span><strong style="color: #334155;"><c:out value="${suggestion.combo.topVibeTags}"/></strong>
+                                </div>
+                            </c:if>
+
                             <p class="combo-choice-description"><c:out value="${suggestion.combo.description}"/></p>
 
                             <c:choose>

@@ -59,16 +59,16 @@ public class DumpServlet extends HttpServlet {
             req.setAttribute("posts",dao.getFeed(user.getUserId(),"BOOKMARKS".equals(req.getParameter("filter"))?"BOOKMARKS":"ALL"));
             req.setAttribute("bookmarksOnly","BOOKMARKS".equals(req.getParameter("filter")));
             req.getRequestDispatcher("/WEB-INF/views/dump/feed.jsp").forward(req,resp);
-        } catch(RuntimeException e) { throw new ServletException("Không thể tải Dump.",e); }
+        } catch(RuntimeException e) { throw new ServletException("Unable to load Dump feed.",e); }
     }
 
     @Override protected void doPost(HttpServletRequest req,HttpServletResponse resp) throws ServletException,IOException {
         req.setCharacterEncoding("UTF-8");
         User user=currentUser(req,resp); if(user==null)return;
-        if(!validCsrf(req)) { req.getSession().setAttribute("errorMessage","Phiên gửi biểu mẫu đã hết hạn. Vui lòng thử lại."); resp.sendRedirect(req.getContextPath()+"/dump");return; }
+        if(!validCsrf(req)) { req.getSession().setAttribute("errorMessage","Form session expired. Please try again."); resp.sendRedirect(req.getContextPath()+"/dump");return; }
         String path=req.getServletPath();
         try {
-            if("/dump/create".equals(path)) { createPost(req,user); req.getSession().setAttribute("successMessage","Đã đăng bài lên Dump."); resp.sendRedirect(req.getContextPath()+"/dump");return; }
+            if("/dump/create".equals(path)) { createPost(req,user); req.getSession().setAttribute("successMessage","Story posted to Dump feed successfully."); resp.sendRedirect(req.getContextPath()+"/dump");return; }
             if("/dump/friends".equals(path)) { handleFriendAction(req,user); resp.sendRedirect(req.getContextPath()+"/dump/friends");return; }
             String action=req.getParameter("action"); int postId=parsePositive(req.getParameter("postId"));
             if("like".equals(action))dao.toggleLike(postId,user.getUserId());
@@ -76,25 +76,25 @@ public class DumpServlet extends HttpServlet {
             else if("comment".equals(action))dao.addComment(postId,user.getUserId(),req.getParameter("content"));
             else if("report".equals(action))dao.reportPost(postId,user.getUserId(),req.getParameter("reason"));
             else if("delete".equals(action))dao.deleteOwnPost(postId,user.getUserId());
-            else throw new IllegalArgumentException("Thao tác không hợp lệ.");
-            req.getSession().setAttribute("successMessage", "like".equals(action)?"Đã cập nhật lượt thích.":"bookmark".equals(action)?"Đã cập nhật bài viết đã lưu.":"comment".equals(action)?"Đã gửi bình luận.":"report".equals(action)?"Đã gửi báo cáo cho quản trị viên.":"Đã xóa bài viết.");
+            else throw new IllegalArgumentException("Invalid operation.");
+            req.getSession().setAttribute("successMessage", "like".equals(action)?"Like updated.":"bookmark".equals(action)?"Bookmark updated.":"comment".equals(action)?"Comment submitted.":"report".equals(action)?"Report submitted to administrators.":"Post deleted.");
         } catch(IllegalArgumentException e) { req.getSession().setAttribute("errorMessage",e.getMessage()); }
-        catch(RuntimeException e) { throw new ServletException("Không thể xử lý thao tác Dump.",e); }
+        catch(RuntimeException e) { throw new ServletException("Unable to process Dump action.",e); }
         resp.sendRedirect(req.getContextPath()+("BOOKMARKS".equals(req.getParameter("returnTo"))?"/dump?filter=BOOKMARKS":"/dump"));
     }
 
     private void createPost(HttpServletRequest req,User user) throws IOException,ServletException {
-        String content=trim(req.getParameter("content")); if(content!=null&&content.length()>2000)throw new IllegalArgumentException("Cảm nhận tối đa 2000 ký tự.");
+        String content=trim(req.getParameter("content")); if(content!=null&&content.length()>2000)throw new IllegalArgumentException("Story content must be within 2000 characters.");
         Integer placeId=optionalPositive(req.getParameter("placeId")); Integer tripId=optionalPositive(req.getParameter("tripId"));
         String visibility="FRIENDS".equals(req.getParameter("visibility"))?"FRIENDS":"PUBLIC";
-        Integer rating=null; String r=trim(req.getParameter("rating")); if(r!=null){try{rating=Integer.valueOf(r);}catch(NumberFormatException e){throw new IllegalArgumentException("Đánh giá không hợp lệ.");}if(rating<1||rating>5)throw new IllegalArgumentException("Đánh giá phải từ 1 đến 5 sao.");}
+        Integer rating=null; String r=trim(req.getParameter("rating")); if(r!=null){try{rating=Integer.valueOf(r);}catch(NumberFormatException e){throw new IllegalArgumentException("Invalid rating value.");}if(rating<1||rating>5)throw new IllegalArgumentException("Rating must be between 1 and 5 stars.");}
         List<Part> parts=new ArrayList<Part>(); for(Part part:req.getParts()) if("images".equals(part.getName())&&part.getSize()>0)parts.add(part);
-        if(parts.size()>MAX_IMAGES)throw new IllegalArgumentException("Mỗi bài viết được tải tối đa 5 ảnh.");
+        if(parts.size()>MAX_IMAGES)throw new IllegalArgumentException("You can upload up to 5 photos per post.");
         File uploadDir=getUploadDir(); List<StoredImage> images=new ArrayList<StoredImage>(); List<File> written=new ArrayList<File>();
         try {
             for(Part part:parts) {
-                if(part.getSize()>5L*1024*1024)throw new IllegalArgumentException("Mỗi ảnh tối đa 5 MB.");
-                String type=detectImageType(part); if(type==null)throw new IllegalArgumentException("Chỉ chấp nhận ảnh JPG, PNG hoặc WEBP hợp lệ.");
+                if(part.getSize()>5L*1024*1024)throw new IllegalArgumentException("Each photo must not exceed 5 MB.");
+                String type=detectImageType(part); if(type==null)throw new IllegalArgumentException("Only JPG, PNG, or WEBP images are accepted.");
                 String stored=UUID.randomUUID().toString().replace("-","")+"."+type.substring(type.indexOf('/')+1).replace("jpeg","jpg");
                 File target=new File(uploadDir,stored); try(InputStream in=part.getInputStream()){Files.copy(in,target.toPath(),StandardCopyOption.REPLACE_EXISTING);} written.add(target);
                 String original=part.getSubmittedFileName(); if(original!=null){original=original.replace('\\','/');original=original.substring(original.lastIndexOf('/')+1);if(original.length()>255)original=original.substring(original.length()-255);}
@@ -137,7 +137,7 @@ public class DumpServlet extends HttpServlet {
     }
     public static File getUploadDir() throws IOException {
         String base=System.getProperty("catalina.base"); if(base==null||base.trim().isEmpty())base=System.getProperty("java.io.tmpdir");
-        File dir=new File(base,"LocalTripUploads/dump"); if(!dir.exists()&&!dir.mkdirs())throw new IOException("Không thể tạo thư mục lưu ảnh an toàn."); return dir;
+        File dir=new File(base,"LocalTripUploads/dump"); if(!dir.exists()&&!dir.mkdirs())throw new IOException("Unable to create upload storage directory."); return dir;
     }
     private String detectImageType(Part part) throws IOException {
         byte[] h=new byte[12]; int n; try(InputStream in=part.getInputStream()){n=in.read(h);} if(n>=3&&(h[0]&255)==255&&(h[1]&255)==216&&(h[2]&255)==255)return "image/jpeg";
@@ -148,7 +148,7 @@ public class DumpServlet extends HttpServlet {
     private User currentUser(HttpServletRequest req,HttpServletResponse resp)throws IOException {HttpSession s=req.getSession(false);User u=s==null?null:(User)s.getAttribute("user");if(u==null){resp.sendRedirect(req.getContextPath()+"/login");return null;}return u;}
     private void ensureCsrf(HttpSession s){if(s.getAttribute("travelCsrf")==null)s.setAttribute("travelCsrf",UUID.randomUUID().toString());}
     private boolean validCsrf(HttpServletRequest req){Object token=req.getSession().getAttribute("travelCsrf");return token instanceof String&&((String)token).equals(req.getParameter("csrfToken"));}
-    private int parsePositive(String value){try{int n=Integer.parseInt(value);if(n>0)return n;}catch(Exception ignored){}throw new IllegalArgumentException("Mã không hợp lệ.");}
+    private int parsePositive(String value){try{int n=Integer.parseInt(value);if(n>0)return n;}catch(Exception ignored){}throw new IllegalArgumentException("Invalid ID parameter.");}
     private Integer optionalPositive(String value){if(value==null||value.trim().isEmpty())return null;return Integer.valueOf(parsePositive(value));}
     private String trim(String s){if(s==null)return null;s=s.trim();return s.isEmpty()?null:s;}
 }

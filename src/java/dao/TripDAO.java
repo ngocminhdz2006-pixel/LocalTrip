@@ -17,7 +17,7 @@ public class TripDAO {
         String sql
                 = "SELECT t.trip_id, t.owner_id, t.trip_name, "
                 + "t.destination, t.start_date, t.end_date, "
-                + "t.budget, t.description, t.status, t.created_at, "
+                + "t.budget, t.description, t.status, t.created_at, t.applied_combo_id, "
                 + "CASE WHEN t.owner_id = ? "
                 + "THEN 'OWNER' ELSE tm.member_role END AS user_role "
                 + "FROM Trips t "
@@ -41,7 +41,7 @@ public class TripDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể tải danh sách chuyến đi.",
+                    "Unable to load trips list.",
                     e
             );
         }
@@ -54,7 +54,7 @@ public class TripDAO {
         String sql
                 = "SELECT t.trip_id, t.owner_id, t.trip_name, "
                 + "t.destination, t.start_date, t.end_date, "
-                + "t.budget, t.description, t.status, t.created_at, "
+                + "t.budget, t.description, t.status, t.created_at, t.applied_combo_id, "
                 + "CASE WHEN t.owner_id = ? "
                 + "THEN 'OWNER' ELSE tm.member_role END AS user_role "
                 + "FROM Trips t "
@@ -79,7 +79,7 @@ public class TripDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể tải chuyến đi.",
+                    "Unable to load trip.",
                     e
             );
         }
@@ -161,7 +161,7 @@ public class TripDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể tạo chuyến đi.",
+                    "Unable to create trip.",
                     e
             );
         }
@@ -197,7 +197,7 @@ public class TripDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể cập nhật chuyến đi.",
+                    "Unable to update trip.",
                     e
             );
         }
@@ -243,6 +243,14 @@ public class TripDAO {
         trip.setStatus(resultSet.getString("status"));
         trip.setCreatedAt(resultSet.getTimestamp("created_at"));
         trip.setRole(resultSet.getString("user_role"));
+
+        try {
+            Object comboObj = resultSet.getObject("applied_combo_id");
+            if (comboObj instanceof Number) {
+                trip.setAppliedComboId(((Number) comboObj).intValue());
+            }
+        } catch (SQLException ignored) {
+        }
 
         return trip;
     }
@@ -337,8 +345,23 @@ public class TripDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể xóa chuyến đi.", e
+                    "Unable to delete trip.", e
             );
+        }
+    }
+    public void setAppliedCombo(int tripId, Integer comboId) {
+        String sql = "UPDATE dbo.Trips SET applied_combo_id = ? WHERE trip_id = ?";
+        try (Connection connection = DBContext.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+            if (comboId == null) {
+                ps.setNull(1, java.sql.Types.INTEGER);
+            } else {
+                ps.setInt(1, comboId);
+            }
+            ps.setInt(2, tripId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Unable to update applied combo on trip.", e);
         }
     }
 }

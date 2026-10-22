@@ -43,20 +43,40 @@
         </div>
     </section>
 
-    <%-- 2. Action Buttons (Add Expense + Settlement) --%>
-    <div class="lt-exp-actions-row">
-        <c:if test="${trip.status == 'PLANNING' or trip.status == 'ONGOING'}">
-            <a href="${pageContext.request.contextPath}/expenses/create?tripId=${trip.id}"
-               class="lt-exp-btn-add">
-                <span>＋</span> Add Expense
-            </a>
-        </c:if>
-
+    <%-- 2. Sub-Modules Summary Cards: Settlement & Group Fund --%>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
         <a href="${pageContext.request.contextPath}/settlement?tripId=${trip.id}"
-           class="lt-exp-btn-settle">
-            <span>⚖️</span> Settlement
+           style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #ffffff; border: 1.5px solid #dce7df; border-radius: 14px; text-decoration: none; transition: all 0.15s ease;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: #ecfdf5; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                ⚖️
+            </div>
+            <div>
+                <strong style="display: block; font-size: 12.5px; color: #143b2d;">Settlement</strong>
+                <span style="font-size: 10px; color: #64748b;">Balances & VietQR</span>
+            </div>
+        </a>
+
+        <a href="${pageContext.request.contextPath}/group-fund?tripId=${trip.id}"
+           style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #ffffff; border: 1.5px solid #dce7df; border-radius: 14px; text-decoration: none; transition: all 0.15s ease;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: #eff6ff; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                🏦
+            </div>
+            <div>
+                <strong style="display: block; font-size: 12.5px; color: #1e40af;">Group Fund</strong>
+                <span style="font-size: 10px; color: #64748b;">Shared pool cash</span>
+            </div>
         </a>
     </div>
+
+    <%-- 3. Add Expense Action --%>
+    <c:if test="${trip.status == 'PLANNING' or trip.status == 'ONGOING'}">
+        <div style="margin-bottom: 16px;">
+            <a href="${pageContext.request.contextPath}/expenses/create?tripId=${trip.id}"
+               class="lt-exp-btn-add" style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; font-weight: 700; border-radius: 14px; text-decoration: none;">
+                <span>＋</span> Add Expense
+            </a>
+        </div>
+    </c:if>
 
     <%-- 3. Danh sách expenses dạng Thẻ Di Động --%>
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">

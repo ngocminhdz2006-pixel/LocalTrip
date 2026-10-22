@@ -60,15 +60,15 @@ public class RegisterServlet extends HttpServlet {
 
         // ---- Dieu kien 3: do dai ho ten ----
         if (!ValidationUtil.isValidName(fullName)) {
-            forward(request, response, "Họ tên không được vượt quá "
-                    + ValidationUtil.NAME_MAX + " ký tự.");
+            forward(request, response, "Full name must not exceed "
+                    + ValidationUtil.NAME_MAX + " characters.");
             return;
         }
 
         // ---- Dieu kien 4: dinh dang + do dai email ----
         String cleanEmail = email.trim().toLowerCase();
         if (!ValidationUtil.isValidEmail(cleanEmail)) {
-            forward(request, response, "Email không đúng định dạng.");
+            forward(request, response, "Invalid email address format.");
             return;
         }
 
@@ -82,7 +82,7 @@ public class RegisterServlet extends HttpServlet {
 
         // ---- Dieu kien 2: khop mat khau nhap lai ----
         if (!password.equals(confirmPassword)) {
-            forward(request, response, "Mật khẩu nhập lại không khớp.");
+            forward(request, response, "Passwords do not match.");
             return;
         }
 
@@ -90,7 +90,7 @@ public class RegisterServlet extends HttpServlet {
         boolean created;
         try {
             if (userDAO.existsByEmail(cleanEmail)) {
-                forward(request, response, "Email này đã được sử dụng.");
+                forward(request, response, "This email is already in use.");
                 return;
             }
             // Dieu kien 8: UserDAO.insert tra ve false neu 2 nguoi dang ky
@@ -98,7 +98,7 @@ public class RegisterServlet extends HttpServlet {
             // check phia Java) - van bao loi ro rang, khong van 500.
             created = userDAO.insert(fullName.trim(), cleanEmail, PasswordUtil.hash(password));
         } catch (Exception e) {
-            forward(request, response, "Không thể kết nối hệ thống, vui lòng thử lại.");
+            forward(request, response, "Unable to complete registration. Please try again.");
             return;
         }
 
@@ -108,7 +108,7 @@ public class RegisterServlet extends HttpServlet {
         }
 
         request.getSession(true).setAttribute("successMessage",
-                "Đăng ký thành công! Vui lòng đăng nhập.");
+                "Registration successful! Please log in.");
         response.sendRedirect(request.getContextPath() + "/login");
     }
 

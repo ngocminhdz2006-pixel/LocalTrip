@@ -16,6 +16,7 @@ public class Trip {
     private String description;
     private String status;
     private Timestamp createdAt;
+    private Integer appliedComboId;
 
     /*
      * Vai trò của user hiện tại trong Trip:
@@ -140,5 +141,13 @@ public class Trip {
 
     public void setArea(String area) {
         this.destination = area;
+    }
+
+    public Integer getAppliedComboId() {
+        return appliedComboId;
+    }
+
+    public void setAppliedComboId(Integer appliedComboId) {
+        this.appliedComboId = appliedComboId;
     }
 }

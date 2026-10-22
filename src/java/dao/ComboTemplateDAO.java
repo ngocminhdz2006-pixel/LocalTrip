@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import model.ComboTemplate;
+import model.ComboReview;
+import java.util.Map;
 import model.ComboTemplate.Activity;
 
 public class ComboTemplateDAO {
@@ -33,14 +35,16 @@ public class ComboTemplateDAO {
                 = connection.prepareStatement(sql);  ResultSet rs = statement.executeQuery()) {
 
             while (rs.next()) {
-                result.add(mapCombo(rs));
+                ComboTemplate c = mapCombo(rs);
+                attachReviewStats(c);
+                result.add(c);
             }
 
             return result;
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể tải danh sách combo.", e);
+                    "Unable to load combos list.", e);
         }
     }
 
@@ -58,7 +62,7 @@ public class ComboTemplateDAO {
                 || districtName.trim().isEmpty()
                 || durationDays < 1) {
             throw new IllegalArgumentException(
-                    "Khu vực hoặc số ngày không hợp lệ.");
+                    "Invalid region or duration days.");
         }
 
         String sql = SELECT_COMBO
@@ -106,7 +110,7 @@ public class ComboTemplateDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể tải combo phù hợp.", e);
+                    "Unable to load matching combos.", e);
         }
     }
 
@@ -118,7 +122,7 @@ public class ComboTemplateDAO {
     public ComboTemplate findById(int comboId) {
         if (comboId <= 0) {
             throw new IllegalArgumentException(
-                    "Mã combo không hợp lệ.");
+                    "Invalid combo ID.");
         }
 
         String sql = SELECT_COMBO + "WHERE c.combo_id = ?";
@@ -142,12 +146,13 @@ public class ComboTemplateDAO {
 
             loadCategories(connection, combo);
             loadActivities(connection, combo);
+            attachReviewStats(combo);
 
             return combo;
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể tải chi tiết combo.", e);
+                    "Unable to load combo details.", e);
         }
     }
 
@@ -157,7 +162,7 @@ public class ComboTemplateDAO {
         if (destination == null || destination.trim().isEmpty()
                 || durationDays < 1) {
             throw new IllegalArgumentException(
-                    "Khu vực hoặc số ngày không hợp lệ.");
+                    "Invalid region or duration days.");
         }
 
         String sql = SELECT_COMBO
@@ -201,7 +206,7 @@ public class ComboTemplateDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể tải combo mẫu cho chuyến đi.", e);
+                    "Unable to load combo templates for trip.", e);
         }
     }
 
@@ -328,5 +333,136 @@ public class ComboTemplateDAO {
                 rs.getBigDecimal("total_cost"));
 
         return combo;
+    }
+
+    public void attachReviewStats(ComboTemplate combo) {
+        if (combo == null) return;
+        String sql = "SELECT COUNT(*) AS review_count, "
+                   + "AVG(CAST(rating AS FLOAT)) AS avg_rating, "
+                   + "SUM(CASE WHEN budget_match = 1 THEN 1 ELSE 0 END) AS budget_ok_count "
+                   + "FROM dbo.ComboReviews WHERE combo_id = ?";
+        try (Connection c = DBContext.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, combo.getId());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int count = rs.getInt("review_count");
+                    combo.setReviewCount(count);
+                    if (count > 0) {
+                        double avg = rs.getDouble("avg_rating");
+                        combo.setAvgRating(Math.round(avg * 10.0) / 10.0);
+                        int budgetOk = rs.getInt("budget_ok_count");
+                        combo.setBudgetMatchPercent((int) Math.round((budgetOk * 100.0) / count));
+                    }
+                }
+            }
+        } catch (SQLException ignored) {
+        }
+
+        String tripsSql = "SELECT COUNT(*) FROM dbo.Trips WHERE applied_combo_id = ?";
+        try (Connection c = DBContext.getConnection(); PreparedStatement ps = c.prepareStatement(tripsSql)) {
+            ps.setInt(1, combo.getId());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    combo.setAppliedTripsCount(rs.getInt(1));
+                }
+            }
+        } catch (SQLException ignored) {
+        }
+
+        String tagsSql = "SELECT vibe_tags FROM dbo.ComboReviews WHERE combo_id = ? AND vibe_tags IS NOT NULL AND vibe_tags <> ''";
+        try (Connection c = DBContext.getConnection(); PreparedStatement ps = c.prepareStatement(tagsSql)) {
+            ps.setInt(1, combo.getId());
+            try (ResultSet rs = ps.executeQuery()) {
+                java.util.Map<String, Integer> tagCounts = new java.util.HashMap<>();
+                while (rs.next()) {
+                    String raw = rs.getString(1);
+                    if (raw != null) {
+                        for (String part : raw.split(",")) {
+                            String trimmed = part.trim();
+                            if (!trimmed.isEmpty()) {
+                                tagCounts.put(trimmed, tagCounts.getOrDefault(trimmed, 0) + 1);
+                            }
+                        }
+                    }
+                }
+                if (!tagCounts.isEmpty()) {
+                    List<Map.Entry<String, Integer>> sorted = new ArrayList<>(tagCounts.entrySet());
+                    sorted.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+                    List<String> top = new ArrayList<>();
+                    for (int i = 0; i < Math.min(3, sorted.size()); i++) {
+                        top.add(sorted.get(i).getKey());
+                    }
+                    combo.setTopVibeTags(String.join(", ", top));
+                }
+            }
+        } catch (SQLException ignored) {
+        }
+    }
+
+    public List<ComboReview> getReviewsForCombo(int comboId) {
+        List<ComboReview> list = new ArrayList<>();
+        String sql = "SELECT r.review_id, r.combo_id, r.trip_id, r.user_id, u.full_name, "
+                   + "r.rating, r.pace_feedback, r.budget_match, r.vibe_tags, r.comment, r.created_at "
+                   + "FROM dbo.ComboReviews r "
+                   + "JOIN dbo.Users u ON u.user_id = r.user_id "
+                   + "WHERE r.combo_id = ? "
+                   + "ORDER BY r.created_at DESC";
+        try (Connection c = DBContext.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, comboId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ComboReview rev = new ComboReview();
+                    rev.setReviewId(rs.getInt("review_id"));
+                    rev.setComboId(rs.getInt("combo_id"));
+                    rev.setTripId(rs.getInt("trip_id"));
+                    rev.setUserId(rs.getInt("user_id"));
+                    rev.setUserName(rs.getString("full_name"));
+                    rev.setRating(rs.getInt("rating"));
+                    rev.setPaceFeedback(rs.getString("pace_feedback"));
+                    rev.setBudgetMatch(rs.getBoolean("budget_match"));
+                    rev.setVibeTags(rs.getString("vibe_tags"));
+                    rev.setComment(rs.getString("comment"));
+                    rev.setCreatedAt(rs.getTimestamp("created_at"));
+                    list.add(rev);
+                }
+            }
+        } catch (SQLException ignored) {
+        }
+        return list;
+    }
+
+    public boolean hasUserReviewed(int tripId, int userId) {
+        String sql = "SELECT TOP 1 1 FROM dbo.ComboReviews WHERE trip_id = ? AND user_id = ?";
+        try (Connection c = DBContext.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, tripId);
+            ps.setInt(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    public void addReview(int comboId, int tripId, int userId, int rating, String paceFeedback, boolean budgetMatch, String vibeTags, String comment) {
+        String sql = "INSERT INTO dbo.ComboReviews (combo_id, trip_id, user_id, rating, pace_feedback, budget_match, vibe_tags, comment) "
+                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection c = DBContext.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, comboId);
+            ps.setInt(2, tripId);
+            ps.setInt(3, userId);
+            ps.setInt(4, rating);
+            ps.setString(5, paceFeedback);
+            ps.setBoolean(6, budgetMatch);
+            ps.setString(7, vibeTags);
+            ps.setString(8, comment);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Unable to save combo review.", e);
+        }
+    }
+
+    public void setAppliedCombo(int tripId, int comboId) {
+        new TripDAO().setAppliedCombo(tripId, comboId);
     }
 }

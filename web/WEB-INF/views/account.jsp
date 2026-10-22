@@ -37,6 +37,89 @@
         </span>
     </section>
 
+    <%-- 2.5. Travel Vibes (Zero-Click Matching) --%>
+    <section class="lt-acc-card-group" style="padding: 16px; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <h3 class="lt-acc-group-title" style="margin: 0;">
+                <span>✨</span> My Travel Vibes (Zero-Click Matching)
+            </h3>
+            <span style="font-size: 11px; font-weight: 700; color: #175b43; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 12px;">
+                ${fn:length(userCategoryIds)} Selected
+            </span>
+        </div>
+        <p style="font-size: 11.5px; color: #64748b; margin: 0 0 14px; line-height: 1.45;">
+            Choose your favorite travel vibes. When you join or create a trip, your tastes automatically sync with friends without repeating choices!
+        </p>
+
+        <form method="post" action="${pageContext.request.contextPath}/account">
+            <input type="hidden" name="action" value="savePreferences">
+            <div class="lt-acc-vibe-grid">
+                <c:forEach var="cat" items="${categories}">
+                    <c:set var="isSelected" value="${userCategoryIds.contains(cat.categoryId)}"/>
+                    <label class="lt-acc-vibe-chip ${isSelected ? 'is-active' : ''}">
+                        <input type="checkbox" name="categoryIds" value="${cat.categoryId}"
+                               ${isSelected ? 'checked' : ''} onchange="this.parentElement.classList.toggle('is-active', this.checked)">
+                        <span><c:out value="${cat.categoryName}"/></span>
+                    </label>
+                </c:forEach>
+            </div>
+            <button type="submit" class="lt-acc-vibe-submit">
+                💾 Save Travel Preferences
+            </button>
+        </form>
+    </section>
+
+    <style>
+        .lt-acc-vibe-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .lt-acc-vibe-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            border: 1.5px solid #dce7df;
+            background: #f8fafc;
+            font-size: 12px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .lt-acc-vibe-chip input[type="checkbox"] {
+            accent-color: #175b43;
+            margin: 0;
+            cursor: pointer;
+        }
+        .lt-acc-vibe-chip.is-active {
+            background: #ecfdf5;
+            border-color: #175b43;
+            color: #143b2d;
+            box-shadow: 0 1px 3px rgba(23, 91, 67, 0.1);
+        }
+        .lt-acc-vibe-submit {
+            display: block;
+            width: 100%;
+            padding: 11px;
+            background: #175b43;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        .lt-acc-vibe-submit:hover {
+            background: #143b2d;
+        }
+    </style>
+
     <%-- 3. PWA Install to Home Screen Banner --%>
     <section class="lt-pwa-install-card" id="pwaInstallCard">
         <div class="lt-pwa-icon-box">

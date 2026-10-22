@@ -13,10 +13,6 @@
 <c:set var="overviewTabActive"
        value="${activeTripPath == '/trip/detail'}"/>
 
-<c:set var="preferenceTabActive"
-       value="${activeTripPath == '/preferences'
-                or fn:startsWith(activeTripPath, '/preferences/')}"/>
-
 <c:set var="comboTabActive"
        value="${activeTripPath == '/combos'
                 or fn:startsWith(activeTripPath, '/combos/')
@@ -28,101 +24,79 @@
 
 <c:set var="expenseTabActive"
        value="${activeTripPath == '/expenses'
-                or fn:startsWith(activeTripPath, '/expenses/')}"/>
-
-<c:set var="settleTabActive"
-       value="${activeTripPath == '/settlement'}"/>
-
-<c:set var="fundTabActive"
-       value="${activeTripPath == '/group-fund'}"/>
+                or fn:startsWith(activeTripPath, '/expenses/')
+                or activeTripPath == '/settlement'
+                or activeTripPath == '/group-fund'}"/>
 
 <nav class="lt-trip-nav" aria-label="Trip planning tabs">
     <div class="lt-trip-nav-scroll">
         <a class="lt-trip-nav-link ${overviewTabActive ? 'is-active' : ''}"
            aria-current="${overviewTabActive ? 'page' : 'false'}"
            href="${pageContext.request.contextPath}/trip/detail?tripId=${trip.id}">
-            Overview
-        </a>
-
-        <a class="lt-trip-nav-link ${preferenceTabActive ? 'is-active' : ''}"
-           aria-current="${preferenceTabActive ? 'page' : 'false'}"
-           href="${pageContext.request.contextPath}/preferences?tripId=${trip.id}">
-            Preferences
+            📋 Overview
         </a>
 
         <a class="lt-trip-nav-link ${comboTabActive ? 'is-active' : ''}"
            aria-current="${comboTabActive ? 'page' : 'false'}"
            href="${pageContext.request.contextPath}/combos?tripId=${trip.id}">
-            Combos / AI Suggest
+            🍱 Combos
         </a>
 
         <a class="lt-trip-nav-link ${itineraryTabActive ? 'is-active' : ''}"
            aria-current="${itineraryTabActive ? 'page' : 'false'}"
            href="${pageContext.request.contextPath}/itinerary?tripId=${trip.id}">
-            Itinerary
+            🗺️ Itinerary
         </a>
 
         <a class="lt-trip-nav-link ${expenseTabActive ? 'is-active' : ''}"
            aria-current="${expenseTabActive ? 'page' : 'false'}"
            href="${pageContext.request.contextPath}/expenses?tripId=${trip.id}">
-            Expenses
-        </a>
-
-        <a class="lt-trip-nav-link ${settleTabActive ? 'is-active' : ''}"
-           aria-current="${settleTabActive ? 'page' : 'false'}"
-           href="${pageContext.request.contextPath}/settlement?tripId=${trip.id}">
-            Settle
-        </a>
-
-        <a class="lt-trip-nav-link ${fundTabActive ? 'is-active' : ''}"
-           aria-current="${fundTabActive ? 'page' : 'false'}"
-           href="${pageContext.request.contextPath}/group-fund?tripId=${trip.id}">
-            Group Fund
+            💰 Expenses & Split
         </a>
     </div>
 </nav>
 
 <style>
     .lt-trip-nav {
-        margin: 18px 0;
+        margin: 14px 0 18px;
     }
     .lt-trip-nav-scroll {
-        display: flex;
-        align-items: center;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
         gap: 6px;
-        padding: 6px;
+        padding: 5px;
         border: 1px solid #dce7df;
         border-radius: 16px;
         background: #ffffff;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-    }
-    .lt-trip-nav-scroll::-webkit-scrollbar {
-        display: none;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
     .lt-trip-nav-link {
-        display: inline-flex;
+        display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 42px;
-        padding: 8px 14px;
-        border-radius: 11px;
-        color: #65776d;
-        font-size: 13px;
-        font-weight: 600;
+        padding: 9px 6px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #64748b;
         text-decoration: none;
         white-space: nowrap;
-        flex-shrink: 0;
         transition: all 0.15s ease;
+        text-align: center;
     }
     .lt-trip-nav-link:hover {
-        color: #1e5942;
-        background: #f1f7f3;
+        background: #f8fafc;
+        color: #175b43;
     }
     .lt-trip-nav-link.is-active {
-        background: #e4f0e8;
-        color: #1e5942;
-        font-weight: 700;
+        background: #175b43;
+        color: #ffffff;
+        box-shadow: 0 2px 6px rgba(23, 91, 67, 0.25);
+    }
+    @media (max-width: 480px) {
+        .lt-trip-nav-link {
+            font-size: 11px;
+            padding: 8px 4px;
+        }
     }
 </style>

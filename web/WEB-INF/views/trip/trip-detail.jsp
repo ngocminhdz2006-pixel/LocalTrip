@@ -13,6 +13,121 @@
 
 <div class="lt-overview-container">
 
+    <%-- 0. Quick Start Hub (When itinerary is empty) --%>
+    <c:if test="${itineraryCount == 0 and (trip.status == 'PLANNING' or trip.status == 'ONGOING')}">
+        <section class="lt-overview-card" style="background: linear-gradient(135deg, #143b2d 0%, #175b43 100%); color: #ffffff; padding: 20px; border-radius: 20px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span style="font-size: 20px;">🚀</span>
+                <h2 style="font-size: 16px; font-weight: 800; margin: 0; color: #ffffff;">Quick Start Hub</h2>
+            </div>
+            <p style="font-size: 12px; color: #d1fae5; margin: 0 0 16px; line-height: 1.45;">
+                Your itinerary is currently empty. Get your trip ready in seconds with curated day-combos or intelligent AI scheduling:
+            </p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <a href="${pageContext.request.contextPath}/combos?tripId=${trip.id}"
+                   style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 14px 10px; background: #ffffff; color: #143b2d; border-radius: 14px; text-decoration: none; font-weight: 800; font-size: 12.5px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.12); transition: transform 0.15s ease;">
+                    <span style="font-size: 24px;">🍱</span>
+                    <span>Choose Curated Combo</span>
+                    <span style="font-size: 10px; color: #175b43; font-weight: 600;">(Auto-matches group vibe)</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/itinerary/auto?tripId=${trip.id}"
+                   style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 14px 10px; background: rgba(255,255,255,0.15); color: #ffffff; border: 1.5px solid rgba(255,255,255,0.4); border-radius: 14px; text-decoration: none; font-weight: 800; font-size: 12.5px; text-align: center; transition: background 0.15s ease;">
+                    <span style="font-size: 24px;">✨</span>
+                    <span>AI Auto-Schedule</span>
+                    <span style="font-size: 10px; color: #a7f3d0; font-weight: 600;">(Hourly smart draft)</span>
+                </a>
+            </div>
+        </section>
+    </c:if>
+
+    <%-- Post-Trip Combo Review Section --%>
+    <c:if test="${trip.status == 'COMPLETED' and not empty trip.appliedComboId and trip.appliedComboId > 0}">
+        <section class="lt-overview-card" style="margin-bottom: 16px; border: 1.5px solid #bbf7d0; background: #f0fdf4;">
+            <div class="lt-overview-head" style="margin-bottom: 10px;">
+                <div>
+                    <h2 class="lt-overview-title" style="color: #143b2d; display: flex; align-items: center; gap: 6px;">
+                        <span>⭐</span> Post-Trip Combo Review
+                    </h2>
+                    <span style="font-size: 11px; color: #64748b;">Help the community evaluate this recommended combo</span>
+                </div>
+            </div>
+
+            <c:choose>
+                <c:when test="${hasReviewedAppliedCombo}">
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 12px; background: #dcfce7; border-radius: 12px; color: #166534; font-size: 12.5px; font-weight: 700;">
+                        <span>✓</span> You have reviewed this combo for this trip. Thank you for your feedback!
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <form method="post" action="${pageContext.request.contextPath}/combo/review" style="display: flex; flex-direction: column; gap: 12px;">
+                        <input type="hidden" name="tripId" value="${trip.id}">
+                        <input type="hidden" name="comboId" value="${trip.appliedComboId}">
+
+                        <div>
+                            <label style="display: block; font-size: 11.5px; font-weight: 700; color: #143b2d; margin-bottom: 4px;">Overall Rating (1 - 5 Stars):</label>
+                            <div style="display: flex; gap: 10px;">
+                                <c:forEach var="star" begin="1" end="5">
+                                    <label style="cursor: pointer; display: flex; align-items: center; gap: 3px; font-size: 13px; font-weight: 700; color: #b45309;">
+                                        <input type="radio" name="rating" value="${star}" ${star == 5 ? 'checked' : ''} style="accent-color: #f59e0b;">
+                                        ${star} ⭐
+                                    </label>
+                                </c:forEach>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style="display: block; font-size: 11.5px; font-weight: 700; color: #143b2d; margin-bottom: 4px;">Pace Feedback:</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+                                <label style="display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 11px; font-weight: 600; cursor: pointer;">
+                                    <input type="radio" name="paceFeedback" value="RELAXED" style="accent-color: #175b43;"> Relaxed 🌿
+                                </label>
+                                <label style="display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 11px; font-weight: 600; cursor: pointer;">
+                                    <input type="radio" name="paceFeedback" value="BALANCED" checked style="accent-color: #175b43;"> Balanced ⚖️
+                                </label>
+                                <label style="display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 11px; font-weight: 600; cursor: pointer;">
+                                    <input type="radio" name="paceFeedback" value="PACKED" style="accent-color: #175b43;"> Packed ⚡
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style="display: block; font-size: 11.5px; font-weight: 700; color: #143b2d; margin-bottom: 4px;">Budget Accuracy:</label>
+                            <div style="display: flex; gap: 12px;">
+                                <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; cursor: pointer;">
+                                    <input type="radio" name="budgetMatch" value="1" checked style="accent-color: #175b43;"> ✓ Within expected budget
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; cursor: pointer;">
+                                    <input type="radio" name="budgetMatch" value="0" style="accent-color: #e11d48;"> ✕ Over budget
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style="display: block; font-size: 11.5px; font-weight: 700; color: #143b2d; margin-bottom: 4px;">Vibe Tags:</label>
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                <c:forTokens var="tag" items="Couples,Friends,Great Food,Nature & Chill,Instagrammable,Nightlife,Budget-friendly" delims=",">
+                                    <label style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: #ffffff; border: 1px solid #d1d5db; border-radius: 16px; font-size: 11px; cursor: pointer;">
+                                        <input type="checkbox" name="vibeTags" value="${tag}" style="accent-color: #175b43;"> ${tag}
+                                    </label>
+                                </c:forTokens>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style="display: block; font-size: 11.5px; font-weight: 700; color: #143b2d; margin-bottom: 4px;">Detailed Review:</label>
+                            <textarea name="comment" class="lt-form-input" style="min-height: 70px; font-size: 12px; width: 100%; border-radius: 10px;"
+                                      placeholder="Share highlights, tips, or what future travelers should know..."></textarea>
+                        </div>
+
+                        <button type="submit" class="lt-btn-action-primary" style="padding: 12px; border-radius: 12px; font-weight: 700; font-size: 13px;">
+                            ⭐ Submit Combo Review
+                        </button>
+                    </form>
+                </c:otherwise>
+            </c:choose>
+        </section>
+    </c:if>
+
     <%-- 0. Trip Planning Checklist (3 Steps) Wizard (Only shown when trip.status == 'PLANNING') --%>
     <c:if test="${trip.status == 'PLANNING'}">
         <section class="lt-overview-card lt-planning-wizard-card">
@@ -177,6 +292,44 @@
             </div>
         </section>
     </c:if>
+
+        <%-- Auto-Matched Group Vibes Card --%>
+    <section class="lt-overview-card" style="margin-bottom: 16px;">
+        <div class="lt-overview-head">
+            <div>
+                <h2 class="lt-overview-title" style="display: flex; align-items: center; gap: 6px;">
+                    <span>✨</span> Auto-Matched Group Vibes
+                </h2>
+                <span style="font-size: 11px; color: #64748b;">Synced automatically from member profile tastes</span>
+            </div>
+            <a href="${pageContext.request.contextPath}/account" style="font-size: 11px; font-weight: 700; color: #175b43; text-decoration: none;">
+                My Profile Vibes →
+            </a>
+        </div>
+
+        <c:choose>
+            <c:when test="${not empty groupMatchedPrefs}">
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
+                    <c:forEach var="gp" items="${groupMatchedPrefs}">
+                        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 20px; font-size: 12px; font-weight: 700; color: #143b2d;">
+                            <span>🎯 <c:out value="${gp.categoryName}"/></span>
+                            <span style="font-size: 10px; background: #175b43; color: #ffffff; padding: 1px 6px; border-radius: 10px;">
+                                <fmt:formatNumber value="${gp.percentage}" maxFractionDigits="0"/>% (${gp.memberCount} members)
+                            </span>
+                        </div>
+                    </c:forEach>
+                </div>
+            </c:when>
+            <c:otherwise>
+                <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 14px; text-align: center; margin-top: 8px;">
+                    <p style="font-size: 11.5px; color: #64748b; margin: 0 0 6px;">No group tastes matched yet.</p>
+                    <a href="${pageContext.request.contextPath}/account" style="font-size: 11px; color: #175b43; font-weight: 700;">
+                        Set your travel vibes in Account Profile
+                    </a>
+                </div>
+            </c:otherwise>
+        </c:choose>
+    </section>
 
     <%-- 1. Trip Members Card --%>
     <section class="lt-overview-card">

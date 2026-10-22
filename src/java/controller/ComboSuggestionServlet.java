@@ -131,6 +131,7 @@ public class ComboSuggestionServlet extends HttpServlet {
 
             List<GroupPreference> preferences =
                     preferenceDAO.findGroupPreferences(tripId);
+            request.setAttribute("groupMatchedPrefs", preferences);
 
             boolean hasPreferences = false;
 
@@ -183,10 +184,29 @@ public class ComboSuggestionServlet extends HttpServlet {
 
                 Map<String, Object> suggestion = new LinkedHashMap<>();
 
+                int groupMatchPercent = 0;
+                if (!preferences.isEmpty()) {
+                    int matched = 0;
+                    int totalGu = 0;
+                    for (GroupPreference p : preferences) {
+                        if (p.getMemberCount() > 0) {
+                            totalGu++;
+                            if (combo.getCategoryIds().contains(p.getCategoryId())) {
+                                matched++;
+                            }
+                        }
+                    }
+                    if (totalGu > 0) {
+                        groupMatchPercent = (int) Math.round((matched * 100.0) / totalGu);
+                    }
+                }
+                combo.setGroupMatchPercent(groupMatchPercent);
+
                 suggestion.put("combo", combo);
                 suggestion.put("groupCost", groupCost);
                 suggestion.put("withinBudget", withinBudget);
                 suggestion.put("preferenceScore", preferenceScore);
+                suggestion.put("groupMatchPercent", groupMatchPercent);
                 suggestion.put("matchedPreferences",
                         String.join(", ", matchedNames));
 

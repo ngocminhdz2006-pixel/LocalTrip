@@ -21,6 +21,13 @@ public class ComboTemplate {
     private List<Integer> categoryIds = new ArrayList<>();
     private List<Activity> activities = new ArrayList<>();
 
+    private double avgRating = 0.0;
+    private int reviewCount = 0;
+    private int appliedTripsCount = 0;
+    private int budgetMatchPercent = 100;
+    private String topVibeTags = "";
+    private int groupMatchPercent = 0;
+
     public int getId() {
         return id;
     }
@@ -108,6 +115,58 @@ public class ComboTemplate {
 
     public List<Activity> getActivities() {
         return activities;
+    }
+
+    public void setActivities(List<Activity> activities) {
+        this.activities = activities;
+    }
+
+    public double getAvgRating() {
+        return avgRating;
+    }
+
+    public void setAvgRating(double avgRating) {
+        this.avgRating = avgRating;
+    }
+
+    public int getReviewCount() {
+        return reviewCount;
+    }
+
+    public void setReviewCount(int reviewCount) {
+        this.reviewCount = reviewCount;
+    }
+
+    public int getAppliedTripsCount() {
+        return appliedTripsCount;
+    }
+
+    public void setAppliedTripsCount(int appliedTripsCount) {
+        this.appliedTripsCount = appliedTripsCount;
+    }
+
+    public int getBudgetMatchPercent() {
+        return budgetMatchPercent;
+    }
+
+    public void setBudgetMatchPercent(int budgetMatchPercent) {
+        this.budgetMatchPercent = budgetMatchPercent;
+    }
+
+    public String getTopVibeTags() {
+        return topVibeTags;
+    }
+
+    public void setTopVibeTags(String topVibeTags) {
+        this.topVibeTags = topVibeTags;
+    }
+
+    public int getGroupMatchPercent() {
+        return groupMatchPercent;
+    }
+
+    public void setGroupMatchPercent(int groupMatchPercent) {
+        this.groupMatchPercent = groupMatchPercent;
     }
 
     public static class Activity {
