@@ -227,7 +227,7 @@
                             <span class="lt-builder-arrow">→</span>
                         </a>
 
-                        <a href="${pageContext.request.contextPath}/itinerary/add?tripId=${trip.id}" class="lt-builder-card">
+                        <a href="${pageContext.request.contextPath}/places?tripId=${trip.id}" class="lt-builder-card">
                             <div class="lt-builder-icon">📍</div>
                             <div class="lt-builder-info">
                                 <strong>Add Places Manually</strong>

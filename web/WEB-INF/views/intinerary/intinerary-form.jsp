@@ -109,9 +109,9 @@
                         </p>
                     </div>
 
-                    <a href="${pageContext.request.contextPath}/recommendations?tripId=${trip.id}"
+                    <a href="${pageContext.request.contextPath}/places?tripId=${trip.id}"
                        class="btn btn-outline-secondary">
-                        Back to suggestions
+                        Back to places
                     </a>
                 </div>
 
