@@ -55,7 +55,7 @@ public class TripStatusDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể cập nhật trạng thái chuyến đi.", e
+                    "Failed to update trip status.", e
             );
         }
     }

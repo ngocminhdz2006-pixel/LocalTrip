@@ -246,7 +246,7 @@
         </div>
 
         <p style="font-size: 11px; font-weight: 600; color: #0f172a; margin: 8px 0 14px; word-break: break-all;">
-            ${sessionScope.user.fullName} (${sessionScope.user.email})
+            <c:out value="${sessionScope.user.fullName}"/> (<c:out value="${sessionScope.user.email}"/>)
         </p>
 
         <div style="display: flex; gap: 8px;">

@@ -98,6 +98,17 @@
             </label>
         </div>
 
+        <div class="form-check mb-3">
+            <input class="form-check-input"
+                   type="checkbox"
+                   id="agreeTerms"
+                   name="agreeTerms"
+                   required>
+            <label class="form-check-label" for="agreeTerms" style="font-size: 13px; color: #475569;">
+                I agree to the <a href="<%= request.getContextPath() %>/terms" target="_blank" style="color: #175b43; text-decoration: underline;">Terms of Service</a> and <a href="<%= request.getContextPath() %>/privacy" target="_blank" style="color: #175b43; text-decoration: underline;">Privacy Policy</a>.
+            </label>
+        </div>
+
         <button type="submit"
                 class="btn btn-primary w-100 py-2">
             Create account

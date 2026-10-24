@@ -143,9 +143,15 @@ public class AutoItineraryServlet extends HttpServlet {
                 return;
             }
 
+            String pace = request.getParameter("pace");
+            if (pace == null || pace.trim().isEmpty()) {
+                pace = "BALANCED";
+            }
+            request.setAttribute("selectedPace", pace.toUpperCase());
+
             ItineraryDraft draft = (ItineraryDraft) session.getAttribute("autoDraft:" + tripId);
-            if (draft == null || draft.getOwnerId() != user.getUserId() || draft.isExpired()) {
-                draft = generateDraft(trip, user, session);
+            if (draft == null || draft.getOwnerId() != user.getUserId() || draft.isExpired() || request.getParameter("pace") != null) {
+                draft = generateDraft(trip, user, session, pace);
                 if (draft == null || draft.getItems().isEmpty()) {
                     session.removeAttribute("autoDraft:" + tripId);
                     session.setAttribute("errorMessage", "Could not generate an itinerary. No suitable destinations found.");
@@ -262,7 +268,7 @@ public class AutoItineraryServlet extends HttpServlet {
             }
 
             // action == "generate" or initial trigger
-            ItineraryDraft draft = generateDraft(trip, currentUser, session);
+            String pace = request.getParameter("pace"); if (pace == null || pace.trim().isEmpty()) pace = "BALANCED"; ItineraryDraft draft = generateDraft(trip, currentUser, session, pace);
             if (draft == null || draft.getItems().isEmpty()) {
                 session.setAttribute("errorMessage", "Could not generate a suitable schedule based on available places.");
                 response.sendRedirect(request.getContextPath() + "/itinerary?tripId=" + tripId);
@@ -275,7 +281,7 @@ public class AutoItineraryServlet extends HttpServlet {
         }
     }
 
-    private ItineraryDraft generateDraft(Trip trip, User currentUser, HttpSession session) {
+    private ItineraryDraft generateDraft(Trip trip, User currentUser, HttpSession session, String pace) {
         int tripId = trip.getId();
         String revision = itineraryDAO.revisionForTrip(tripId);
         List<ItineraryItem> draftItems = new ArrayList<ItineraryItem>();
@@ -316,20 +322,42 @@ public class AutoItineraryServlet extends HttpServlet {
         if (trip.getStartDate() != null && trip.getStartDate().after(fromDate)) {
             fromDate = trip.getStartDate();
         }
-        for (ItineraryItem item : itineraryDAO.findByTrip(tripId)) {
+        List<ItineraryItem> allCurrentItems = itineraryDAO.findByTrip(tripId);
+        List<ItineraryItem> lockedItems = new ArrayList<ItineraryItem>();
+        for (ItineraryItem item : allCurrentItems) {
             if (item.getVisitDate().before(fromDate)) {
                 existing.add(item);
+                if (item.getPlaceId() > 0) {
+                    scheduledPlaceIds.add(item.getPlaceId());
+                }
+            } else if (item.isLocked()) {
+                existing.add(item);
+                lockedItems.add(item);
                 if (item.getPlaceId() > 0) {
                     scheduledPlaceIds.add(item.getPlaceId());
                 }
             }
         }
 
-        Slot[] milestones = {
-            new Slot(LocalTime.of(7, 0), LocalTime.of(11, 0)),
-            new Slot(LocalTime.of(11, 0), LocalTime.of(17, 0)),
-            new Slot(LocalTime.of(17, 0), LocalTime.of(22, 0))
-        };
+        Slot[] milestones;
+        if ("RELAXED".equalsIgnoreCase(pace)) {
+            milestones = new Slot[] {
+                new Slot(LocalTime.of(9, 0), LocalTime.of(12, 0)),
+                new Slot(LocalTime.of(14, 0), LocalTime.of(18, 30))
+            };
+        } else if ("PACKED".equalsIgnoreCase(pace)) {
+            milestones = new Slot[] {
+                new Slot(LocalTime.of(7, 0), LocalTime.of(11, 0)),
+                new Slot(LocalTime.of(11, 0), LocalTime.of(16, 30)),
+                new Slot(LocalTime.of(16, 30), LocalTime.of(22, 0))
+            };
+        } else {
+            milestones = new Slot[] {
+                new Slot(LocalTime.of(7, 30), LocalTime.of(11, 30)),
+                new Slot(LocalTime.of(11, 30), LocalTime.of(17, 0)),
+                new Slot(LocalTime.of(17, 30), LocalTime.of(21, 30))
+            };
+        }
 
         LocalDate today = LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
         LocalDate currentDate = trip.getStartDate().toLocalDate();
@@ -366,8 +394,7 @@ public class AutoItineraryServlet extends HttpServlet {
                                 plan.foodStart,
                                 FOOD_MINUTES,
                                 "MEAL",
-                                "Dining - Slot "
-                                + milestoneLabel(plan))) {
+                                "Dining")) {
                     scheduledPlaceIds.add(plan.food.getPlace().getId());
                 }
 
@@ -379,8 +406,7 @@ public class AutoItineraryServlet extends HttpServlet {
                                 plan.cafeStart,
                                 CAFE_MINUTES,
                                 "CAFE",
-                                "Cafe & Drinks - Slot "
-                                + milestoneLabel(plan))) {
+                                "Cafe & Drinks")) {
                     scheduledPlaceIds.add(plan.cafe.getPlace().getId());
                 }
 
@@ -392,10 +418,7 @@ public class AutoItineraryServlet extends HttpServlet {
                                 plan.activityStart,
                                 ACTIVITY_MINUTES,
                                 "VISIT",
-                                "Activity ("
-                                + plan.activity.getPlace().getCategoryName()
-                                + ") - Slot "
-                                + milestoneLabel(plan))) {
+                                plan.activity.getPlace().getCategoryName() != null ? plan.activity.getPlace().getCategoryName() : "Sightseeing")) {
                     scheduledPlaceIds.add(plan.activity.getPlace().getId());
                 }
             }
@@ -434,6 +457,7 @@ public class AutoItineraryServlet extends HttpServlet {
             return null;
         }
 
+        draftItems.addAll(lockedItems);
         Collections.sort(draftItems, Comparator.comparing(ItineraryItem::getVisitDate).thenComparing(ItineraryItem::getStartTime));
         ItineraryDraft draft = new ItineraryDraft(tripId, currentUser.getUserId(), fromDate, revision, draftItems);
         session.setAttribute("autoDraft:" + tripId, draft);
@@ -1321,11 +1345,12 @@ public class AutoItineraryServlet extends HttpServlet {
         item.setActivityTitle(recommendation.getPlace().getPlaceName());
         item.setActivityStatus("UPCOMING");
 
-        item.setNote(
-                note
-                + " - structured milestone; match score: "
-                + Math.round(recommendation.getScore())
-                + ".");
+        item.setSourceType("AI");
+        item.setLocked(false);
+        String catName = recommendation.getPlace().getCategoryName() != null ? recommendation.getPlace().getCategoryName() : (note != null ? note : "Attraction");
+        String icon = "CAFE".equalsIgnoreCase(activityType) || catName.toLowerCase().contains("cafe") || catName.toLowerCase().contains("coffee") ? "☕" :
+                      (("MEAL".equalsIgnoreCase(activityType) || catName.toLowerCase().contains("food") || catName.toLowerCase().contains("dining")) ? "🍽️" : "🎯");
+        item.setNote(icon + " Recommended for " + catName + " • 🔥 " + Math.round(recommendation.getScore()) + "% Group Vibe Match");
 
         item.setPlaceName(recommendation.getPlace().getPlaceName());
         item.setLatitude(recommendation.getPlace().getLatitude()); item.setLongitude(recommendation.getPlace().getLongitude());

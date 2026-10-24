@@ -12,5 +12,6 @@ public class GroupFundSummary {
     public BigDecimal getTotalSpent() { return totalSpent; }
     public void setTotalSpent(BigDecimal value) { this.totalSpent = value == null ? BigDecimal.ZERO : value; }
     public BigDecimal getBalance() { return balance; }
+    public BigDecimal getCurrentBalance() { return balance; }
     public void setBalance(BigDecimal value) { this.balance = value == null ? BigDecimal.ZERO : value; }
 }

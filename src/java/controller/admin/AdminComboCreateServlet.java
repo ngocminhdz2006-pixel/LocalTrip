@@ -63,7 +63,7 @@ public class AdminComboCreateServlet extends HttpServlet {
                 form = comboDAO.findById(id);
 
                 if (form == null) {
-                    response.sendError(404, "Không tìm thấy combo.");
+                    response.sendError(404, "Combo not found.");
                     return;
                 }
 
@@ -72,7 +72,7 @@ public class AdminComboCreateServlet extends HttpServlet {
                         || "INACTIVE".equals(form.getStatus()))) {
                     request.getSession().setAttribute(
                             "errorMessage",
-                            "Hãy ngừng sử dụng combo trước khi sửa.");
+                            "Please deactivate the combo before editing.");
 
                     response.sendRedirect(
                             request.getContextPath()
@@ -95,7 +95,7 @@ public class AdminComboCreateServlet extends HttpServlet {
 
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể tải biểu mẫu combo.", e);
+                    "Failed to load combo form.", e);
         }
     }
 
@@ -118,7 +118,7 @@ public class AdminComboCreateServlet extends HttpServlet {
         if (expected == null
                 || !expected.equals(request.getParameter("csrfToken"))) {
             response.sendError(403,
-                    "Biểu mẫu đã hết hiệu lực. Hãy tải lại trang.");
+                    "Form session expired. Please reload the page.");
             return;
         }
 
@@ -178,7 +178,7 @@ public class AdminComboCreateServlet extends HttpServlet {
                     || !sameLength(costs, count)
                     || !sameLength(notes, count)) {
                 throw new IllegalArgumentException(
-                        "Danh sách hoạt động không hợp lệ.");
+                        "Invalid activity list.");
             }
 
             for (int i = 0; i < count; i++) {
@@ -218,8 +218,8 @@ public class AdminComboCreateServlet extends HttpServlet {
 
             session.setAttribute("successMessage",
                     editing
-                    ? "Đã cập nhật combo. Hãy kiểm tra và kích hoạt lại."
-                    : "Đã tạo combo bản nháp.");
+                    ? "Combo updated. Please review and activate."
+                    : "Draft combo created successfully.");
 
             response.sendRedirect(
                     request.getContextPath()
@@ -230,11 +230,11 @@ public class AdminComboCreateServlet extends HttpServlet {
             showForm(request, response);
 
         } catch (RuntimeException e) {
-            log("Không thể lưu combo.", e);
+            log("Failed to save combo.", e);
 
             request.setAttribute("error",
-                    "Không thể lưu combo. Kiểm tra kết nối database "
-                    + "và cấu trúc dữ liệu.");
+                    "Failed to save combo. Please check database connection."
+                    );
 
             showForm(request, response);
         }
@@ -268,15 +268,15 @@ public class AdminComboCreateServlet extends HttpServlet {
 
             request.setAttribute("pageTitle",
                     isEditing(request)
-                    ? "Sửa combo bản nháp"
-                    : "Tạo combo bản nháp");
+                    ? "Edit Draft Combo"
+                    : "Create Draft Combo");
 
             request.getRequestDispatcher(VIEW)
                     .forward(request, response);
 
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể tải dữ liệu biểu mẫu combo.", e);
+                    "Failed to load combo form data.", e);
         }
     }
 
@@ -326,20 +326,20 @@ public class AdminComboCreateServlet extends HttpServlet {
         }
 
         throw new IllegalArgumentException(
-                "Số ngày hoặc mã lựa chọn không hợp lệ.");
+                "Invalid duration days or option ID.");
     }
 
     private Time parseTime(String value) {
         if (value == null || !value.matches("\\d{2}:\\d{2}")) {
             throw new IllegalArgumentException(
-                    "Giờ hoạt động không hợp lệ.");
+                    "Invalid activity time format.");
         }
 
         try {
             return Time.valueOf(value + ":00");
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(
-                    "Giờ hoạt động không hợp lệ.");
+                    "Invalid activity time format.");
         }
     }
 }

@@ -43,7 +43,7 @@
             = URLEncoder.encode(selectedRole, "UTF-8");
     String encodedStatus
             = URLEncoder.encode(selectedStatus, "UTF-8");
-    request.setAttribute("pageTitle", "Quản lý người dùng");
+    request.setAttribute("pageTitle", "User Management");
 %>
 <% request.setAttribute("tripRedesign", Boolean.TRUE);%>
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
@@ -151,26 +151,25 @@
     <div class="rd-hero-top">
         <div>
             <div class="small text-white-50 mb-2">
-                LOCALTRIP · QUẢN TRỊ TÀI KHOẢN
+                LOCALTRIP · USER ADMINISTRATION
             </div>
 
-            <h1 class="mb-2">Quản lý người dùng</h1>
+            <h1 class="mb-2">User Management</h1>
 
             <p class="text-white mb-0">
-                Tìm kiếm tài khoản, cập nhật thông tin
-                và quản lý quyền sử dụng hệ thống.
+                Search accounts, update credentials and manage platform permissions.
             </p>
         </div>
 
         <div class="d-flex flex-wrap gap-2">
             <a href="<%= request.getContextPath()%>/admin/users/create"
                class="rd-back">
-                + Thêm người dùng
+                + Add User
             </a>
 
             <a href="<%= request.getContextPath()%>/admin"
                class="rd-back">
-                ← Tổng quan quản trị
+                ← Admin Dashboard
             </a>
         </div>
     </div>
@@ -183,21 +182,21 @@
             <div class="row g-3 align-items-end">
                 <div class="col-lg-5">
                     <label class="form-label">
-                        Tìm theo họ tên hoặc email
+                        Search by full name or email
                     </label>
 
                     <input type="text"
                            name="keyword"
                            class="form-control"
                            value="<%= HtmlUtil.escape(keyword)%>"
-                           placeholder="Ví dụ: Lan Anh hoặc @localtrip.vn">
+                           placeholder="e.g. Lan Anh or @localtrip.vn">
                 </div>
 
                 <div class="col-lg-2">
-                    <label class="form-label">Vai trò</label>
+                    <label class="form-label">Role</label>
 
                     <select name="role" class="form-select">
-                        <option value="">Tất cả</option>
+                        <option value="">All</option>
 
                         <option value="ADMIN"
                                 <%= "ADMIN".equals(selectedRole)
@@ -214,21 +213,21 @@
                 </div>
 
                 <div class="col-lg-2">
-                    <label class="form-label">Trạng thái</label>
+                    <label class="form-label">Status</label>
 
                     <select name="status" class="form-select">
-                        <option value="">Tất cả</option>
+                        <option value="">All</option>
 
                         <option value="ACTIVE"
                                 <%= "ACTIVE".equals(selectedStatus)
                                         ? "selected" : ""%>>
-                            Đang hoạt động
+                            Active
                         </option>
 
                         <option value="LOCKED"
                                 <%= "LOCKED".equals(selectedStatus)
                                         ? "selected" : ""%>>
-                            Đã khóa
+                            Locked
                         </option>
                     </select>
                 </div>
@@ -236,12 +235,12 @@
                 <div class="col-lg-3">
                     <button type="submit"
                             class="btn btn-primary">
-                        Tìm kiếm
+                        Search
                     </button>
 
                     <a href="<%= request.getContextPath()%>/admin/users"
                        class="btn btn-outline-secondary">
-                        Xóa lọc
+                        Clear
                     </a>
                 </div>
             </div>
@@ -251,16 +250,16 @@
 <div class="card shadow-sm user-management-card">
     <div class="card-body">
         <div class="d-flex justify-content-between mb-3">
-            <strong>Danh sách người dùng</strong>
+            <strong>User List</strong>
 
             <span class="text-muted">
-                <%= resultCount == null ? 0 : resultCount%> kết quả
+                <%= resultCount == null ? 0 : resultCount%> results
             </span>
         </div>
         <% if (users == null || users.isEmpty()) { %>
 
         <div class="alert alert-info mb-0">
-            Không tìm thấy người dùng phù hợp với điều kiện lọc.
+            No users match the search criteria.
         </div>
 
         <% } else { %>
@@ -270,12 +269,12 @@
                 <thead class="table-light">
                     <tr>
                         <th>ID</th>
-                        <th>Họ tên</th>
+                        <th>Full Name</th>
                         <th>Email</th>
-                        <th>Vai trò</th>
-                        <th>Trạng thái</th>
-                        <th>Ngày tạo</th>
-                        <th>Thao tác</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
 
@@ -307,11 +306,11 @@
                         <td>
                             <% if (user.isActive()) { %>
                             <span class="badge text-bg-success">
-                                Đang hoạt động
+                                Active
                             </span>
                             <% } else { %>
                             <span class="badge text-bg-secondary">
-                                Đã khóa
+                                Locked
                             </span>
                             <% }%>
                         </td>
@@ -327,12 +326,12 @@
                             <div class="d-flex flex-wrap gap-2">
                                 <a href="<%= request.getContextPath()%>/admin/users/edit?id=<%= user.getUserId()%>"
                                    class="btn btn-sm btn-outline-primary">
-                                    Sửa
+                                    Edit
                                 </a>
 
                                 <a href="<%= request.getContextPath()%>/admin/users/reset-password?id=<%= user.getUserId()%>"
                                    class="btn btn-sm btn-outline-warning">
-                                    Đặt lại mật khẩu
+                                    Reset Password
                                 </a>
                             </div>
                         </td>
@@ -343,7 +342,7 @@
         </div>
         <% if (totalPages > 1) {%>
         <nav class="mt-4"
-             aria-label="Phân trang người dùng">
+             aria-label="User list pagination">
 
             <ul class="pagination justify-content-center mb-0">
 
@@ -351,11 +350,11 @@
                     <%= currentPage <= 1 ? "disabled" : ""%>">
 
                     <% if (currentPage <= 1) { %>
-                    <span class="page-link">Trang trước</span>
+                    <span class="page-link">Previous</span>
                     <% } else {%>
                     <a class="page-link"
                        href="<%= request.getContextPath()%>/admin/users?keyword=<%= encodedKeyword%>&role=<%= encodedRole%>&status=<%= encodedStatus%>&page=<%= currentPage - 1%>">
-                        Trang trước
+                        Previous
                     </a>
                     <% } %>
                 </li>
@@ -380,7 +379,7 @@
                             ? "disabled" : ""%>">
 
                     <% if (currentPage >= totalPages) { %>
-                    <span class="page-link">Trang sau</span>
+                    <span class="page-link">Next</span>
                     <% } else {%>
                     <a class="page-link"
                        href="<%= request.getContextPath()%>/admin/users?keyword=<%= encodedKeyword%>&role=<%= encodedRole%>&status=<%= encodedStatus%>&page=<%= currentPage + 1%>">
@@ -393,7 +392,7 @@
         </nav>
 
         <div class="text-center text-muted small mt-2">
-            Trang <%= currentPage%> / <%= totalPages%>
+            Page <%= currentPage%> / <%= totalPages%>
         </div>
         <% } %>
         <% }%>

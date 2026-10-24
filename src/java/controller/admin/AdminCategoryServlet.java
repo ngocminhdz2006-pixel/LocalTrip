@@ -78,13 +78,13 @@ public class AdminCategoryServlet extends HttpServlet {
             List<Category> categories = categoryDAO.searchAdmin(keyword);
             request.setAttribute("categories", categories);
             request.setAttribute("keyword", keyword);
-            request.setAttribute("pageTitle", "Quản lý danh mục");
+            request.setAttribute("pageTitle", "Category Management");
             request.getRequestDispatcher(LIST_VIEW).forward(request, response);
         } catch (RuntimeException e) {
             request.setAttribute("categories", java.util.Collections.emptyList());
             request.setAttribute("keyword", keyword);
-            request.setAttribute("errorMessage", "Không thể tải danh sách danh mục.");
-            request.setAttribute("pageTitle", "Quản lý danh mục");
+            request.setAttribute("errorMessage", "Failed to load category list.");
+            request.setAttribute("pageTitle", "Category Management");
             request.getRequestDispatcher(LIST_VIEW).forward(request, response);
         }
     }
@@ -93,13 +93,13 @@ public class AdminCategoryServlet extends HttpServlet {
             throws ServletException, IOException {
         int categoryId = parseInt(request.getParameter("id"), -1);
         if (categoryId <= 0) {
-            redirectWithMessage(request, response, "Mã danh mục không hợp lệ.", true);
+            redirectWithMessage(request, response, "Invalid category ID.", true);
             return;
         }
 
         Category category = categoryDAO.findById(categoryId);
         if (category == null) {
-            redirectWithMessage(request, response, "Không tìm thấy danh mục.", true);
+            redirectWithMessage(request, response, "Category not found.", true);
             return;
         }
 
@@ -109,7 +109,7 @@ public class AdminCategoryServlet extends HttpServlet {
     private void showForm(HttpServletRequest request, HttpServletResponse response, Category category)
             throws ServletException, IOException {
         request.setAttribute("item", category);
-        request.setAttribute("pageTitle", category == null ? "Thêm danh mục" : "Sửa danh mục");
+        request.setAttribute("pageTitle", category == null ? "Add Category" : "Edit Category");
         request.getRequestDispatcher(FORM_VIEW).forward(request, response);
     }
 
@@ -121,19 +121,19 @@ public class AdminCategoryServlet extends HttpServlet {
         if (error != null) {
             request.setAttribute("errorMessage", error);
             request.setAttribute("item", category);
-            request.setAttribute("pageTitle", "Thêm danh mục");
+            request.setAttribute("pageTitle", "Add Category");
             request.getRequestDispatcher(FORM_VIEW).forward(request, response);
             return;
         }
 
         try {
             int id = categoryDAO.insert(category);
-            logAction(request, "CREATE_CATEGORY", "Tạo danh mục #" + id + " - " + category.getCategoryName());
-            redirectWithMessage(request, response, "Đã thêm danh mục thành công.", false);
+            logAction(request, "CREATE_CATEGORY", "Created category #" + id + " - " + category.getCategoryName());
+            redirectWithMessage(request, response, "Category created successfully.", false);
         } catch (RuntimeException e) {
-            request.setAttribute("errorMessage", "Không thể thêm danh mục. Mã hoặc tên danh mục có thể đã tồn tại.");
+            request.setAttribute("errorMessage", "Failed to add category. Category code or name may already exist.");
             request.setAttribute("item", category);
-            request.setAttribute("pageTitle", "Thêm danh mục");
+            request.setAttribute("pageTitle", "Add Category");
             request.getRequestDispatcher(FORM_VIEW).forward(request, response);
         }
     }
@@ -142,7 +142,7 @@ public class AdminCategoryServlet extends HttpServlet {
             throws ServletException, IOException {
         int categoryId = parseInt(request.getParameter("categoryId"), -1);
         if (categoryId <= 0) {
-            redirectWithMessage(request, response, "Mã danh mục không hợp lệ.", true);
+            redirectWithMessage(request, response, "Invalid category ID.", true);
             return;
         }
 
@@ -153,22 +153,22 @@ public class AdminCategoryServlet extends HttpServlet {
         if (error != null) {
             request.setAttribute("errorMessage", error);
             request.setAttribute("item", category);
-            request.setAttribute("pageTitle", "Sửa danh mục");
+            request.setAttribute("pageTitle", "Edit Category");
             request.getRequestDispatcher(FORM_VIEW).forward(request, response);
             return;
         }
 
         try {
             if (!categoryDAO.update(category)) {
-                redirectWithMessage(request, response, "Không tìm thấy danh mục để cập nhật.", true);
+                redirectWithMessage(request, response, "Category not found to update.", true);
                 return;
             }
-            logAction(request, "UPDATE_CATEGORY", "Cập nhật danh mục #" + categoryId + " - " + category.getCategoryName());
-            redirectWithMessage(request, response, "Đã cập nhật danh mục thành công.", false);
+            logAction(request, "UPDATE_CATEGORY", "Updated category #" + categoryId + " - " + category.getCategoryName());
+            redirectWithMessage(request, response, "Category updated successfully.", false);
         } catch (RuntimeException e) {
-            request.setAttribute("errorMessage", "Không thể cập nhật danh mục. Mã hoặc tên danh mục có thể đã tồn tại.");
+            request.setAttribute("errorMessage", "Failed to update category. Category code or name may already exist.");
             request.setAttribute("item", category);
-            request.setAttribute("pageTitle", "Sửa danh mục");
+            request.setAttribute("pageTitle", "Edit Category");
             request.getRequestDispatcher(FORM_VIEW).forward(request, response);
         }
     }
@@ -177,32 +177,32 @@ public class AdminCategoryServlet extends HttpServlet {
             throws IOException {
         int categoryId = parseInt(request.getParameter("id"), -1);
         if (categoryId <= 0) {
-            redirectWithMessage(request, response, "Mã danh mục không hợp lệ.", true);
+            redirectWithMessage(request, response, "Invalid category ID.", true);
             return;
         }
 
         Category category = categoryDAO.findById(categoryId);
         if (category == null) {
-            redirectWithMessage(request, response, "Không tìm thấy danh mục.", true);
+            redirectWithMessage(request, response, "Category not found.", true);
             return;
         }
 
         if (category.getPlaceCount() > 0) {
             redirectWithMessage(request, response,
-                    "Không thể xóa danh mục vì đang có " + category.getPlaceCount() + " địa điểm sử dụng danh mục này. Hãy đổi danh mục của các địa điểm trước.", true);
+                    "Cannot delete category because " + category.getPlaceCount() + " places are assigned to this category. Please reassign those places first.", true);
             return;
         }
 
         try {
             if (categoryDAO.delete(categoryId)) {
-                logAction(request, "DELETE_CATEGORY", "Xóa danh mục #" + categoryId + " - " + category.getCategoryName());
-                redirectWithMessage(request, response, "Đã xóa danh mục thành công.", false);
+                logAction(request, "DELETE_CATEGORY", "Deleted category #" + categoryId + " - " + category.getCategoryName());
+                redirectWithMessage(request, response, "Category deleted successfully.", false);
             } else {
-                redirectWithMessage(request, response, "Không thể xóa danh mục.", true);
+                redirectWithMessage(request, response, "Failed to delete category.", true);
             }
         } catch (RuntimeException e) {
             redirectWithMessage(request, response,
-                    "Không thể xóa danh mục. Danh mục có thể đang được sử dụng trong dữ liệu hệ thống.", true);
+                    "Cannot delete category. It may be referenced in system records.", true);
         }
     }
 
@@ -215,19 +215,19 @@ public class AdminCategoryServlet extends HttpServlet {
 
     private String validate(Category category) {
         if (category.getCategoryCode() == null || category.getCategoryCode().isEmpty()) {
-            return "Mã danh mục không được để trống.";
+            return "Category code cannot be empty.";
         }
         if (category.getCategoryCode().length() > 50) {
-            return "Mã danh mục không được vượt quá 50 ký tự.";
+            return "Category code cannot exceed 50 characters.";
         }
         if (!category.getCategoryCode().matches("[A-Za-z0-9_-]+")) {
-            return "Mã danh mục chỉ được chứa chữ cái, số, dấu gạch ngang hoặc gạch dưới.";
+            return "Category code may only contain letters, numbers, hyphens, or underscores.";
         }
         if (category.getCategoryName() == null || category.getCategoryName().isEmpty()) {
-            return "Tên danh mục không được để trống.";
+            return "Category name cannot be empty.";
         }
         if (category.getCategoryName().length() > 100) {
-            return "Tên danh mục không được vượt quá 100 ký tự.";
+            return "Category name cannot exceed 100 characters.";
         }
         return null;
     }

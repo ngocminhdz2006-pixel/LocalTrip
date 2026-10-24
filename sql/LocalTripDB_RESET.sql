@@ -1448,3 +1448,64 @@ UNION ALL SELECT 'ComboTemplateItems', COUNT(*) FROM dbo.ComboTemplateItems
 UNION ALL SELECT 'UserPreferences', COUNT(*) FROM dbo.UserPreferences
 UNION ALL SELECT 'ComboReviews', COUNT(*) FROM dbo.ComboReviews;
 GO
+
+
+/* =========================================================
+   VERSION 3 FULL PRODUCTION UPGRADES
+   ========================================================= */
+IF OBJECT_ID(N'dbo.TripInvites', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.TripInvites (
+        invite_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        trip_id INT NOT NULL CONSTRAINT FK_TripInvites_Trip REFERENCES dbo.Trips(trip_id) ON DELETE CASCADE,
+        invite_token VARCHAR(64) NOT NULL UNIQUE,
+        created_by INT NOT NULL CONSTRAINT FK_TripInvites_User REFERENCES dbo.Users(user_id),
+        expires_at DATETIME2 NOT NULL,
+        is_active BIT NOT NULL DEFAULT 1,
+        created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME()
+    );
+    CREATE INDEX IX_TripInvites_Token ON dbo.TripInvites(invite_token);
+    CREATE INDEX IX_TripInvites_Trip ON dbo.TripInvites(trip_id);
+END;
+GO
+
+IF OBJECT_ID(N'dbo.TripNotes', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.TripNotes (
+        note_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        trip_id INT NOT NULL CONSTRAINT FK_TripNotes_Trip REFERENCES dbo.Trips(trip_id) ON DELETE CASCADE,
+        user_id INT NOT NULL CONSTRAINT FK_TripNotes_User REFERENCES dbo.Users(user_id),
+        note_text NVARCHAR(1000) NOT NULL,
+        created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME()
+    );
+    CREATE INDEX IX_TripNotes_Trip ON dbo.TripNotes(trip_id);
+END;
+GO
+
+IF OBJECT_ID(N'dbo.SettlementPayments', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.SettlementPayments (
+        payment_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        trip_id INT NOT NULL CONSTRAINT FK_SettlementPayments_Trip REFERENCES dbo.Trips(trip_id) ON DELETE CASCADE,
+        from_user_id INT NOT NULL CONSTRAINT FK_SettlementPayments_FromUser REFERENCES dbo.Users(user_id),
+        to_user_id INT NOT NULL CONSTRAINT FK_SettlementPayments_ToUser REFERENCES dbo.Users(user_id),
+        amount DECIMAL(18,2) NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+        updated_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+        created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME()
+    );
+    CREATE INDEX IX_SettlementPayments_Trip ON dbo.SettlementPayments(trip_id);
+END;
+GO
+
+IF COL_LENGTH(N'dbo.ItineraryItems', N'is_locked') IS NULL
+BEGIN
+    ALTER TABLE dbo.ItineraryItems ADD is_locked BIT NOT NULL DEFAULT 0;
+END;
+GO
+
+IF COL_LENGTH(N'dbo.ItineraryItems', N'source_type') IS NULL
+BEGIN
+    ALTER TABLE dbo.ItineraryItems ADD source_type VARCHAR(20) NOT NULL DEFAULT 'MANUAL';
+END;
+GO

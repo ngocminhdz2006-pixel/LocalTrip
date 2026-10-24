@@ -27,11 +27,11 @@ public class ResetPasswordServlet extends HttpServlet {
         String token = request.getParameter("token");
         User user = token == null ? null : resetDAO.findUserByValidToken(utils.TokenUtil.sha256(token));
         if (user == null) {
-            request.setAttribute("errorMessage", "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
+            request.setAttribute("errorMessage", "The password reset link is invalid or has expired.");
         } else {
             request.setAttribute("token", token);
         }
-        request.setAttribute("pageTitle", "Đặt lại mật khẩu");
+        request.setAttribute("pageTitle", "Reset password");
         request.getRequestDispatcher(VIEW).forward(request, response);
     }
 
@@ -43,7 +43,7 @@ public class ResetPasswordServlet extends HttpServlet {
         String confirm = request.getParameter("confirmPassword");
 
         if (token == null || token.trim().isEmpty()) {
-            forwardError(request, response, "Liên kết đặt lại mật khẩu không hợp lệ.", null);
+            forwardError(request, response, "The password reset link is invalid.", null);
             return;
         }
         String passwordError = PasswordValidator.validate(password);
@@ -58,27 +58,27 @@ public class ResetPasswordServlet extends HttpServlet {
             return;
         }
         if (!password.equals(confirm)) {
-            forwardError(request, response, "Mật khẩu xác nhận không khớp.", token);
+            forwardError(request, response, "Password confirmation does not match.", token);
             return;
         }
 
         String tokenHash = utils.TokenUtil.sha256(token);
         User user = resetDAO.findUserByValidToken(tokenHash);
         if (user == null) {
-            forwardError(request, response, "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.", null);
+            forwardError(request, response, "The password reset link is invalid or has expired.", null);
             return;
         }
 
         boolean success = resetDAO.resetPassword(tokenHash, PasswordUtil.hash(password));
         if (!success) {
-            forwardError(request, response, "Không thể đặt lại mật khẩu. Vui lòng yêu cầu liên kết mới.", null);
+            forwardError(request, response, "Unable to reset password. Please request a new link.", null);
             return;
         }
 
         // A password change invalidates existing remember-me sessions for this account.
         new dao.RememberMeDAO().deleteAllForUser(user.getUserId());
-        request.setAttribute("successMessage", "Đặt lại mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.");
-        request.setAttribute("pageTitle", "Đặt lại mật khẩu");
+        request.setAttribute("successMessage", "Password reset successful. You can now sign in with your new password.");
+        request.setAttribute("pageTitle", "Reset password");
         request.getRequestDispatcher(VIEW).forward(request, response);
     }
 
@@ -87,7 +87,7 @@ public class ResetPasswordServlet extends HttpServlet {
             throws ServletException, IOException {
         request.setAttribute("errorMessage", message);
         request.setAttribute("token", token);
-        request.setAttribute("pageTitle", "Đặt lại mật khẩu");
+        request.setAttribute("pageTitle", "Reset password");
         request.getRequestDispatcher(VIEW).forward(request, response);
     }
 }

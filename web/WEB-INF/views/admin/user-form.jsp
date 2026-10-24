@@ -30,7 +30,7 @@
     }
 
     String formTitle = editMode
-        ? "Sửa người dùng" : "Thêm người dùng";
+        ? "Edit User" : "Add User";
 
     String formAction = editMode
         ? "/admin/users/edit" : "/admin/users/create";
@@ -45,21 +45,21 @@
     <div class="rd-hero-top">
         <div>
             <div class="small text-white-50 mb-2">
-                LOCALTRIP · QUẢN TRỊ TÀI KHOẢN
+                LOCALTRIP · USER ADMINISTRATION
             </div>
 
             <h1 class="mb-2"><%= formTitle %></h1>
 
             <p class="text-white mb-0">
                 <%= editMode
-                    ? "Cập nhật thông tin, vai trò và trạng thái tài khoản."
-                    : "Tạo tài khoản mới trong hệ thống LocalTrip." %>
+                    ? "Update account credentials, role, and active status."
+                    : "Register a new account in LocalTrip." %>
             </p>
         </div>
 
         <a class="rd-back"
            href="<%= request.getContextPath() %>/admin/users">
-            ← Danh sách người dùng
+            ← User List
         </a>
     </div>
 </section>
@@ -67,7 +67,7 @@
 <div class="row justify-content-center">
     <div class="col-12 col-lg-8">
         <section class="rd-card">
-            <h2 class="h4 mb-4">Thông tin tài khoản</h2>
+            <h2 class="h4 mb-4">Account Details</h2>
 
             <form id="adminUserForm"
                   method="post"
@@ -82,7 +82,7 @@
                 <div class="mb-3">
                     <label for="userFullName"
                            class="form-label fw-semibold">
-                        Họ tên
+                        Full Name
                     </label>
 
                     <input type="text"
@@ -114,7 +114,7 @@
                         <div class="col-12 col-md-6">
                             <label for="userPassword"
                                    class="form-label fw-semibold">
-                                Mật khẩu
+                                Password
                             </label>
 
                             <input type="password"
@@ -124,7 +124,7 @@
                                    minlength="8"
                                    maxlength="64"
                                    pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,64}"
-                                   title="Mật khẩu phải có 8–64 ký tự, gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt."
+                                   title="Password must be 8–64 characters with uppercase, lowercase, number, and special character."
                                    autocomplete="new-password"
                                    aria-describedby="userPasswordHelp"
                                    required>
@@ -133,7 +133,7 @@
                         <div class="col-12 col-md-6">
                             <label for="userConfirmPassword"
                                    class="form-label fw-semibold">
-                                Nhập lại mật khẩu
+                                Confirm Password
                             </label>
 
                             <input type="password"
@@ -148,8 +148,7 @@
                     </div>
 
                     <p id="userPasswordHelp" class="small text-muted">
-                        Từ 8 đến 64 ký tự, gồm chữ hoa,
-                        chữ thường, chữ số và ký tự đặc biệt.
+                        8 to 64 characters, including uppercase, lowercase, number, and symbol.
                     </p>
 
                     <div class="form-check mb-4">
@@ -159,7 +158,7 @@
 
                         <label for="showUserPasswords"
                                class="form-check-label">
-                            Hiển thị mật khẩu
+                            Show password
                         </label>
                     </div>
                 <% } %>
@@ -168,7 +167,7 @@
                     <div class="mb-3">
                         <label for="userRole"
                                class="form-label fw-semibold">
-                            Vai trò
+                            Role
                         </label>
 
                         <select id="userRole"
@@ -177,12 +176,12 @@
                                 required>
                             <option value="USER"
                                     <%= "USER".equals(roleValue) ? "selected" : "" %>>
-                                Người dùng
+                                Standard User (USER)
                             </option>
 
                             <option value="ADMIN"
                                     <%= "ADMIN".equals(roleValue) ? "selected" : "" %>>
-                                Quản trị viên
+                                Administrator (ADMIN)
                             </option>
                         </select>
                     </div>
@@ -195,7 +194,7 @@
                                <%= activeValue ? "checked" : "" %>>
 
                         <label for="active" class="form-check-label">
-                            Tài khoản đang hoạt động
+                            Account is active
                         </label>
                     </div>
                 </div>
@@ -203,12 +202,12 @@
                 <div class="border-top pt-4 d-flex flex-wrap gap-2">
                     <button type="submit"
                             class="btn btn-primary px-4">
-                        <%= editMode ? "Lưu thay đổi" : "Tạo người dùng" %>
+                        <%= editMode ? "Save Changes" : "Create User" %>
                     </button>
 
                     <a class="btn btn-outline-secondary px-4"
                        href="<%= request.getContextPath() %>/admin/users">
-                        Hủy
+                        Cancel
                     </a>
                 </div>
             </form>
@@ -230,7 +229,7 @@
     function validateConfirmation() {
         confirmation.setCustomValidity(
             confirmation.value && confirmation.value !== password.value
-                ? 'Mật khẩu nhập lại chưa khớp.'
+                ? 'Password confirmation does not match.'
                 : ''
         );
     }

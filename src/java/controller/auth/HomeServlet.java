@@ -47,7 +47,7 @@ public class HomeServlet extends HttpServlet {
             loadAdminDashboard(request);
             request.getRequestDispatcher(ADMIN_VIEW).forward(request, response);
         } catch (RuntimeException e) {
-            request.setAttribute("dashboardError", "Không thể tải dữ liệu dashboard. Vui lòng thử lại.");
+            request.setAttribute("dashboardError", "Failed to load dashboard data. Please try again.");
             String view = "ADMIN".equals(user.getRole()) ? ADMIN_VIEW : USER_VIEW;
             request.getRequestDispatcher(view).forward(request, response);
         }

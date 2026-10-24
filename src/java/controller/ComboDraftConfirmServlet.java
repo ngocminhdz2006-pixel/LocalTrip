@@ -3,10 +3,12 @@ package controller;
 import dao.ItineraryDAO;
 import dao.TripDAO;
 import java.io.IOException;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import model.ItineraryDraft;
+import model.ItineraryItem;
 import model.Trip;
 import model.User;
 
@@ -113,6 +115,10 @@ public class ComboDraftConfirmServlet extends HttpServlet {
             }
 
             if (!confirming) {
+                List<ItineraryItem> existingItems = itineraryDAO.findByTrip(tripId);
+                request.setAttribute("existingItems", existingItems);
+                request.setAttribute("hasExistingItems", existingItems != null && !existingItems.isEmpty());
+
                 request.setAttribute("trip", trip);
                 request.setAttribute("currentTrip", trip);
                 request.setAttribute("comboDraft", draft);
@@ -139,8 +145,13 @@ public class ComboDraftConfirmServlet extends HttpServlet {
                 return;
             }
 
-            if (!"yes".equals(
-                    request.getParameter("acceptReplacement"))) {
+            String applyMode = request.getParameter("applyMode");
+            if (applyMode == null || applyMode.trim().isEmpty()) {
+                applyMode = "REPLACE";
+            }
+
+            if ("REPLACE".equalsIgnoreCase(applyMode)
+                    && !"yes".equals(request.getParameter("acceptReplacement"))) {
 
                 session.setAttribute("errorMessage",
                         "Please acknowledge replacing the upcoming itinerary.");
@@ -152,12 +163,20 @@ public class ComboDraftConfirmServlet extends HttpServlet {
             }
 
             try {
-                itineraryDAO.replaceFromDraft(
-                        tripId,
-                        user.getUserId(),
-                        draft.getFromDate(),
-                        draft.getRevision(),
-                        draft.getItems());
+                for (ItineraryItem item : draft.getItems()) {
+                    item.setSourceType("COMBO");
+                }
+
+                if ("APPEND".equalsIgnoreCase(applyMode)) {
+                    itineraryDAO.appendFromDraft(tripId, user.getUserId(), draft.getItems());
+                } else {
+                    itineraryDAO.replaceFromDraft(
+                            tripId,
+                            user.getUserId(),
+                            draft.getFromDate(),
+                            draft.getRevision(),
+                            draft.getItems());
+                }
 
                 if (draft.getComboId() > 0) {
                     tripDAO.setAppliedCombo(tripId, draft.getComboId());
@@ -167,7 +186,9 @@ public class ComboDraftConfirmServlet extends HttpServlet {
                 session.removeAttribute(draftKey);
 
                 session.setAttribute("successMessage",
-                        "Your new itinerary has been confirmed.");
+                        "APPEND".equalsIgnoreCase(applyMode)
+                                ? "Curated combo activities appended to your itinerary successfully!"
+                                : "Your new itinerary from combo has been confirmed.");
 
                 response.sendRedirect(
                         request.getContextPath()

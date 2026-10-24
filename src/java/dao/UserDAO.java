@@ -27,7 +27,7 @@ public class UserDAO {
                 users.add(map(rs));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể lấy danh sách user", e);
+            throw new RuntimeException("Failed to load user list", e);
         }
 
         return users;
@@ -98,7 +98,7 @@ public class UserDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể tìm kiếm danh sách user",
+                    "Failed to search user list",
                     e
             );
         }
@@ -166,7 +166,7 @@ public class UserDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể đếm kết quả tìm kiếm user",
+                    "Failed to count search user results",
                     e
             );
         }
@@ -259,7 +259,7 @@ public class UserDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể tải trang danh sách user",
+                    "Failed to load user list page",
                     e
             );
         }
@@ -278,7 +278,7 @@ public class UserDAO {
                 return rs.next() ? map(rs) : null;
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể tìm user theo ID", e);
+            throw new RuntimeException("Failed to find user by ID", e);
         }
     }
 
@@ -357,7 +357,7 @@ public class UserDAO {
                 return false;
             }
 
-            throw new RuntimeException("Không thể tạo user bởi Admin", e);
+            throw new RuntimeException("Failed to create user by admin", e);
         }
     }
 
@@ -376,7 +376,7 @@ public class UserDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể kiểm tra email khi cập nhật user",
+                    "Failed to verify email for user update",
                     e
             );
         }
@@ -408,7 +408,7 @@ public class UserDAO {
             }
 
             throw new RuntimeException(
-                    "Không thể cập nhật user bởi Admin",
+                    "Failed to update user by admin",
                     e
             );
         }
@@ -430,9 +430,21 @@ public class UserDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể đặt lại mật khẩu user",
+                    "Failed to reset user password",
                     e
             );
+        }
+    }
+
+    public boolean deactivateAndAnonymize(int userId) {
+        String sql = "UPDATE Users SET is_active = 0, full_name = 'Former Traveler', email = ? WHERE user_id = ?";
+        String anonymizedEmail = "deleted_" + userId + "_" + System.currentTimeMillis() + "@localtrip.local";
+        try (Connection con = DBContext.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, anonymizedEmail);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() == 1;
+        } catch (SQLException e) {
+            throw new RuntimeException("Unable to deactivate and anonymize user account: " + userId, e);
         }
     }
 

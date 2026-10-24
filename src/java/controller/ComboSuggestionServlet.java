@@ -265,7 +265,7 @@ public class ComboSuggestionServlet extends HttpServlet {
 
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể tải gợi ý combo.", e);
+                    "Unable to load combo suggestions.", e);
         }
     }
 

@@ -87,6 +87,40 @@ public class TripDAO {
         return null;
     }
 
+    public Trip findById(int tripId) {
+        String sql = "SELECT trip_id, owner_id, trip_name, destination, start_date, "
+                   + "end_date, budget, description, status, created_at, applied_combo_id "
+                   + "FROM Trips WHERE trip_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, tripId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Trip trip = new Trip();
+                    trip.setId(rs.getInt("trip_id"));
+                    trip.setOwnerId(rs.getInt("owner_id"));
+                    trip.setTripName(rs.getString("trip_name"));
+                    trip.setName(rs.getString("trip_name"));
+                    trip.setDestination(rs.getString("destination"));
+                    trip.setStartDate(rs.getDate("start_date"));
+                    trip.setEndDate(rs.getDate("end_date"));
+                    trip.setBudget(rs.getBigDecimal("budget"));
+                    trip.setDescription(rs.getString("description"));
+                    trip.setStatus(rs.getString("status"));
+                    trip.setCreatedAt(rs.getTimestamp("created_at"));
+                    int comboId = rs.getInt("applied_combo_id");
+                    if (!rs.wasNull()) {
+                        trip.setAppliedComboId(comboId);
+                    }
+                    return trip;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Unable to load trip by id: " + tripId, e);
+        }
+        return null;
+    }
+
     public int create(Trip trip, int ownerId) {
 
         String insertTrip
@@ -221,7 +255,7 @@ public class TripDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể kiểm tra quyền sở hữu Trip.",
+                    "Failed to verify trip ownership.",
                     e
             );
         }
@@ -275,15 +309,15 @@ public class TripDAO {
                     try ( ResultSet result = statement.executeQuery()) {
                         if (!result.next()) {
                             throw new IllegalArgumentException(
-                                    "Chuyến đi không còn tồn tại hoặc bạn không có quyền xóa."
+                                    "Trip not found or you lack permission to delete."
                             );
                         }
 
                         if (!"PLANNING".equals(result.getString("status"))) {
                             throw new IllegalArgumentException(
-                                    "Chỉ xóa được chuyến đang lên kế hoạch. "
-                                    + "Chuyến đã bắt đầu, hoàn thành hoặc hủy "
-                                    + "được giữ lại để lưu lịch sử."
+                                    "Only planning trips can be permanently deleted. "
+                                    + "Ongoing, completed, or cancelled trips "
+                                    + "are retained for history."
                             );
                         }
                     }
@@ -306,15 +340,15 @@ public class TripDAO {
 
                         if (!result.next()) {
                             throw new IllegalArgumentException(
-                                    "Chuyến đi không còn tồn tại hoặc bạn không có quyền xóa."
+                                    "Trip not found or you lack permission to delete."
                             );
                         }
 
                         if (!"PLANNING".equals(result.getString("status"))) {
                             throw new IllegalArgumentException(
-                                    "Chỉ xóa được chuyến đang lên kế hoạch. "
-                                    + "Chuyến đã bắt đầu, hoàn thành hoặc hủy "
-                                    + "được giữ lại để lưu lịch sử."
+                                    "Only planning trips can be permanently deleted. "
+                                    + "Ongoing, completed, or cancelled trips "
+                                    + "are retained for history."
                             );
                         }
                     }

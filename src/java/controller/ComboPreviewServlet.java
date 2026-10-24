@@ -270,7 +270,7 @@ public class ComboPreviewServlet extends HttpServlet {
                     ? BigDecimal.ZERO : trip.getBudget();
             if (draftItems.isEmpty()) {
                 throw new IllegalArgumentException(
-                        "Combo chưa có hoạt động để tạo bản nháp.");
+                        "This combo does not have activities to generate a draft.");
             }
 
             ItineraryDraft comboDraft = new ItineraryDraft(
@@ -317,7 +317,7 @@ public class ComboPreviewServlet extends HttpServlet {
 
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể xem trước combo.", e);
+                    "Unable to preview combo.", e);
         }
     }
 

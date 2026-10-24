@@ -42,7 +42,7 @@ public class ComboTemplateWriteDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể lưu combo bản nháp.", e);
+                    "Failed to save draft combo.", e);
         }
     }
 
@@ -62,7 +62,7 @@ public class ComboTemplateWriteDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể tải phiên bản combo.", e);
+                    "Failed to load combo revision.", e);
         }
     }
 
@@ -77,7 +77,7 @@ public class ComboTemplateWriteDAO {
                 || expectedRevision == null
                 || expectedRevision.trim().isEmpty()) {
             throw new IllegalArgumentException(
-                    "Thiếu mã hoặc phiên bản combo. Hãy mở lại trang sửa.");
+                    "Missing combo ID or revision. Please reopen the edit page.");
         }
 
         try ( Connection connection = DBContext.getConnection()) {
@@ -100,7 +100,7 @@ public class ComboTemplateWriteDAO {
                     try ( ResultSet rs = ps.executeQuery()) {
                         if (!rs.next()) {
                             throw new IllegalArgumentException(
-                                    "Không tìm thấy combo.");
+                                    "Combo not found.");
                         }
 
                         String status = rs.getString("status");
@@ -108,14 +108,14 @@ public class ComboTemplateWriteDAO {
                         if (!"DRAFT".equals(status)
                                 && !"INACTIVE".equals(status)) {
                             throw new IllegalArgumentException(
-                                    "Hãy ngừng sử dụng combo trước khi sửa.");
+                                    "Please deactivate the combo before editing.");
                         }
 
                         if (!expectedRevision.equals(
                                 rs.getString("revision"))) {
                             throw new IllegalArgumentException(
-                                    "Combo đã được sửa hoặc đổi trạng thái "
-                                    + "ở nơi khác. Hãy mở lại trang sửa.");
+                                    "Combo was modified or status changed "
+                                    + "elsewhere. Please reopen the edit page.");
                         }
                     }
                 }
@@ -143,7 +143,7 @@ public class ComboTemplateWriteDAO {
 
                     if (ps.executeUpdate() != 1) {
                         throw new SQLException(
-                                "Không cập nhật được combo.");
+                                "Failed to update combo.");
                     }
                 }
 
@@ -179,40 +179,40 @@ public class ComboTemplateWriteDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể cập nhật combo bản nháp.", e);
+                    "Failed to update draft combo.", e);
         }
     }
 
     private void validateStructure(ComboTemplate combo) {
         if (combo == null) {
-            throw new IllegalArgumentException("Thiếu thông tin combo.");
+            throw new IllegalArgumentException("Missing combo information.");
         }
 
-        requireText(combo.getName(), 150, "Tên combo");
-        requireText(combo.getCityName(), 100, "Tỉnh/thành");
-        requireText(combo.getDistrictName(), 100, "Quận/huyện");
+        requireText(combo.getName(), 150, "Combo name");
+        requireText(combo.getCityName(), 100, "City");
+        requireText(combo.getDistrictName(), 100, "District");
 
         if (combo.getDescription() != null
                 && combo.getDescription().length() > 1000) {
             throw new IllegalArgumentException(
-                    "Mô tả tối đa 1000 ký tự.");
+                    "Description cannot exceed 1000 characters.");
         }
 
         if (combo.getDurationDays() < 1
                 || combo.getDurationDays() > 14) {
             throw new IllegalArgumentException(
-                    "Combo phải có từ 1 đến 14 ngày.");
+                    "Combo must span 1 to 14 days.");
         }
 
         if (combo.getCategoryIds().isEmpty()) {
             throw new IllegalArgumentException(
-                    "Chọn ít nhất một sở thích.");
+                    "Select at least one vibe preference.");
         }
 
         if (combo.getActivities().isEmpty()
                 || combo.getActivities().size() > 60) {
             throw new IllegalArgumentException(
-                    "Combo phải có từ 1 đến 60 hoạt động.");
+                    "Combo must have between 1 and 60 activities.");
         }
 
         combo.getActivities().sort(
@@ -227,19 +227,19 @@ public class ComboTemplateWriteDAO {
         Activity previous = null;
 
         for (Activity activity : combo.getActivities()) {
-            requireText(activity.getTitle(), 200, "Tên hoạt động");
+            requireText(activity.getTitle(), 200, "Activity title");
 
             if (activity.getDayNumber() < 1
                     || activity.getDayNumber() > combo.getDurationDays()) {
                 throw new IllegalArgumentException(
-                        "Ngày hoạt động phải nằm trong số ngày của combo.");
+                        "Activity day must be within combo duration.");
             }
 
             String type = activity.getActivityType();
             if (!"VISIT".equals(type) && !"MEAL".equals(type)
                     && !"CAFE".equals(type) && !"REST".equals(type)) {
                 throw new IllegalArgumentException(
-                        "Loại hoạt động không hợp lệ.");
+                        "Invalid activity type.");
             }
 
             if (activity.getStartTime() == null
@@ -247,7 +247,7 @@ public class ComboTemplateWriteDAO {
                     || !activity.getEndTime().after(
                             activity.getStartTime())) {
                 throw new IllegalArgumentException(
-                        "Giờ kết thúc phải sau giờ bắt đầu.");
+                        "End time must be after start time.");
             }
 
             if (activity.getEstimatedCostPerPerson() == null
@@ -256,24 +256,24 @@ public class ComboTemplateWriteDAO {
                     || activity.getEstimatedCostPerPerson().precision()
                     - activity.getEstimatedCostPerPerson().scale() > 16) {
                 throw new IllegalArgumentException(
-                        "Chi phí không hợp lệ; tối đa hai chữ số thập phân.");
+                        "Invalid cost; up to 2 decimal places allowed.");
             }
 
             if (activity.getNote() != null
                     && activity.getNote().length() > 500) {
                 throw new IllegalArgumentException(
-                        "Ghi chú tối đa 500 ký tự.");
+                        "Note cannot exceed 500 characters.");
             }
 
             if (!"REST".equals(type) && activity.getPlaceId() == null) {
                 throw new IllegalArgumentException(
-                        "Hoạt động tham quan, ăn uống hoặc cà phê phải có địa điểm.");
+                        "Sightseeing, dining, or cafe activities must have an assigned place.");
             }
 
             if (activity.getPlaceId() != null
                     && !usedPlaces.add(activity.getPlaceId())) {
                 throw new IllegalArgumentException(
-                        "Một địa điểm không được lặp lại trong combo.");
+                        "A place cannot be repeated within the combo.");
             }
 
             if (activity.getDayNumber() != currentDay) {
@@ -295,8 +295,8 @@ public class ComboTemplateWriteDAO {
 
                 if (gap < 0 || (changesPlace && gap < 15)) {
                     throw new IllegalArgumentException(
-                            "Hoạt động không được trùng giờ; cần ít nhất "
-                            + "15 phút giữa hai địa điểm khác nhau.");
+                            "Activities cannot overlap; at least "
+                            + "15 minutes required between different locations.");
                 }
             }
 
@@ -309,7 +309,7 @@ public class ComboTemplateWriteDAO {
         if (value == null || value.trim().isEmpty()
                 || value.length() > limit) {
             throw new IllegalArgumentException(
-                    label + " bắt buộc và tối đa " + limit + " ký tự.");
+                    label + " is required and cannot exceed " + limit + " characters.");
         }
     }
 
@@ -324,7 +324,7 @@ public class ComboTemplateWriteDAO {
             try ( ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
                     throw new IllegalArgumentException(
-                            "Tài khoản không có quyền quản lý combo.");
+                            "Account does not have permission to manage combos.");
                 }
             }
         }
@@ -343,14 +343,14 @@ public class ComboTemplateWriteDAO {
             for (Integer id : combo.getCategoryIds()) {
                 if (id == null || id <= 0 || !seen.add(id)) {
                     throw new IllegalArgumentException(
-                            "Danh sách sở thích không hợp lệ.");
+                            "Invalid category list.");
                 }
 
                 ps.setInt(1, id);
                 try ( ResultSet rs = ps.executeQuery()) {
                     if (!rs.next()) {
                         throw new IllegalArgumentException(
-                                "Sở thích đã chọn không còn tồn tại.");
+                                "Selected category no longer exists.");
                     }
                 }
             }
@@ -382,8 +382,8 @@ public class ComboTemplateWriteDAO {
                 try ( ResultSet rs = ps.executeQuery()) {
                     if (!rs.next()) {
                         throw new IllegalArgumentException(
-                                "Địa điểm phải đang sử dụng và thuộc "
-                                + "đúng tỉnh/thành, quận/huyện của combo.");
+                                "Place must be active and located within "
+                                + "the combo city and district.");
                     }
 
                     String code = rs.getString("category_code");
@@ -392,8 +392,8 @@ public class ComboTemplateWriteDAO {
                             || ("CAFE".equals(activity.getActivityType())
                             && !"CAFE".equals(code))) {
                         throw new IllegalArgumentException(
-                                "Địa điểm ăn uống hoặc cà phê "
-                                + "không đúng danh mục.");
+                                "Dining or cafe place "
+                                + "does not match the category.");
                     }
 
                     java.sql.Time open = rs.getTime("opening_time");
@@ -402,14 +402,14 @@ public class ComboTemplateWriteDAO {
                     if (open == null || close == null
                             || !close.after(open)) {
                         throw new IllegalArgumentException(
-                                "Cần giờ mở cửa cùng ngày hợp lệ cho "
+                                "Requires valid same-day opening hours for "
                                 + rs.getString("place_name") + ".");
                     }
 
                     if (activity.getStartTime().before(open)
                             || activity.getEndTime().after(close)) {
                         throw new IllegalArgumentException(
-                                "Hoạt động nằm ngoài giờ mở cửa của "
+                                "Activity is outside opening hours of "
                                 + rs.getString("place_name") + ".");
                     }
                 }
@@ -440,7 +440,7 @@ public class ComboTemplateWriteDAO {
 
             try ( ResultSet rs = ps.getGeneratedKeys()) {
                 if (!rs.next()) {
-                    throw new SQLException("Không lấy được mã combo.");
+                    throw new SQLException("Failed to retrieve combo ID.");
                 }
                 return rs.getInt(1);
             }

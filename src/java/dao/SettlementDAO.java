@@ -86,7 +86,7 @@ public class SettlementDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể tính số dư thành viên.",
+                    "Unable to calculate member balances.",
                     e
             );
         }
@@ -194,6 +194,73 @@ public class SettlementDAO {
         }
 
         return transfers;
+    }
+
+    public void syncAndLoadPaymentStatuses(int tripId, List<SettlementTransfer> transfers) {
+        if (transfers == null || transfers.isEmpty()) {
+            return;
+        }
+
+        String selectSql = "SELECT payment_id, status, updated_at FROM SettlementPayments WHERE trip_id = ? AND from_user_id = ? AND to_user_id = ?";
+        String insertSql = "INSERT INTO SettlementPayments (trip_id, from_user_id, to_user_id, amount, status, updated_at) VALUES (?, ?, ?, ?, 'PENDING', SYSDATETIME())";
+
+        try (Connection conn = DBContext.getConnection()) {
+            for (SettlementTransfer t : transfers) {
+                try (PreparedStatement psSelect = conn.prepareStatement(selectSql)) {
+                    psSelect.setInt(1, tripId);
+                    psSelect.setInt(2, t.getFromMemberId());
+                    psSelect.setInt(3, t.getToMemberId());
+                    try (ResultSet rs = psSelect.executeQuery()) {
+                        if (rs.next()) {
+                            t.setPaymentId(rs.getInt("payment_id"));
+                            t.setStatus(rs.getString("status"));
+                            t.setUpdatedAt(rs.getTimestamp("updated_at"));
+                        } else {
+                            try (PreparedStatement psInsert = conn.prepareStatement(insertSql, new String[]{"payment_id"})) {
+                                psInsert.setInt(1, tripId);
+                                psInsert.setInt(2, t.getFromMemberId());
+                                psInsert.setInt(3, t.getToMemberId());
+                                psInsert.setBigDecimal(4, t.getAmount());
+                                psInsert.executeUpdate();
+                                try (ResultSet rsKey = psInsert.getGeneratedKeys()) {
+                                    if (rsKey.next()) {
+                                        t.setPaymentId(rsKey.getInt(1));
+                                    }
+                                }
+                                t.setStatus("PENDING");
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            // Table might not exist or temporary error - log and proceed with default PENDING
+            System.err.println("Notice: SettlementPayments sync fallback: " + e.getMessage());
+        }
+    }
+
+    public boolean updatePaymentStatus(int paymentId, int tripId, int actingUserId, String newStatus) {
+        if (!"PENDING".equalsIgnoreCase(newStatus) && !"SENT".equalsIgnoreCase(newStatus) && !"CONFIRMED".equalsIgnoreCase(newStatus)) {
+            return false;
+        }
+
+        String sql = "UPDATE SettlementPayments SET status = ?, updated_at = SYSDATETIME() "
+                   + "WHERE payment_id = ? AND trip_id = ? "
+                   + "AND (from_user_id = ? OR to_user_id = ? OR EXISTS (SELECT 1 FROM Trips WHERE trip_id = ? AND owner_id = ?))";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, newStatus.toUpperCase());
+            ps.setInt(2, paymentId);
+            ps.setInt(3, tripId);
+            ps.setInt(4, actingUserId);
+            ps.setInt(5, actingUserId);
+            ps.setInt(6, tripId);
+            ps.setInt(7, actingUserId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Unable to update settlement payment status.", e);
+        }
     }
 
     private static class SettlementParty {

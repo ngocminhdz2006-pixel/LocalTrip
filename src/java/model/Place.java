@@ -191,15 +191,15 @@ public class Place {
 
     public String getOpenHours() {
         if (openingTime == null && closingTime == null) {
-            return "Chưa cập nhật";
+            return "Flexible hours";
         }
 
         if (openingTime == null) {
-            return "Đến " + formatTime(closingTime);
+            return "Until " + formatTime(closingTime);
         }
 
         if (closingTime == null) {
-            return "Từ " + formatTime(openingTime);
+            return "From " + formatTime(openingTime);
         }
 
         return formatTime(openingTime)

@@ -24,7 +24,7 @@ public class ComboTemplateStatusDAO {
 
         if (comboId <= 0 || (!activate && !deactivate)) {
             throw new IllegalArgumentException(
-                    "Thao tác đổi trạng thái không hợp lệ.");
+                    "Invalid status transition.");
         }
 
         try (Connection connection = DBContext.getConnection()) {
@@ -55,7 +55,7 @@ public class ComboTemplateStatusDAO {
 
                     if (ps.executeUpdate() != 1) {
                         throw new IllegalArgumentException(
-                                "Combo đã thay đổi. Hãy tải lại trang.");
+                                "Combo was modified. Please reload the page.");
                     }
                 }
 
@@ -73,7 +73,7 @@ public class ComboTemplateStatusDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể đổi trạng thái combo.", e);
+                    "Failed to change combo status.", e);
         }
     }
 
@@ -91,7 +91,7 @@ public class ComboTemplateStatusDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
                     throw new IllegalArgumentException(
-                            "Tài khoản không có quyền quản lý combo.");
+                            "Account does not have permission to manage combos.");
                 }
             }
         }
@@ -113,13 +113,13 @@ public class ComboTemplateStatusDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
                     throw new IllegalArgumentException(
-                            "Không tìm thấy combo.");
+                            "Combo not found.");
                 }
 
                 if (!expectedStatus.equals(rs.getString("status"))) {
                     throw new IllegalArgumentException(
-                            "Trạng thái combo đã thay đổi. "
-                            + "Hãy tải lại trang.");
+                            "Combo status has changed. "
+                            + "Please reload the page.");
                 }
 
                 return rs.getInt("duration_days");
@@ -145,7 +145,7 @@ public class ComboTemplateStatusDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
                     throw new IllegalArgumentException(
-                            "Combo cần ít nhất một nhãn sở thích.");
+                            "Combo requires at least one category tag.");
                 }
             }
         }
@@ -172,20 +172,20 @@ public class ComboTemplateStatusDAO {
 
                     if (day != expectedDay || day > durationDays) {
                         throw new IllegalArgumentException(
-                                "Combo phải có hoạt động liên tục "
-                                + "từ Ngày 1 đến ngày cuối.");
+                                "Combo must have continuous activities "
+                                + "from Day 1 to the last day.");
                     }
 
                     if (rs.getInt("meal_count") < 1) {
                         throw new IllegalArgumentException(
-                                "Ngày " + day
-                                + " cần ít nhất một hoạt động ăn uống.");
+                                "Day " + day
+                                + " requires at least one dining activity.");
                     }
 
                     if (rs.getInt("break_count") < 1) {
                         throw new IllegalArgumentException(
-                                "Ngày " + day
-                                + " cần ít nhất một hoạt động nghỉ hoặc cà phê.");
+                                "Day " + day
+                                + " requires at least one rest or coffee activity.");
                     }
 
                     expectedDay++;
@@ -195,7 +195,7 @@ public class ComboTemplateStatusDAO {
 
         if (expectedDay != durationDays + 1) {
             throw new IllegalArgumentException(
-                    "Combo chưa có đủ hoạt động cho tất cả các ngày.");
+                    "Combo does not have enough activities for all days.");
         }
 
         rejectIfFound(connection, comboId,
@@ -226,15 +226,15 @@ public class ComboTemplateStatusDAO {
                 + "AND cat.category_code <> 'CAFE')"
                 + "))"
                 + ")",
-                "Có hoạt động không hợp lệ: kiểm tra địa điểm, "
-                + "khu vực, loại hoạt động và giờ mở cửa.");
+                "Invalid activity: check place, "
+                + "region, activity type, and opening hours.");
 
         rejectIfFound(connection, comboId,
                 "SELECT place_id "
                 + "FROM dbo.ComboTemplateItems WITH (HOLDLOCK) "
                 + "WHERE combo_id = ? AND place_id IS NOT NULL "
                 + "GROUP BY place_id HAVING COUNT(*) > 1",
-                "Combo có địa điểm bị lặp lại.");
+                "Combo has duplicate places.");
 
         rejectIfFound(connection, comboId,
                 "WITH Schedule AS ("
@@ -248,7 +248,7 @@ public class ComboTemplateStatusDAO {
                 + ") "
                 + "SELECT TOP (1) day_number FROM Schedule "
                 + "WHERE previous_end > start_time",
-                "Có hoạt động trùng thời gian.");
+                "Activities have overlapping times.");
 
         /*
          * Chỉ xét các điểm có địa điểm.
@@ -271,7 +271,7 @@ public class ComboTemplateStatusDAO {
                 + "SELECT TOP (1) day_number FROM PlaceSchedule "
                 + "WHERE previous_place <> place_id "
                 + "AND DATEDIFF(MINUTE, previous_end, start_time) < 15",
-                "Cần ít nhất 15 phút giữa hai địa điểm khác nhau.");
+                "At least 15 minutes required between different locations.");
     }
 
     private void rejectIfFound(

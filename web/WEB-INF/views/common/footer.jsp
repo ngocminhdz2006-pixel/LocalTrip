@@ -7,6 +7,10 @@
             <strong>LocalTrip</strong>
             <span class="app-footer-dot">&middot;</span>
             Plan memorable journeys and track group travel expenses.
+            <span class="app-footer-dot">&middot;</span>
+            <a href="${pageContext.request.contextPath}/privacy" style="color: inherit; text-decoration: underline;">Privacy</a>
+            <span class="app-footer-dot">&middot;</span>
+            <a href="${pageContext.request.contextPath}/terms" style="color: inherit; text-decoration: underline;">Terms</a>
         </div>
         <div>PRJ301 Project</div>
     </div>

@@ -44,7 +44,7 @@ public class AdminComboServlet extends HttpServlet {
                 return;
             }
 
-            request.setAttribute("pageTitle", "Quản lý combo");
+            request.setAttribute("pageTitle", "Combo Management");
             request.setAttribute(
                     "combos", comboDAO.findAllForAdmin());
 
@@ -54,7 +54,7 @@ public class AdminComboServlet extends HttpServlet {
 
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể tải dữ liệu combo.", e);
+                    "Failed to load combo data.", e);
         }
     }
 
@@ -73,14 +73,14 @@ public class AdminComboServlet extends HttpServlet {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException e) {
-            response.sendError(400, "Mã combo không hợp lệ.");
+            response.sendError(400, "Invalid combo ID.");
             return;
         }
 
         ComboTemplate combo = comboDAO.findById(comboId);
 
         if (combo == null) {
-            response.sendError(404, "Không tìm thấy combo.");
+            response.sendError(404, "Combo not found.");
             return;
         }
 
@@ -91,7 +91,7 @@ public class AdminComboServlet extends HttpServlet {
                     category.getId(), category.getName());
         }
 
-        request.setAttribute("pageTitle", "Chi tiết combo");
+        request.setAttribute("pageTitle", "Combo Details");
         request.setAttribute("selectedCombo", combo);
         request.setAttribute("categoryNames", categoryNames);
 

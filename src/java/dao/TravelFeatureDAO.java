@@ -423,4 +423,21 @@ public class TravelFeatureDAO {
         try(Connection c=DBContext.getConnection();PreparedStatement ps=c.prepareStatement(sql)){ps.setInt(1,userId);try(ResultSet rs=ps.executeQuery()){if(rs.next()){m.put("placeCount",rs.getInt(1));m.put("checkInCount",rs.getInt(2));m.put("tripCount",rs.getInt(3));m.put("photoCount",rs.getInt(4));}}}catch(SQLException e){throw failure("Unable to aggregate passport summary.",e);}
         try(Connection c=DBContext.getConnection();PreparedStatement ps=c.prepareStatement("SELECT COUNT(*) FROM dbo.UserBadges WHERE user_id=?")){ps.setInt(1,userId);try(ResultSet rs=ps.executeQuery()){m.put("badgeCount",rs.next()?rs.getInt(1):0);}}catch(SQLException e){throw failure("Unable to aggregate badges.",e);}return m;
     }
+
+    public java.util.Set<Integer> getCheckedInPlaceIds(int userId, int tripId) {
+        java.util.Set<Integer> set = new java.util.HashSet<Integer>();
+        String sql = "SELECT DISTINCT place_id FROM dbo.CheckIns WHERE user_id=? AND trip_id=? AND status='VERIFIED'";
+        try (Connection c = DBContext.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, tripId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    set.add(rs.getInt(1));
+                }
+            }
+        } catch (SQLException e) {
+            // Non-critical check for UI badges
+        }
+        return set;
+    }
 }

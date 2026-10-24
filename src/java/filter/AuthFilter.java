@@ -1,6 +1,5 @@
 package filter;
 
-import controller.auth.HomeServlet;
 import controller.auth.RememberMeUtil;
 import java.io.IOException;
 import javax.servlet.Filter;
@@ -22,6 +21,7 @@ import dao.UserDAO;
 public class AuthFilter implements Filter {
 
     private final UserDAO userDAO = new UserDAO();
+    private static final long USER_VERIFY_TTL_MS = 60000L; // 60 seconds session cache
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response,
@@ -37,24 +37,25 @@ public class AuthFilter implements Filter {
         String uri = req.getRequestURI();
         String path = uri.substring(contextPath.length());
 
-        // Never auto-login while explicitly logging out.
-        if (!"/logout".equals(path)) {
-            restoreRememberedUser(req);
-        }
-
+        // 1. Fast path for public and static resources: skip remember-me check completely
         if (isPublic(path)) {
             chain.doFilter(request, response);
             return;
+        }
+
+        // 2. Never auto-login while explicitly logging out.
+        if (!"/logout".equals(path)) {
+            restoreRememberedUser(req);
         }
 
         HttpSession session = req.getSession(false);
         User user = session == null ? null : (User) session.getAttribute("user");
 
         if (user == null) {
-            HttpSession newSession = req.getSession(true);
-            newSession.setAttribute("authMessage", "Vui lòng đăng nhập để tiếp tục.");
-
+            // Only create a session if it's a GET page request that needs a redirect target
             if ("GET".equalsIgnoreCase(req.getMethod())) {
+                HttpSession newSession = req.getSession(true);
+                newSession.setAttribute("authMessage", "Please sign in to continue.");
                 String targetUrl = req.getRequestURI();
                 String queryString = req.getQueryString();
                 if (queryString != null && !queryString.trim().isEmpty()) {
@@ -66,64 +67,63 @@ public class AuthFilter implements Filter {
             resp.sendRedirect(contextPath + "/login");
             return;
         }
+
         /*
- * Nạp lại user từ database để trạng thái Active và role
- * mới có hiệu lực ngay, không phải chờ session hết hạn.
+         * Refresh user from database with 60-second session cache
+         * to verify active status and role changes without hammering DB on every click.
          */
         try {
-            User freshUser = userDAO.findById(user.getUserId());
+            Long lastVerifiedAt = (Long) session.getAttribute("userLastVerifiedAt");
+            long now = System.currentTimeMillis();
 
-            if (freshUser == null || !freshUser.isActive()) {
+            if (lastVerifiedAt == null || (now - lastVerifiedAt > USER_VERIFY_TTL_MS)) {
+                User freshUser = userDAO.findById(user.getUserId());
 
-                try {
-                    RememberMeUtil.revoke(req, resp);
-                } catch (RuntimeException ignored) {
-                    // Vẫn tiếp tục hủy session.
+                if (freshUser == null || !freshUser.isActive()) {
+                    try {
+                        RememberMeUtil.revoke(req, resp);
+                    } catch (RuntimeException ignored) {
+                        // Continue invalidation
+                    }
+
+                    session.invalidate();
+
+                    HttpSession newSession = req.getSession(true);
+                    newSession.setAttribute(
+                            "authMessage",
+                            "Your account has been deactivated or no longer exists."
+                    );
+
+                    resp.sendRedirect(contextPath + "/login");
+                    return;
                 }
 
-                session.invalidate();
-
-                HttpSession newSession = req.getSession(true);
-                newSession.setAttribute(
-                        "authMessage",
-                        "Tài khoản đã bị khóa hoặc không còn tồn tại."
-                );
-
-                resp.sendRedirect(contextPath + "/login");
-                return;
+                // Never store password hash in session
+                freshUser.setPasswordHash(null);
+                session.setAttribute("user", freshUser);
+                session.setAttribute("userLastVerifiedAt", now);
+                user = freshUser;
             }
 
-            /*
-     * Không giữ password hash trong session.
-             */
-            freshUser.setPasswordHash(null);
-
-            session.setAttribute("user", freshUser);
             if (session.getAttribute("travelCsrf") == null) {
                 session.setAttribute("travelCsrf", java.util.UUID.randomUUID().toString());
             }
-            user = freshUser;
 
         } catch (RuntimeException e) {
-            /*
-     * Không tiếp tục bằng quyền cũ nếu không xác minh được
-     * trạng thái mới nhất của tài khoản.
-             */
-            resp.sendError(
-                    HttpServletResponse.SC_SERVICE_UNAVAILABLE
-            );
+            resp.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Unable to verify authentication status.");
             return;
-        }   
+        }
+
         boolean adminPath = "/admin".equals(path) || path.startsWith("/admin/");
         boolean userPath = "/user".equals(path) || path.startsWith("/user/");
 
         if (adminPath && !"ADMIN".equals(user.getRole())) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied: Administrator privilege required.");
             return;
         }
 
         if (userPath && !"USER".equals(user.getRole())) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN);
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied: User privilege required.");
             return;
         }
 
@@ -138,6 +138,7 @@ public class AuthFilter implements Filter {
                 Object sessionToken = session.getAttribute("travelCsrf");
 
                 boolean valid = (sessionToken instanceof String && ((String) sessionToken).equals(paramToken))
+                        || (paramToken != null && paramToken.equals(session.getAttribute("activityStatusToken")))
                         || (req.getParameter("statusToken") != null && req.getParameter("statusToken").equals(session.getAttribute("tripStatusToken")))
                         || (req.getParameter("deleteToken") != null && req.getParameter("deleteToken").equals(session.getAttribute("tripDeleteToken")))
                         || (req.getParameter("token") != null && req.getParameter("token").equals(session.getAttribute("autoItineraryToken")));
@@ -179,6 +180,10 @@ public class AuthFilter implements Filter {
         }
         if ("/login".equals(path) || "/register".equals(path) || "/logout".equals(path)
                 || "/forgot-password".equals(path) || "/reset-password".equals(path)) {
+            return true;
+        }
+        // Public legal and invite routing
+        if ("/privacy".equals(path) || "/terms".equals(path) || "/trip/join".equals(path)) {
             return true;
         }
         if ("/manifest.json".equals(path) || "/sw.js".equals(path) || "/offline.html".equals(path) || "/favicon.ico".equals(path)) {

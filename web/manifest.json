@@ -1,7 +1,7 @@
 {
   "name": "LocalTrip - Smart Travel Planner",
   "short_name": "LocalTrip",
-  "description": "Lập kế hoạch du lịch thông minh và quản lý chi phí chuyến đi cùng bạn bè.",
+  "description": "Smart group travel planner, zero-click vibe matching, and fair expense splitting.",
   "start_url": "./trips",
   "scope": "./",
   "display": "standalone",

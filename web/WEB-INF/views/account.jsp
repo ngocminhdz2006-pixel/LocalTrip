@@ -192,7 +192,29 @@
         </div>
     </section>
 
-    <%-- 6. Logout Button --%>
+    <%-- 6. Danger Zone: Account Deletion --%>
+    <section class="lt-acc-card-group" style="border: 1px solid #fee2e2; background: #fffafb;">
+        <h3 class="lt-acc-group-title" style="color: #991b1b;">
+            <span>⚠️</span> Danger Zone
+        </h3>
+        <div class="lt-acc-row-item" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+            <div>
+                <span class="lt-acc-row-label" style="color: #991b1b; font-weight: 700;">Delete My Account</span>
+                <p style="font-size: 11px; color: #64748b; margin: 2px 0 0; line-height: 1.4;">
+                    Permanently deactivate your account, anonymize your email and profile name, and revoke all active sessions. This action cannot be undone.
+                </p>
+            </div>
+            <form method="post" action="${pageContext.request.contextPath}/account" onsubmit="return confirm('Are you sure you want to delete and deactivate your account permanently? You will be signed out immediately.');" style="margin-top: 6px; width: 100%;">
+                <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
+                <input type="hidden" name="action" value="deleteAccount">
+                <button type="submit" class="btn btn-outline-danger btn-sm w-100 rounded-3 fw-bold py-2">
+                    Delete My Account
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <%-- 7. Logout Button --%>
     <a href="${pageContext.request.contextPath}/logout" class="lt-acc-signout-btn">
         <span>🚪</span> Sign out
     </a>

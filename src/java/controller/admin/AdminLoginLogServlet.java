@@ -31,11 +31,11 @@ public class AdminLoginLogServlet extends HttpServlet {
         Date toDate = parseDate(toDateText);
 
         if (!fromDateText.isEmpty() && fromDate == null) {
-            request.setAttribute("filterError", "Ngày bắt đầu không hợp lệ.");
+            request.setAttribute("filterError", "Invalid start date.");
         } else if (!toDateText.isEmpty() && toDate == null) {
-            request.setAttribute("filterError", "Ngày kết thúc không hợp lệ.");
+            request.setAttribute("filterError", "Invalid end date.");
         } else if (fromDate != null && toDate != null && fromDate.after(toDate)) {
-            request.setAttribute("filterError", "Ngày bắt đầu không được lớn hơn ngày kết thúc.");
+            request.setAttribute("filterError", "Start date cannot be after end date.");
         }
 
         if (request.getAttribute("filterError") != null) {

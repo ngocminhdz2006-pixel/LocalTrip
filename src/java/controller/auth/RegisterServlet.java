@@ -54,7 +54,7 @@ public class RegisterServlet extends HttpServlet {
         // ---- Dieu kien 1: khong duoc de trong ----
         if (ValidationUtil.isBlank(fullName) || ValidationUtil.isBlank(email)
                 || ValidationUtil.isBlank(password) || ValidationUtil.isBlank(confirmPassword)) {
-            forward(request, response, "Vui lòng nhập đầy đủ thông tin.");
+            forward(request, response, "Please fill in all required fields.");
             return;
         }
 
@@ -103,7 +103,7 @@ public class RegisterServlet extends HttpServlet {
         }
 
         if (!created) {
-            forward(request, response, "Email này đã được sử dụng.");
+            forward(request, response, "This email address is already registered.");
             return;
         }
 

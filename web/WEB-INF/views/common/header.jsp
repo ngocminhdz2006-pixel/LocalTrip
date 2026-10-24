@@ -88,7 +88,7 @@
           href="<%= request.getContextPath() %>/css/style.css">
     <link rel="stylesheet" href="<%= request.getContextPath() %>/css/localtrip.css?v=2">
     <link rel="stylesheet" href="<%= request.getContextPath() %>/css/travel-features.css?v=1">
-    <link rel="stylesheet" href="<%= request.getContextPath() %>/css/mobile-user.css?v=2">
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/css/mobile-user.css?v=3">
     <link rel="stylesheet" href="<%= request.getContextPath() %>/css/mobile-auth.css?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -299,7 +299,7 @@
     <% } %>
 
 
-<% boolean redesignAuth = headerUser == null && java.util.Arrays.asList("Sign in", "Register", "Forgot password", "Reset password", "Đăng ký", "Quên mật khẩu", "Đặt lại mật khẩu").contains(pageTitleText);
+<% boolean redesignAuth = headerUser == null && java.util.Arrays.asList("Sign in", "Register", "Forgot password", "Reset password").contains(pageTitleText);
    if (redesignAuth) { request.setAttribute("hasAuthLayout", Boolean.TRUE); %>
 <div class="rd-auth-layout">
     <section class="rd-auth-welcome" aria-label="About LocalTrip">

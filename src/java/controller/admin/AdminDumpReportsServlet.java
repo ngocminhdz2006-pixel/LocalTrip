@@ -21,8 +21,8 @@ public class AdminDumpReportsServlet extends HttpServlet {
     }
     @Override protected void doPost(HttpServletRequest req,HttpServletResponse resp)throws ServletException,IOException {
         HttpSession s=req.getSession(false);User u=s==null?null:(User)s.getAttribute("user");if(u==null||!"ADMIN".equals(u.getRole())){resp.sendError(403);return;}
-        Object token=s.getAttribute("travelCsrf");if(!(token instanceof String)||!token.equals(req.getParameter("csrfToken"))){s.setAttribute("errorMessage","Phiên biểu mẫu đã hết hạn.");resp.sendRedirect(req.getContextPath()+"/admin/dump-reports");return;}
-        try{dao.updatePostReport(Integer.parseInt(req.getParameter("reportId")),req.getParameter("status"));s.setAttribute("successMessage","Đã cập nhật trạng thái báo cáo.");}catch(IllegalArgumentException e){s.setAttribute("errorMessage",e.getMessage());}
+        Object token=s.getAttribute("travelCsrf");if(!(token instanceof String)||!token.equals(req.getParameter("csrfToken"))){s.setAttribute("errorMessage","Form session expired.");resp.sendRedirect(req.getContextPath()+"/admin/dump-reports");return;}
+        try{dao.updatePostReport(Integer.parseInt(req.getParameter("reportId")),req.getParameter("status"));s.setAttribute("successMessage","Report status updated successfully.");}catch(IllegalArgumentException e){s.setAttribute("errorMessage",e.getMessage());}
         resp.sendRedirect(req.getContextPath()+"/admin/dump-reports");
     }
 }

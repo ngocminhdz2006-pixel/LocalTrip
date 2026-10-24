@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <c:set var="pageTitle" value="Explore Places" scope="request"/>
 <fmt:setLocale value="en_US" scope="page"/>
@@ -20,7 +21,7 @@
             <h1 class="mb-2">Explore Destinations</h1>
 
             <p class="mb-0 text-white">
-                Discover exciting places, explore the interactive map, and prepare your group journeys.
+                Discover exciting places, explore the interactive map, and add spots directly to your itinerary.
             </p>
         </div>
 
@@ -35,12 +36,16 @@
     <div class="alert d-flex justify-content-between align-items-center mb-4"
          style="background: #e8f4ec; border: 1px solid #86c19a; color: #175b43; border-radius: 12px; padding: 12px 16px;">
         <div style="font-size: 13px;">
-            <strong>Adding places to Trip #${param.tripId}</strong> — Browse destinations and tap <strong>"+ Add to Trip"</strong>.
+            <strong>Adding places to Trip #${fn:escapeXml(param.tripId)}</strong>
+            <c:if test="${not empty currentTrip}">
+                · <em><c:out value="${currentTrip.name}"/></em>
+            </c:if>
+            — Browse destinations and tap <strong>"+ Add to Itinerary"</strong>.
         </div>
-        <a href="${pageContext.request.contextPath}/trip/detail?tripId=${param.tripId}"
+        <a href="${pageContext.request.contextPath}/itinerary?tripId=${param.tripId}"
            class="btn btn-sm btn-outline-success"
            style="border-color: #175b43; color: #175b43; font-weight: 600; flex-shrink: 0;">
-            ← Return to Trip
+            ← Return to Itinerary
         </a>
     </div>
 </c:if>
@@ -57,7 +62,7 @@
         </c:if>
 
         <div class="row g-3">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label for="filterCity" class="form-label">
                     Province / City
                 </label>
@@ -76,7 +81,7 @@
                 </select>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label for="filterDistrict" class="form-label">
                     District / Area
                 </label>
@@ -95,7 +100,7 @@
                 </select>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label for="filterCategory" class="form-label">
                     Category
                 </label>
@@ -113,6 +118,19 @@
                     </c:forEach>
                 </select>
             </div>
+
+            <div class="col-md-3">
+                <label for="filterMaxPrice" class="form-label">
+                    Max Price (VND)
+                </label>
+                <input type="number"
+                       id="filterMaxPrice"
+                       name="maxPrice"
+                       class="form-control"
+                       placeholder="e.g. 200000"
+                       step="10000"
+                       value="<c:out value='${selectedMaxPrice}'/>"/>
+            </div>
         </div>
 
         <div class="d-flex flex-wrap gap-2 mt-3">
@@ -120,7 +138,7 @@
                 Apply filters
             </button>
 
-            <a href="${pageContext.request.contextPath}/places"
+            <a href="${pageContext.request.contextPath}/places<c:if test='${not empty param.tripId}'>?tripId=${param.tripId}</c:if>"
                class="btn btn-outline-secondary">
                 Reset filters
             </a>
@@ -176,31 +194,31 @@
             <h2 class="h4 mb-2">No destinations found</h2>
 
             <p class="text-muted mb-4">
-                No destinations match your active filters.
-                Try selecting a different area or category.
+                No destinations match your active filters. Try expanding your price limit or clearing the area/category filter.
             </p>
 
-            <a href="${pageContext.request.contextPath}/places"
-               class="btn btn-outline-secondary px-4">
-                View all places
+            <a href="${pageContext.request.contextPath}/places<c:if test='${not empty param.tripId}'>?tripId=${param.tripId}</c:if>"
+               class="btn btn-primary px-4" style="background-color: #175b43; border-color: #175b43;">
+                Reset filters
             </a>
         </div>
     </c:when>
 
     <c:otherwise>
-        <div class="mb-3">
-            <h2 class="h4 mb-1">Matching Destinations</h2>
-            <p class="text-muted mb-0">
-                Explore place details before adding them to your itinerary.
-            </p>
+        <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h2 class="h4 mb-1">Matching Destinations</h2>
+                <p class="text-muted mb-0">
+                    Showing <c:out value="${fn:length(places)}"/> places matching your criteria.
+                </p>
+            </div>
         </div>
 
         <div class="row g-4">
             <c:forEach var="place" items="${places}">
                 <div class="col-12 col-md-6 col-xl-4">
                     <article class="rd-card h-100 d-flex flex-column">
-                        <div class="d-flex justify-content-between
-                             align-items-start gap-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                             <span class="rd-count">
                                 <c:out value="${place.categoryName}" />
                             </span>
@@ -210,73 +228,79 @@
                             </span>
                         </div>
 
-                        <h3 class="h5 mb-3">
+                        <c:if test="${not empty groupCategoryIds and groupCategoryIds.contains(place.categoryId)}">
+                            <div class="mb-2">
+                                <span class="badge d-inline-flex align-items-center gap-1"
+                                      style="background: #e8f4ec; color: #175b43; border: 1px solid #86c19a; font-size: 11px; padding: 4px 8px; border-radius: 6px; font-weight: 600;">
+                                    🔥 Matches group vibes (<c:out value="${place.categoryName}"/>)
+                                </span>
+                            </div>
+                        </c:if>
+
+                        <h3 class="h5 mb-2">
                             <c:out value="${place.name}" />
                         </h3>
 
-                        <div class="mb-3">
+                        <div class="mb-2">
                             <div class="small text-muted mb-1">
                                 Address
                             </div>
-
-                            <div>
+                            <div class="small text-secondary">
                                 <c:out value="${place.address}" />
                             </div>
                         </div>
 
-                        <div class="mb-4">
-                            <div class="small text-muted mb-1">
-                                Opening hours
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="small text-muted mb-1">Opening hours</div>
+                                <div class="small fw-semibold">
+                                    <c:choose>
+                                        <c:when test="${not empty place.openHours}">
+                                            <c:out value="${place.openHours}" />
+                                        </c:when>
+                                        <c:otherwise>Flexible</c:otherwise>
+                                    </c:choose>
+                                </div>
                             </div>
-
-                            <div>
-                                <c:choose>
-                                    <c:when test="${not empty place.openHours}">
-                                        <c:out value="${place.openHours}" />
-                                    </c:when>
-                                    <c:otherwise>
-                                        Not specified
-                                    </c:otherwise>
-                                </c:choose>
+                            <div class="col-6">
+                                <div class="small text-muted mb-1">Suggested visit</div>
+                                <div class="small fw-semibold text-muted">
+                                    ⏱ 60–90 mins
+                                </div>
                             </div>
                         </div>
 
                         <div class="border-top pt-3 mt-auto">
-                            <div class="d-flex justify-content-between
-                                 align-items-center gap-2 mb-3">
+                            <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
                                 <span class="small text-muted">
                                     Estimated price
                                 </span>
 
-                                <strong>
+                                <strong style="color: #175b43;">
                                     <fmt:formatNumber
                                         value="${place.estimatedPrice}"
                                         type="number"
-                                        maxFractionDigits="2" />
+                                        maxFractionDigits="0" />
                                     VND
                                 </strong>
                             </div>
 
-                            <c:choose>
-                                <c:when test="${not empty param.tripId}">
-                                    <div class="d-grid gap-2">
-                                        <a href="${pageContext.request.contextPath}/itinerary/add?tripId=${param.tripId}&placeId=${place.id}"
-                                           class="btn btn-primary w-100" style="background-color: #175b43; border-color: #175b43;">
-                                            + Add to Trip
-                                        </a>
-                                        <a href="${pageContext.request.contextPath}/places/detail?placeId=${place.id}&tripId=${param.tripId}"
-                                           class="btn btn-outline-secondary btn-sm w-100">
-                                            View details →
-                                        </a>
-                                    </div>
-                                </c:when>
-                                <c:otherwise>
-                                    <a href="${pageContext.request.contextPath}/places/detail?placeId=${place.id}"
-                                       class="btn btn-outline-secondary w-100">
-                                        View details →
-                                    </a>
-                                </c:otherwise>
-                            </c:choose>
+                            <div class="d-grid gap-2">
+                                <button type="button"
+                                        class="btn btn-primary w-100 btn-quick-add"
+                                        style="background-color: #175b43; border-color: #175b43;"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#quickAddModal"
+                                        data-place-id="${place.id}"
+                                        data-place-name="<c:out value='${place.name}'/>"
+                                        data-place-cost="${place.estimatedPrice}">
+                                    + Add directly to Itinerary
+                                </button>
+                                <a href="${pageContext.request.contextPath}/places/detail?placeId=${place.id}<c:if test='${not empty param.tripId}'>&tripId=${param.tripId}</c:if>"
+                                   class="btn btn-outline-secondary btn-sm w-100">
+                                    View details →
+                                </a>
+                            </div>
                         </div>
                     </article>
                 </div>
@@ -285,19 +309,144 @@
     </c:otherwise>
 </c:choose>
 
+<!-- Quick Add to Itinerary Modal -->
+<div class="modal fade" id="quickAddModal" tabindex="-1" aria-labelledby="quickAddModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+            <div class="modal-header" style="background: #175b43; color: white; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title" id="quickAddModalLabel">Add to Itinerary</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="${pageContext.request.contextPath}/itinerary/add">
+                <input type="hidden" name="travelCsrf" value="${sessionScope.travelCsrf}"/>
+                <input type="hidden" id="modalPlaceId" name="placeId" value=""/>
+
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-muted small mb-1">DESTINATION</label>
+                        <div id="modalPlaceName" class="h6 fw-bold mb-0 text-dark"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modalTripSelect" class="form-label fw-semibold">Target Trip</label>
+                        <c:choose>
+                            <c:when test="${not empty userTrips}">
+                                <select id="modalTripSelect" name="tripId" class="form-select" required>
+                                    <c:forEach var="t" items="${userTrips}">
+                                        <option value="${t.id}"
+                                                data-start="${t.startDate}"
+                                                ${param.tripId == t.id ? 'selected' : ''}>
+                                            <c:out value="${t.name}"/> (${t.startDate} - ${t.endDate})
+                                        </option>
+                                    </c:forEach>
+                                </select>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="alert alert-warning py-2 mb-0" style="font-size: 13px;">
+                                    You don't have any trips yet. <a href="${pageContext.request.contextPath}/trips/create" class="alert-link">Create a trip</a> first.
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-12">
+                            <label for="modalVisitDate" class="form-label fw-semibold">Visit Date</label>
+                            <input type="date" id="modalVisitDate" name="visitDate" class="form-control" required/>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label for="modalStartTime" class="form-label fw-semibold">Start Time</label>
+                            <input type="time" id="modalStartTime" name="startTime" class="form-control" value="09:00" required/>
+                        </div>
+                        <div class="col-6">
+                            <label for="modalEndTime" class="form-label fw-semibold">End Time</label>
+                            <input type="time" id="modalEndTime" name="endTime" class="form-control" value="10:30" required/>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modalEstimatedCost" class="form-label fw-semibold">Estimated Cost (VND)</label>
+                        <input type="number" id="modalEstimatedCost" name="estimatedCost" step="1000" class="form-control" value="0" required/>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="modalNote" class="form-label fw-semibold">Notes (Optional)</label>
+                        <input type="text" id="modalNote" name="note" class="form-control" placeholder="e.g. Try special dishes, reserve window seats..." maxlength="255"/>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light p-3" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <c:if test="${not empty userTrips}">
+                        <button type="submit" class="btn btn-primary px-4" style="background-color: #175b43; border-color: #175b43;">
+                            + Add to Itinerary
+                        </button>
+                    </c:if>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     (function () {
         const form = document.getElementById('placeFilterForm');
         const city = document.getElementById('filterCity');
         const district = document.getElementById('filterDistrict');
 
-        if (!form || !city || !district)
-            return;
+        if (form && city && district) {
+            city.addEventListener('change', function () {
+                district.value = '';
+                form.submit();
+            });
+        }
 
-        city.addEventListener('change', function () {
-            district.value = '';
-            form.submit();
-        });
+        // Quick Add Modal Wiring
+        const quickAddModal = document.getElementById('quickAddModal');
+        if (quickAddModal) {
+            quickAddModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                if (!button) return;
+
+                const placeId = button.getAttribute('data-place-id');
+                const placeName = button.getAttribute('data-place-name');
+                const placeCost = button.getAttribute('data-place-cost') || '0';
+
+                document.getElementById('modalPlaceId').value = placeId;
+                document.getElementById('modalPlaceName').textContent = placeName;
+                document.getElementById('modalEstimatedCost').value = Math.round(Number(placeCost));
+
+                // Auto set date from selected trip if available
+                const tripSelect = document.getElementById('modalTripSelect');
+                const dateInput = document.getElementById('modalVisitDate');
+                if (tripSelect && tripSelect.selectedOptions.length > 0 && dateInput) {
+                    const start = tripSelect.selectedOptions[0].getAttribute('data-start');
+                    if (start && !dateInput.value) {
+                        dateInput.value = start;
+                    }
+                }
+                if (dateInput && !dateInput.value) {
+                    const today = new Date().toISOString().split('T')[0];
+                    dateInput.value = today;
+                }
+            });
+
+            const tripSelect = document.getElementById('modalTripSelect');
+            if (tripSelect) {
+                tripSelect.addEventListener('change', function () {
+                    const dateInput = document.getElementById('modalVisitDate');
+                    if (this.selectedOptions.length > 0 && dateInput) {
+                        const start = this.selectedOptions[0].getAttribute('data-start');
+                        if (start) {
+                            dateInput.value = start;
+                        }
+                    }
+                });
+            }
+        }
     })();
 </script>
 

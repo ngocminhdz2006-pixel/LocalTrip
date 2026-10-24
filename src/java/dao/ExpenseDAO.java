@@ -70,7 +70,7 @@ public class ExpenseDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể tải danh sách chi phí.",
+                    "Failed to load expense list.",
                     e
             );
         }
@@ -86,7 +86,7 @@ public class ExpenseDAO {
                 || participantIds.isEmpty()) {
 
             throw new IllegalArgumentException(
-                    "Phải chọn ít nhất một người tham gia."
+                    "Must select at least one participant."
             );
         }
 
@@ -207,7 +207,7 @@ public class ExpenseDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể lưu khoản chi.",
+                    "Failed to save expense.",
                     e
             );
         }
@@ -232,7 +232,7 @@ public class ExpenseDAO {
 
                     if (!resultSet.next()) {
                         throw new IllegalArgumentException(
-                                "Có người tham gia không thuộc Trip."
+                                "Some participants are not members of this trip."
                         );
                     }
                 }
@@ -250,7 +250,7 @@ public class ExpenseDAO {
 
         if (participantIds == null || participantIds.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Phải chọn ít nhất một người chia chi phí."
+                    "Must select at least one person to split expense."
             );
         }
 
@@ -260,7 +260,7 @@ public class ExpenseDAO {
 
         if (amount.signum() <= 0) {
             throw new IllegalArgumentException(
-                    "Số tiền phải lớn hơn 0."
+                    "Amount must be greater than 0."
             );
         }
 
@@ -327,7 +327,7 @@ public class ExpenseDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể tải khoản chi cần sửa.",
+                    "Failed to load expense to edit.",
                     e
             );
         }
@@ -365,7 +365,7 @@ public class ExpenseDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể tải danh sách người chia khoản chi.",
+                    "Failed to load expense splits.",
                     e
             );
         }
@@ -380,7 +380,7 @@ public class ExpenseDAO {
     ) {
         if (participantIds == null || participantIds.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Phải chọn ít nhất một người tham gia."
+                    "Must select at least one participant."
             );
         }
 
@@ -478,7 +478,7 @@ public class ExpenseDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể cập nhật khoản chi.",
+                    "Failed to update expense.",
                     e
             );
         }
@@ -569,7 +569,7 @@ public class ExpenseDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể xóa khoản chi.",
+                    "Failed to delete expense.",
                     e
             );
         }

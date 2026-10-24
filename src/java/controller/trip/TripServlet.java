@@ -24,8 +24,8 @@ import model.ItineraryItem;
     "/trip/edit",
     "/trip/detail",
     "/trip/member/add",
-    "/trip/member/remove"
-
+    "/trip/member/remove",
+    "/trip/note"
 })
 public class TripServlet extends HttpServlet {
 
@@ -104,6 +104,10 @@ public class TripServlet extends HttpServlet {
         }
         if ("/trip/member/remove".equals(path)) {
             removeMember(request, response, user);
+            return;
+        }
+        if ("/trip/note".equals(path)) {
+            handleTripNote(request, response, user);
             return;
         }
         response.sendError(
@@ -271,7 +275,16 @@ public class TripServlet extends HttpServlet {
         }
         java.time.LocalDate viewToday = java.time.LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
         boolean viewInDates = !viewToday.isBefore(trip.getStartDate().toLocalDate()) && !viewToday.isAfter(trip.getEndDate().toLocalDate());
-        int itineraryCount = new dao.ItineraryDAO().findByTrip(tripId).size();
+        java.util.List<ItineraryItem> itineraryItems = new dao.ItineraryDAO().findByTrip(tripId);
+        int itineraryCount = itineraryItems.size();
+        int incompleteActivityCount = 0;
+        for (ItineraryItem item : itineraryItems) {
+            String s = item.getActivityStatus();
+            if ("UPCOMING".equals(s) || "IN_PROGRESS".equals(s)) {
+                incompleteActivityCount++;
+            }
+        }
+        request.setAttribute("incompleteActivityCount", incompleteActivityCount);
         boolean viewHasItinerary = itineraryCount > 0;
         boolean hasUserPreference = !new dao.PreferenceDAO().findSelectedCategoryIds(tripId, user.getUserId()).isEmpty();
 
@@ -303,8 +316,64 @@ public class TripServlet extends HttpServlet {
         request.setAttribute("viewCanStart", viewInDates && viewHasItinerary);
         request.setAttribute("viewStartReason", !viewHasItinerary ? "Please add or confirm itinerary activities before starting." : !viewInDates ? "Trips can only be started during the scheduled travel dates." : "");
 
+        dao.TripInviteDAO inviteDAO = new dao.TripInviteDAO();
+        model.TripInvite activeInvite = inviteDAO.getActiveInvite(tripId);
+        if (activeInvite == null && "OWNER".equalsIgnoreCase(trip.getRole())) {
+            activeInvite = inviteDAO.createOrRenewInvite(tripId, user.getUserId());
+        }
+        request.setAttribute("tripInvite", activeInvite);
+
+        java.util.List<model.TripNote> tripNotes = new dao.TripNoteDAO().findByTripId(tripId);
+        request.setAttribute("tripNotes", tripNotes);
+
         request.getRequestDispatcher(DETAIL_VIEW)
                 .forward(request, response);
+    }
+
+    private void handleTripNote(HttpServletRequest request,
+            HttpServletResponse response,
+            User user)
+            throws IOException {
+        HttpSession session = request.getSession(false);
+        String tripIdStr = request.getParameter("tripId");
+        String action = request.getParameter("noteAction");
+
+        if (tripIdStr == null || tripIdStr.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/trips");
+            return;
+        }
+
+        try {
+            int tripId = Integer.parseInt(tripIdStr.trim());
+            Trip trip = tripDAO.findByIdForUser(tripId, user.getUserId());
+            if (trip == null) {
+                if (session != null) {
+                    session.setAttribute("errorMessage", "Trip not found or access denied.");
+                }
+                response.sendRedirect(request.getContextPath() + "/trips");
+                return;
+            }
+
+            if ("delete".equals(action)) {
+                int noteId = Integer.parseInt(request.getParameter("noteId"));
+                boolean isOwner = "OWNER".equalsIgnoreCase(trip.getRole());
+                new dao.TripNoteDAO().deleteNote(noteId, user.getUserId(), isOwner);
+                if (session != null) {
+                    session.setAttribute("successMessage", "Note deleted successfully.");
+                }
+            } else {
+                String noteText = request.getParameter("noteText");
+                if (noteText != null && !noteText.trim().isEmpty()) {
+                    new dao.TripNoteDAO().addNote(tripId, user.getUserId(), noteText.trim());
+                    if (session != null) {
+                        session.setAttribute("successMessage", "Discussion note added.");
+                    }
+                }
+            }
+            response.sendRedirect(request.getContextPath() + "/trip/detail?tripId=" + tripId);
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/trips");
+        }
     }
 
     private void createTrip(HttpServletRequest request,
@@ -339,11 +408,11 @@ public class TripServlet extends HttpServlet {
             return;
         }
 
-        if (name.length() > 150) {
+        if (!utils.ValidationUtil.isValidTripName(name)) {
             forwardCreateError(
                     request,
                     response,
-                    "Trip name must not exceed 150 characters."
+                    "Trip name must be between 1 and 150 characters and cannot contain '<' or '>'."
             );
             return;
         }
@@ -383,7 +452,7 @@ public class TripServlet extends HttpServlet {
             forwardCreateError(
                     request,
                     response,
-                    "Ngày bắt đầu không được trước ngày hôm nay."
+                    "Start date cannot be before today."
             );
             return;
         }
@@ -493,7 +562,7 @@ public class TripServlet extends HttpServlet {
                         "Cannot change travel dates. "
                         + "Existing activities are scheduled from "
                         + firstActivityDate.toLocalDate().format(dateFormat)
-                        + " đến "
+                        + " to "
                         + lastActivityDate.toLocalDate().format(dateFormat)
                         + ". Start and end dates must cover "
                         + "all scheduled activities."
@@ -600,15 +669,14 @@ public class TripServlet extends HttpServlet {
 
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể tìm người dùng.",
-                    e
+                    "Unable to find user.", e
             );
         }
 
         if (member == null || !member.isActive()) {
             request.getSession().setAttribute(
                     "errorMessage",
-                    "Không tìm thấy user đang hoạt động với email này."
+                    "No active user found with this email."
             );
 
             redirectToDetail(request, response, tripId);
@@ -618,7 +686,7 @@ public class TripServlet extends HttpServlet {
         if (member.getUserId() == currentUser.getUserId()) {
             request.getSession().setAttribute(
                     "errorMessage",
-                    "OWNER đã nằm trong chuyến đi."
+                    "Trip lead is already in this trip."
             );
 
             redirectToDetail(request, response, tripId);
@@ -643,7 +711,7 @@ public class TripServlet extends HttpServlet {
         if (!added) {
             request.getSession().setAttribute(
                     "errorMessage",
-                    "User này đã là thành viên của chuyến đi."
+                    "This user is already a member of the trip."
             );
 
             redirectToDetail(request, response, tripId);

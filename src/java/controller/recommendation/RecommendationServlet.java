@@ -43,7 +43,7 @@ public class RecommendationServlet extends HttpServlet {
         if (!"USER".equalsIgnoreCase(currentUser.getRole())) {
             response.sendError(
                     HttpServletResponse.SC_FORBIDDEN,
-                    "Bạn không có quyền sử dụng chức năng này."
+                    "You do not have permission to access this feature."
             );
             return;
         }
@@ -61,7 +61,7 @@ public class RecommendationServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             response.sendError(
                     HttpServletResponse.SC_BAD_REQUEST,
-                    "Trip ID không hợp lệ."
+                    "Invalid Trip ID."
             );
             return;
         }
@@ -75,7 +75,7 @@ public class RecommendationServlet extends HttpServlet {
             if (trip == null) {
                 response.sendError(
                         HttpServletResponse.SC_NOT_FOUND,
-                        "Không tìm thấy chuyến đi hoặc bạn không có quyền truy cập."
+                        "Trip not found or access denied."
                 );
                 return;
             }
@@ -95,7 +95,7 @@ public class RecommendationServlet extends HttpServlet {
 
         } catch (Exception e) {
             throw new ServletException(
-                    "Không thể tải danh sách địa điểm gợi ý.",
+                    "Unable to load place recommendations.",
                     e
             );
         }

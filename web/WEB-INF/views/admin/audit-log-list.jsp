@@ -12,20 +12,20 @@
     Integer pageNumber = (Integer) request.getAttribute("page");
     Integer totalPages = (Integer) request.getAttribute("totalPages");
     String errorMessage = (String) request.getAttribute("errorMessage");
-    request.setAttribute("pageTitle", "Nhật ký quản trị");
+    request.setAttribute("pageTitle", "Admin Audit Logs");
 %>
 
 <%@ include file="/WEB-INF/views/common/header.jsp" %>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="fw-bold mb-1">Nhật ký quản trị</h2>
+        <h2 class="fw-bold mb-1">Admin Audit Logs</h2>
         <p class="text-muted mb-0">
-            Theo dõi các thao tác quan trọng mà ADMIN thực hiện trong hệ thống.
+            Track critical actions executed by administrators across the platform.
         </p>
     </div>
     <a href="<%= request.getContextPath() %>/admin" class="btn btn-outline-secondary">
-        Admin Tổng quan
+        ← Admin Dashboard
     </a>
 </div>
 
@@ -37,15 +37,15 @@
     <div class="card-body">
         <form method="get" action="<%= request.getContextPath() %>/admin/audit-logs" class="row g-3 align-items-end">
             <div class="col-md-6">
-                <label class="form-label">Tìm kiếm</label>
+                <label class="form-label">Search</label>
                 <input type="text" name="keyword" class="form-control"
                        value="<%= HtmlUtil.escape(keyword) %>"
-                       placeholder="Admin, email, user, nội dung thao tác...">
+                       placeholder="Admin, email, user, action details...">
             </div>
             <div class="col-md-4">
-                <label class="form-label">Loại thao tác</label>
+                <label class="form-label">Action Type</label>
                 <select name="action" class="form-select">
-                    <option value="">Tất cả thao tác</option>
+                    <option value="">All Actions</option>
                     <% if (actions != null) { for (String action : actions) { %>
                         <option value="<%= HtmlUtil.escape(action) %>"
                             <%= action.equals(selectedAction) ? "selected" : "" %>>
@@ -55,8 +55,8 @@
                 </select>
             </div>
             <div class="col-md-2 d-flex gap-2">
-                <button class="btn btn-primary flex-grow-1" type="submit">Lọc</button>
-                <a class="btn btn-outline-secondary" href="<%= request.getContextPath() %>/admin/audit-logs">Xóa</a>
+                <button class="btn btn-primary flex-grow-1" type="submit">Filter</button>
+                <a class="btn btn-outline-secondary" href="<%= request.getContextPath() %>/admin/audit-logs">Clear</a>
             </div>
         </form>
     </div>
@@ -66,24 +66,24 @@
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-                <strong>Lịch sử thao tác</strong>
-                <span class="text-muted ms-2"><%= resultCount == null ? 0 : resultCount %> bản ghi</span>
+                <strong>Audit Log Records</strong>
+                <span class="text-muted ms-2"><%= resultCount == null ? 0 : resultCount %> records</span>
             </div>
-            <span class="small text-muted">Trang <%= pageNumber == null ? 1 : pageNumber %> / <%= totalPages == null ? 1 : totalPages %></span>
+            <span class="small text-muted">Page <%= pageNumber == null ? 1 : pageNumber %> / <%= totalPages == null ? 1 : totalPages %></span>
         </div>
 
         <% if (logs == null || logs.isEmpty()) { %>
-            <div class="alert alert-info mb-0">Không tìm thấy nhật ký phù hợp.</div>
+            <div class="alert alert-info mb-0">No matching audit logs found.</div>
         <% } else { %>
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th>Thời gian</th>
-                            <th>Admin thực hiện</th>
-                            <th>Hành động</th>
-                            <th>Đối tượng</th>
-                            <th>Chi tiết</th>
+                            <th>Timestamp</th>
+                            <th>Admin Actor</th>
+                            <th>Action</th>
+                            <th>Target</th>
+                            <th>Details</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -102,7 +102,7 @@
                                     <strong><%= HtmlUtil.escape(log.getTargetName()) %></strong>
                                     <div class="small text-muted"><%= HtmlUtil.escape(log.getTargetEmail()) %></div>
                                 <% } else { %>
-                                    <span class="text-muted">Theo nội dung chi tiết</span>
+                                    <span class="text-muted">See details</span>
                                 <% } %>
                             </td>
                             <td><%= HtmlUtil.escape(log.getDetail()) %></td>
@@ -113,7 +113,7 @@
             </div>
 
             <% if (totalPages != null && totalPages > 1) { %>
-            <nav class="mt-3" aria-label="Phân trang nhật ký">
+            <nav class="mt-3" aria-label="Audit log pagination">
                 <ul class="pagination justify-content-center mb-0">
                     <% for (int p = 1; p <= totalPages; p++) { %>
                         <li class="page-item <%= p == pageNumber ? "active" : "" %>">
@@ -132,17 +132,17 @@
 
 <%!
     private String actionLabel(String action) {
-        if (action == null) return "Không xác định";
-        if ("CREATE_USER".equals(action)) return "Tạo User";
-        if ("UPDATE_USER".equals(action)) return "Cập nhật User";
-        if ("RESET_PASSWORD".equals(action)) return "Reset mật khẩu";
-        if ("CREATE_PLACE".equals(action)) return "Tạo địa điểm";
-        if ("UPDATE_PLACE".equals(action)) return "Cập nhật địa điểm";
-        if ("ACTIVATE_PLACE".equals(action)) return "Kích hoạt địa điểm";
-        if ("DEACTIVATE_PLACE".equals(action)) return "Ẩn địa điểm";
-        if ("CREATE_CATEGORY".equals(action)) return "Tạo danh mục";
-        if ("UPDATE_CATEGORY".equals(action)) return "Cập nhật danh mục";
-        if ("DELETE_CATEGORY".equals(action)) return "Xóa danh mục";
+        if (action == null) return "Unknown";
+        if ("CREATE_USER".equals(action)) return "Create User";
+        if ("UPDATE_USER".equals(action)) return "Update User";
+        if ("RESET_PASSWORD".equals(action)) return "Reset Password";
+        if ("CREATE_PLACE".equals(action)) return "Create Place";
+        if ("UPDATE_PLACE".equals(action)) return "Update Place";
+        if ("ACTIVATE_PLACE".equals(action)) return "Activate Place";
+        if ("DEACTIVATE_PLACE".equals(action)) return "Deactivate Place";
+        if ("CREATE_CATEGORY".equals(action)) return "Create Category";
+        if ("UPDATE_CATEGORY".equals(action)) return "Update Category";
+        if ("DELETE_CATEGORY".equals(action)) return "Delete Category";
         return action;
     }
 

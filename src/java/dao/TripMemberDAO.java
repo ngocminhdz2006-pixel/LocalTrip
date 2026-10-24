@@ -60,7 +60,7 @@ public class TripMemberDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể tải danh sách thành viên.",
+                    "Failed to load member list.",
                     e
             );
         }
@@ -86,7 +86,7 @@ public class TripMemberDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể kiểm tra thành viên.",
+                    "Failed to verify member.",
                     e
             );
         }
@@ -123,7 +123,7 @@ public class TripMemberDAO {
             }
 
             throw new RuntimeException(
-                    "Không thể thêm thành viên.",
+                    "Failed to add member.",
                     e
             );
         }
@@ -167,7 +167,7 @@ public class TripMemberDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(
-                    "Không thể xóa thành viên.",
+                    "Failed to remove member.",
                     e
             );
         }

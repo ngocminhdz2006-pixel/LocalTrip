@@ -44,7 +44,7 @@ public class CategoryDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể tải danh sách danh mục.", e);
+            throw new RuntimeException("Failed to load category list.", e);
         }
 
         return categories;
@@ -63,7 +63,7 @@ public class CategoryDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể đọc danh mục.", e);
+            throw new RuntimeException("Failed to read category.", e);
         }
         return null;
     }
@@ -83,10 +83,10 @@ public class CategoryDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể thêm danh mục. Mã hoặc tên danh mục có thể đã tồn tại.", e);
+            throw new RuntimeException("Failed to add category. Code or name may already exist.", e);
         }
 
-        throw new RuntimeException("Không lấy được mã danh mục vừa tạo.");
+        throw new RuntimeException("Failed to retrieve new category ID.");
     }
 
     public boolean update(Category category) {
@@ -100,7 +100,7 @@ public class CategoryDAO {
             statement.setInt(3, category.getCategoryId());
             return statement.executeUpdate() == 1;
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể cập nhật danh mục. Mã hoặc tên danh mục có thể đã tồn tại.", e);
+            throw new RuntimeException("Failed to update category. Code or name may already exist.", e);
         }
     }
 
@@ -112,7 +112,7 @@ public class CategoryDAO {
             statement.setInt(1, categoryId);
             return statement.executeUpdate() == 1;
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể xóa danh mục. Danh mục có thể đang được sử dụng bởi địa điểm hoặc sở thích thành viên.", e);
+            throw new RuntimeException("Cannot delete category. Category may be in use by places or user preferences.", e);
         }
     }
 

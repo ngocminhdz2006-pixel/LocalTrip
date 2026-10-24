@@ -30,10 +30,10 @@ public class ItineraryItem {
     public String getActivityStatus() { return activityStatus; }
     public void setActivityStatus(String value) { activityStatus=value; }
     public String getStatusLabel() {
-        if("IN_PROGRESS".equals(activityStatus)) return "Đang diễn ra";
-        if("COMPLETED".equals(activityStatus)) return "Đã hoàn thành";
-        if("CANCELLED".equals(activityStatus)) return "Đã hủy";
-        return "Sắp tới";
+        if ("IN_PROGRESS".equals(activityStatus)) return "Ongoing";
+        if ("COMPLETED".equals(activityStatus)) return "Done";
+        if ("CANCELLED".equals(activityStatus)) return "Skipped";
+        return "Upcoming";
     }
 
     public ItineraryItem() {
@@ -141,6 +141,72 @@ public class ItineraryItem {
 
     public void setLongitude(BigDecimal longitude) {
         this.longitude = longitude;
+    }
+
+    private boolean locked = false;
+    private String sourceType = "MANUAL"; // MANUAL, COMBO, AI
+
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
+
+    public String getSourceType() {
+        return sourceType != null ? sourceType : "MANUAL";
+    }
+
+    public void setSourceType(String sourceType) {
+        this.sourceType = sourceType;
+    }
+
+    public long getDurationMinutes() {
+        if (startTime == null || endTime == null) {
+            return 0;
+        }
+        return Math.max(0, (endTime.getTime() - startTime.getTime()) / 60000L);
+    }
+
+    public String getCleanedNote() {
+        if (note == null || note.trim().isEmpty()) {
+            return "";
+        }
+        String n = note.trim();
+        if (n.contains("structured milestone") || n.contains("match score:")) {
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile(
+                "^(.*?)(?:\\s*-\\s*Slot\\s*\\d{2}:\\d{2}\\s*-\\s*\\d{2}:\\d{2})?\\s*-\\s*structured milestone;?\\s*match score:\\s*(\\d+)\\.?$",
+                java.util.regex.Pattern.CASE_INSENSITIVE).matcher(n);
+            if (m.find()) {
+                String cat = m.group(1).trim();
+                if (cat.contains("Tham quan")) cat = "Sightseeing";
+                if (cat.contains("Gi?i tr") || cat.contains("Giải trí")) cat = "Entertainment";
+                if (cat.contains("Mua s") || cat.contains("Mua sắm")) cat = "Shopping";
+                if (cat.startsWith("Activity (") && cat.endsWith(")")) cat = cat.substring(10, cat.length() - 1);
+                String score = m.group(2).trim();
+                String icon = cat.toLowerCase().contains("cafe") || cat.toLowerCase().contains("coffee") ? "☕ " :
+                             (cat.toLowerCase().contains("dining") || cat.toLowerCase().contains("meal") || cat.toLowerCase().contains("food") ? "🍽️ " : "🎯 ");
+                return icon + cat + " • " + score + "% Group Match";
+            }
+        }
+        if (n.contains("Matches group vibe")) {
+            java.util.regex.Matcher m2 = java.util.regex.Pattern.compile(
+                "Matches group vibe \\((.*?)\\).*?Score:\\s*(\\d+)%",
+                java.util.regex.Pattern.CASE_INSENSITIVE).matcher(n);
+            if (m2.find()) {
+                String cat = m2.group(1).trim();
+                String score = m2.group(2).trim();
+                String icon = cat.toLowerCase().contains("cafe") || cat.toLowerCase().contains("coffee") ? "☕ " :
+                             (cat.toLowerCase().contains("dining") || cat.toLowerCase().contains("meal") || cat.toLowerCase().contains("food") ? "🍽️ " : "🎯 ");
+                return icon + cat + " • " + score + "% Group Match";
+            }
+        }
+        return n;
+    }
+
+    public String getDisplayNote() {
+        return getCleanedNote();
     }
 
     public Timestamp getCreatedAt() {

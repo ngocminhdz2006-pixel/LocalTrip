@@ -59,7 +59,7 @@ public class AdminAuditLogDAO {
                 return rs.next() ? rs.getInt(1) : 0;
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể đếm audit log", e);
+            throw new RuntimeException("Failed to count audit logs", e);
         }
     }
 
@@ -96,7 +96,7 @@ public class AdminAuditLogDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể tải audit log", e);
+            throw new RuntimeException("Failed to load audit logs", e);
         }
         return logs;
     }

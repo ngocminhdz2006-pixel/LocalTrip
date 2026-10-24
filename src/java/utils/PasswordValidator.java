@@ -8,31 +8,31 @@ public final class PasswordValidator {
     public static String validate(String password) {
 
         if (password == null || password.isEmpty()) {
-            return "Mật khẩu không được để trống.";
+            return "Password cannot be empty.";
         }
 
         if (password.length() < 8) {
-            return "Mật khẩu phải có ít nhất 8 ký tự.";
+            return "Password must be at least 8 characters long.";
         }
 
         if (password.length() > 64) {
-            return "Mật khẩu không được vượt quá 64 ký tự.";
+            return "Password must not exceed 64 characters.";
         }
 
         if (!password.matches(".*[A-Z].*")) {
-            return "Mật khẩu phải có ít nhất một chữ hoa.";
+            return "Password must contain at least one uppercase letter.";
         }
 
         if (!password.matches(".*[a-z].*")) {
-            return "Mật khẩu phải có ít nhất một chữ thường.";
+            return "Password must contain at least one lowercase letter.";
         }
 
         if (!password.matches(".*[0-9].*")) {
-            return "Mật khẩu phải có ít nhất một chữ số.";
+            return "Password must contain at least one digit.";
         }
 
         if (!password.matches(".*[^A-Za-z0-9].*")) {
-            return "Mật khẩu phải có ít nhất một ký tự đặc biệt.";
+            return "Password must contain at least one special character.";
         }
 
         return null;

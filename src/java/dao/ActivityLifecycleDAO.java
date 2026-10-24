@@ -116,21 +116,58 @@ public class ActivityLifecycleDAO {
                     rejectConflict(c,item,0,true);
                     previous=item;
                 }
-                // Preserve completed, running and cancelled history, even on today's date.
-                try(PreparedStatement ps=c.prepareStatement("DELETE FROM dbo.ItineraryItems WHERE trip_id=? AND visit_date>=? AND activity_status='UPCOMING'")) {
+                // Preserve completed, running and cancelled history, and keep pinned/locked items.
+                try(PreparedStatement ps=c.prepareStatement("DELETE FROM dbo.ItineraryItems WHERE trip_id=? AND visit_date>=? AND activity_status='UPCOMING' AND is_locked=0")) {
                     ps.setInt(1,tripId); ps.setDate(2,fromDate); ps.executeUpdate();
                 }
-                String sql="INSERT dbo.ItineraryItems(trip_id,place_id,visit_date,start_time,end_time,note,estimated_cost,activity_type,activity_title,activity_status) VALUES(?,?,?,?,?,?,?,?,?,'UPCOMING')";
+                String sql="INSERT dbo.ItineraryItems(trip_id,place_id,visit_date,start_time,end_time,note,estimated_cost,activity_type,activity_title,activity_status,is_locked,source_type) VALUES(?,?,?,?,?,?,?,?,?,'UPCOMING',?,?)";
                 try(PreparedStatement ps=c.prepareStatement(sql)) {
                     for(ItineraryItem item:ordered) {
                         ps.setInt(1,tripId); bindPlace(ps,2,item.getPlaceId()); ps.setDate(3,item.getVisitDate()); ps.setString(4,item.getStartTime().toString()); ps.setString(5,item.getEndTime().toString());
-                        ps.setString(6,item.getNote()); ps.setBigDecimal(7,item.getEstimatedCost()); ps.setString(8,item.getActivityType() != null ? item.getActivityType() : "VISIT"); ps.setString(9,item.getActivityTitle()); ps.addBatch();
+                        ps.setString(6,item.getNote()); ps.setBigDecimal(7,item.getEstimatedCost()); ps.setString(8,item.getActivityType() != null ? item.getActivityType() : "VISIT"); ps.setString(9,item.getActivityTitle());
+                        ps.setBoolean(10, item.isLocked()); ps.setString(11, item.getSourceType() != null ? item.getSourceType() : "MANUAL");
+                        ps.addBatch();
                     }
                     ps.executeBatch();
                 }
                 c.commit();
             } catch(SQLException|RuntimeException e) { rollback(c,e); throw e; }
         } catch(SQLException e) { throw new RuntimeException("Unable to apply schedule. Previous itinerary preserved.",e); }
+    }
+
+    public void appendActivities(int tripId, int ownerId, List<ItineraryItem> items) {
+        if (items == null || items.isEmpty()) return;
+        try (Connection c = DBContext.getConnection()) {
+            c.setAutoCommit(false);
+            c.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            try {
+                TripInfo trip = lockTrip(c, tripId, ownerId);
+                String sql = "INSERT dbo.ItineraryItems(trip_id,place_id,visit_date,start_time,end_time,note,estimated_cost,activity_type,activity_title,activity_status,is_locked,source_type) VALUES(?,?,?,?,?,?,?,?,?,'UPCOMING',?,?)";
+                try (PreparedStatement ps = c.prepareStatement(sql)) {
+                    for (ItineraryItem item : items) {
+                        ps.setInt(1, tripId);
+                        bindPlace(ps, 2, item.getPlaceId());
+                        ps.setDate(3, item.getVisitDate());
+                        ps.setString(4, item.getStartTime().toString());
+                        ps.setString(5, item.getEndTime().toString());
+                        ps.setString(6, item.getNote());
+                        ps.setBigDecimal(7, item.getEstimatedCost());
+                        ps.setString(8, item.getActivityType() != null ? item.getActivityType() : "VISIT");
+                        ps.setString(9, item.getActivityTitle());
+                        ps.setBoolean(10, item.isLocked());
+                        ps.setString(11, item.getSourceType() != null ? item.getSourceType() : "COMBO");
+                        ps.addBatch();
+                    }
+                    ps.executeBatch();
+                }
+                c.commit();
+            } catch (SQLException | RuntimeException e) {
+                rollback(c, e);
+                throw e;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Unable to append activities to itinerary.", e);
+        }
     }
 
     private TripInfo lockTrip(Connection c,int tripId,int ownerId) throws SQLException {

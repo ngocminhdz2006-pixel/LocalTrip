@@ -33,14 +33,16 @@
         <% if (hasNfcContext) { %>
         <div style="background: linear-gradient(180deg, #e5f0e8 0%, #f3f6f2 100%); border-radius: 16px; padding: 12px; margin-top: 14px; border: 1px solid rgba(23, 91, 67, 0.12); text-align: center;">
             <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
-                     style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 2px solid #fff;" alt="Traveler 1">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: #175b43; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 2px solid #fff;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
                 <div style="display: flex; flex-direction: column; align-items: center;">
                     <span style="font-size: 9px; font-weight: 700; background: #d1fae5; color: #175b43; padding: 1px 7px; border-radius: 20px; border: 1px solid #a7f3d0;">NFC Tap))</span>
                     <span style="width: 36px; border-top: 2px dashed rgba(23, 91, 67, 0.4); margin: 3px 0;"></span>
                 </div>
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
-                     style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 2px solid #fff;" alt="Traveler 2">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: #0284c7; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 2px solid #fff;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
             </div>
             <p style="font-size: 11px; color: #2e533e; font-weight: 600; margin: 6px 0 0;">Instant trip syncing with friends</p>
         </div>
@@ -50,16 +52,16 @@
     <h2 class="lt-signin-title">Welcome back</h2>
     <p class="lt-signin-sub">Plan your next trip with friends.</p>
 
-    <%-- 2. Fast Social Login Button for PWA --%>
-    <button type="button" class="lt-social-login-btn" onclick="alert('Google Social Sign-in ready for Firebase/OAuth integration!')">
+    <%-- 2. Fast Social Login Option for PWA (Coming Soon state, clean and accessible) --%>
+    <div class="lt-social-login-btn" style="opacity: 0.75; cursor: default; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 12px; font-weight: 600; font-size: 13px; color: #64748b;" title="Google sign-in will be enabled in upcoming release">
         <svg width="18" height="18" viewBox="0 0 24 24" style="width:18px;height:18px;flex-shrink:0;">
             <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.8C6.2 7.2 8.9 5 12 5z"/>
             <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.6l3.7 2.9c2.2-2 3.7-5 3.7-8.7z"/>
             <path fill="#FBBC05" d="M5.3 14.8c-.2-.8-.4-1.6-.4-2.5s.2-1.7.4-2.5L1.6 7C.6 9 0 11.2 0 13.5s.6 4.5 1.6 6.5l3.7-2.9z"/>
             <path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.1-6.7-5L1.6 17c1.9 3.9 5.8 7 10.4 7z"/>
         </svg>
-        <span>Sign in with Google</span>
-    </button>
+        <span>Sign in with Google (Coming soon)</span>
+    </div>
 
     <div class="lt-divider-or">
         <div class="lt-divider-line"></div>

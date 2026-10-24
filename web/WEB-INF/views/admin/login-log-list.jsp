@@ -5,7 +5,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Lịch sử đăng nhập</title>
+    <title>Login History</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 30px; background: #f5f6fa; color: #212529; }
         h1 { margin-bottom: 6px; }
@@ -33,8 +33,8 @@
 </head>
 <body>
 
-<h1>Lịch sử đăng nhập</h1>
-<div class="subtitle">Theo dõi các lần đăng nhập thành công và thất bại của tài khoản trong hệ thống.</div>
+<h1>Login History</h1>
+<div class="subtitle">Monitor successful and failed user authentication attempts.</div>
 
 <c:if test="${not empty filterError}">
     <div class="error"><c:out value="${filterError}"/></div>
@@ -42,32 +42,32 @@
 
 <form method="get" action="${pageContext.request.contextPath}/admin/login-logs" class="filter-box">
     <label for="email">Email:</label>
-    <input type="text" id="email" name="email" value="<c:out value='${emailKeyword}'/>" placeholder="Nhập email">
+    <input type="text" id="email" name="email" value="<c:out value='${emailKeyword}'/>" placeholder="Enter email...">
 
-    <label for="result">Kết quả:</label>
+    <label for="result">Result:</label>
     <select id="result" name="result">
-        <option value="" ${empty selectedResult ? 'selected' : ''}>Tất cả</option>
-        <option value="success" ${selectedResult == 'success' ? 'selected' : ''}>Thành công</option>
-        <option value="failed" ${selectedResult == 'failed' ? 'selected' : ''}>Thất bại</option>
+        <option value="" ${empty selectedResult ? 'selected' : ''}>All</option>
+        <option value="success" ${selectedResult == 'success' ? 'selected' : ''}>Success</option>
+        <option value="failed" ${selectedResult == 'failed' ? 'selected' : ''}>Failed</option>
     </select>
 
-    <label for="fromDate">Từ:</label>
+    <label for="fromDate">From:</label>
     <input type="date" id="fromDate" name="fromDate" value="<c:out value='${fromDate}'/>" >
 
-    <label for="toDate">Đến:</label>
+    <label for="toDate">To:</label>
     <input type="date" id="toDate" name="toDate" value="<c:out value='${toDate}'/>" >
 
-    <button type="submit">Lọc</button>
-    <a class="clear" href="${pageContext.request.contextPath}/admin/login-logs">Xóa bộ lọc</a>
+    <button type="submit">Filter</button>
+    <a class="clear" href="${pageContext.request.contextPath}/admin/login-logs">Clear</a>
 </form>
 
 <div class="summary">
-    Tổng số bản ghi: <strong><c:out value="${totalRows}"/></strong>
+    Total Records: <strong><c:out value="${totalRows}"/></strong>
 </div>
 
 <c:choose>
     <c:when test="${empty loginLogs}">
-        <p>Không có lịch sử đăng nhập phù hợp.</p>
+        <p>No matching login logs found.</p>
     </c:when>
     <c:otherwise>
         <table>
@@ -76,11 +76,11 @@
                 <th>ID</th>
                 <th>Email</th>
                 <th>User ID</th>
-                <th>Kết quả</th>
-                <th>Lý do</th>
+                <th>Result</th>
+                <th>Reason</th>
                 <th>IP</th>
-                <th>Thiết bị / trình duyệt</th>
-                <th>Thời gian</th>
+                <th>User Agent</th>
+                <th>Timestamp</th>
             </tr>
             </thead>
             <tbody>
@@ -96,18 +96,18 @@
                     </td>
                     <td>
                         <c:choose>
-                            <c:when test="${log.success}"><span class="success">Thành công</span></c:when>
-                            <c:otherwise><span class="failed">Thất bại</span></c:otherwise>
+                            <c:when test="${log.success}"><span class="success">Success</span></c:when>
+                            <c:otherwise><span class="failed">Failed</span></c:otherwise>
                         </c:choose>
                     </td>
                     <td>
                         <c:choose>
                             <c:when test="${empty log.failureReason}">—</c:when>
-                            <c:when test="${log.failureReason == 'INVALID_CREDENTIALS'}">Sai email hoặc mật khẩu</c:when>
-                            <c:when test="${log.failureReason == 'ACCOUNT_DISABLED'}">Tài khoản đã bị khóa</c:when>
-                            <c:when test="${log.failureReason == 'MISSING_CREDENTIALS'}">Chưa nhập đủ thông tin</c:when>
-                            <c:when test="${log.failureReason == 'SYSTEM_ERROR'}">Lỗi hệ thống</c:when>
-                            <c:when test="${log.failureReason == 'RATE_LIMITED'}">Thử đăng nhập quá nhiều lần</c:when>
+                            <c:when test="${log.failureReason == 'INVALID_CREDENTIALS'}">Invalid email or password</c:when>
+                            <c:when test="${log.failureReason == 'ACCOUNT_DISABLED'}">Account is disabled</c:when>
+                            <c:when test="${log.failureReason == 'MISSING_CREDENTIALS'}">Missing credentials</c:when>
+                            <c:when test="${log.failureReason == 'SYSTEM_ERROR'}">System error</c:when>
+                            <c:when test="${log.failureReason == 'RATE_LIMITED'}">Rate limited - too many attempts</c:when>
                             <c:otherwise><c:out value="${log.failureReason}"/></c:otherwise>
                         </c:choose>
                     </td>
@@ -130,9 +130,9 @@
 
                 <c:choose>
                     <c:when test="${currentPage > 1}">
-                        <a href="${baseUrl}&page=${currentPage - 1}">« Trước</a>
+                        <a href="${baseUrl}&page=${currentPage - 1}">« Prev</a>
                     </c:when>
-                    <c:otherwise><span class="disabled">« Trước</span></c:otherwise>
+                    <c:otherwise><span class="disabled">« Prev</span></c:otherwise>
                 </c:choose>
 
                 <c:forEach begin="1" end="${totalPages}" var="p">
@@ -148,16 +148,16 @@
 
                 <c:choose>
                     <c:when test="${currentPage < totalPages}">
-                        <a href="${baseUrl}&page=${currentPage + 1}">Sau »</a>
+                        <a href="${baseUrl}&page=${currentPage + 1}">Next »</a>
                     </c:when>
-                    <c:otherwise><span class="disabled">Sau »</span></c:otherwise>
+                    <c:otherwise><span class="disabled">Next »</span></c:otherwise>
                 </c:choose>
             </div>
         </c:if>
     </c:otherwise>
 </c:choose>
 
-<a class="back-link" href="${pageContext.request.contextPath}/admin">Quay lại trang Admin</a>
+<a class="back-link" href="${pageContext.request.contextPath}/admin">← Back to Admin Dashboard</a>
 
 </body>
 </html>

@@ -51,17 +51,17 @@
 <div class="combo-admin-heading">
     <div>
         <h2>
-            <c:out value="${editing ? 'Sửa combo bản nháp' : 'Tạo combo bản nháp'}"/>
+            <c:out value="${editing ? 'Edit Draft Combo' : 'Create Draft Combo'}"/>
         </h2>
         <p class="rd-sub">
-            Xây dựng lịch mẫu với địa điểm cụ thể.
-            Bản nháp chưa xuất hiện trong gợi ý cho người dùng.
+            Build curated templates with verified places.
+            Drafts are hidden from user recommendations.
         </p>
     </div>
 
     <a class="btn btn-outline-secondary"
        href="${pageContext.request.contextPath}/admin">
-        Về trang quản trị
+        ← Admin Dashboard
     </a>
 </div>
 
@@ -89,10 +89,10 @@
            value="<c:out value='${csrfToken}'/>">
 
     <section class="rd-card combo-admin-section">
-        <h3>Thông tin combo</h3>
+        <h3>Combo Information</h3>
 
         <div class="mb-3">
-            <label class="form-label" for="comboName">Tên combo</label>
+            <label class="form-label" for="comboName">Combo Name</label>
             <input class="form-control"
                    id="comboName"
                    name="name"
@@ -103,7 +103,7 @@
 
         <div class="mb-3">
             <label class="form-label"
-                   for="comboDescription">Mô tả</label>
+                   for="comboDescription">Description</label>
             <textarea class="form-control"
                       id="comboDescription"
                       name="description"
@@ -114,9 +114,9 @@
         <div class="row">
             <div class="col-md-5 mb-3">
                 <label class="form-label"
-                       for="comboCity">Tỉnh/thành</label>
+                       for="comboCity">City</label>
                 <select class="form-select" id="comboCity" name="cityName" required>
-                    <option value="">Chọn tỉnh/thành</option>
+                    <option value="">Select city</option>
                     <c:forEach var="region" items="${comboRegions}">
                         <option value="<c:out value='${region.key}'/>"
                                 ${form.cityName == region.key ? 'selected' : ''}>
@@ -125,7 +125,7 @@
                     </c:forEach>
                     <c:if test="${not empty form.cityName and not comboRegions.containsKey(form.cityName)}">
                         <option value="<c:out value='${form.cityName}'/>" selected>
-                            <c:out value="${form.cityName}"/> — không còn địa điểm đang sử dụng
+                            <c:out value="${form.cityName}"/> — no active places
                         </option>
                     </c:if>
                 </select>
@@ -133,16 +133,16 @@
 
             <div class="col-md-5 mb-3">
                 <label class="form-label"
-                       for="comboDistrict">Quận/huyện</label>
+                       for="comboDistrict">District</label>
                 <select class="form-select" id="comboDistrict" name="districtName" required
                         data-selected="<c:out value='${form.districtName}'/>">
-                    <option value="">Chọn quận/huyện</option>
+                    <option value="">Select district</option>
                 </select>
             </div>
 
             <div class="col-md-2 mb-3">
                 <label class="form-label"
-                       for="comboDays">Số ngày</label>
+                       for="comboDays">Duration (Days)</label>
                 <input class="form-control"
                        type="number"
                        id="comboDays"
@@ -155,13 +155,12 @@
         </div>
 
         <p class="form-text">
-            Khu vực được chọn từ dữ liệu địa điểm để khớp với chuyến đi.
-            Lịch mẫu sử dụng Ngày 1, Ngày 2… chưa gắn ngày thực tế.
+            Regions are selected from existing places. Templates use relative days (Day 1, Day 2...).
         </p>
     </section>
 
     <section class="rd-card combo-admin-section">
-        <h3>Sở thích phù hợp</h3>
+        <h3>Target Vibes & Categories</h3>
 
         <div class="combo-admin-categories">
             <c:forEach var="category" items="${categories}">
@@ -185,29 +184,27 @@
     </section>
 
     <section class="rd-card combo-admin-section">
-        <h3>Hoạt động trong combo</h3>
+        <h3>Curated Activities</h3>
 
         <p class="rd-sub mb-3">
-            Chi phí nhập theo mỗi người.
-            Hai địa điểm khác nhau cần cách nhau ít nhất 15 phút.
-            Đây là khoảng đệm tối thiểu, chưa phải thời gian tuyến đường.
+            Cost is per person. Allow at least 15 minutes buffer between different places.
         </p>
 
         <div id="comboActivities">
             <c:forEach var="activity" items="${form.activities}">
                 <div class="combo-admin-activity">
                     <div class="combo-admin-activity-heading">
-                        <strong>Hoạt động</strong>
+                        <strong>Activity</strong>
                         <button type="button"
                                 class="btn btn-sm btn-outline-danger"
                                 data-remove-activity>
-                            Bỏ
+                            Remove
                         </button>
                     </div>
 
                     <div class="row">
                         <div class="col-md-2 mb-3">
-                            <label class="form-label">Ngày</label>
+                            <label class="form-label">Day</label>
                             <input class="form-control"
                                    type="number"
                                    name="dayNumber"
@@ -217,32 +214,32 @@
                         </div>
 
                         <div class="col-md-3 mb-3">
-                            <label class="form-label">Loại hoạt động</label>
+                            <label class="form-label">Activity Type</label>
                             <select class="form-select"
                                     name="activityType" required>
                                 <option value="VISIT"
                                         ${activity.activityType == 'VISIT' ? 'selected' : ''}>
-                                    Tham quan
+                                    Sightseeing
                                 </option>
                                 <option value="MEAL"
                                         ${activity.activityType == 'MEAL' ? 'selected' : ''}>
-                                    Ăn uống
+                                    Dining
                                 </option>
                                 <option value="CAFE"
                                         ${activity.activityType == 'CAFE' ? 'selected' : ''}>
-                                    Cà phê
+                                    Cafe
                                 </option>
                                 <option value="REST"
                                         ${activity.activityType == 'REST' ? 'selected' : ''}>
-                                    Nghỉ
+                                    Rest / Free Time
                                 </option>
                             </select>
                         </div>
 
                         <div class="col-md-7 mb-3">
-                            <label class="form-label">Địa điểm</label>
+                            <label class="form-label">Place</label>
                             <select class="form-select" name="placeId">
-                                <option value="">Không chọn — chỉ dành cho nghỉ</option>
+                                <option value="">None — rest / free time only</option>
                                 <c:forEach var="place" items="${places}">
                                     <option value="${place.placeId}"
                                             ${activity.placeId == place.placeId ? 'selected' : ''}>
@@ -255,7 +252,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Tên hoạt động</label>
+                        <label class="form-label">Activity Title</label>
                         <input class="form-control"
                                name="activityTitle"
                                maxlength="200"
@@ -265,7 +262,7 @@
 
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Bắt đầu</label>
+                            <label class="form-label">Start Time</label>
                             <input class="form-control"
                                    type="time"
                                    name="startTime"
@@ -274,7 +271,7 @@
                         </div>
 
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Kết thúc</label>
+                            <label class="form-label">End Time</label>
                             <input class="form-control"
                                    type="time"
                                    name="endTime"
@@ -283,7 +280,7 @@
                         </div>
 
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Chi phí/người (đ)</label>
+                            <label class="form-label">Cost/Person (VND)</label>
                             <input class="form-control"
                                    type="number"
                                    name="cost"
@@ -293,7 +290,7 @@
                         </div>
                     </div>
 
-                    <label class="form-label">Ghi chú</label>
+                    <label class="form-label">Notes</label>
                     <textarea class="form-control"
                               name="note"
                               rows="2"
@@ -305,18 +302,18 @@
         <button type="button"
                 class="btn btn-outline-secondary"
                 id="addComboActivity">
-            + Thêm hoạt động
+            + Add Activity
         </button>
     </section>
 
     <div class="d-flex flex-wrap gap-2 mb-4">
         <button type="submit" class="btn btn-brand">
-            <c:out value="${editing ? 'Lưu thay đổi bản nháp' : 'Lưu bản nháp'}"/>
+            <c:out value="${editing ? 'Save Draft Changes' : 'Save Draft'}"/>
         </button>
 
         <a class="btn btn-outline-secondary"
            href="${pageContext.request.contextPath}/admin">
-            Hủy và quay lại
+            Cancel and return
         </a>
     </div>
 </form>
@@ -324,36 +321,36 @@
 <template id="comboActivityTemplate">
     <div class="combo-admin-activity">
         <div class="combo-admin-activity-heading">
-            <strong>Hoạt động</strong>
+            <strong>Activity</strong>
             <button type="button"
                     class="btn btn-sm btn-outline-danger"
                     data-remove-activity>
-                Bỏ
+                Remove
             </button>
         </div>
 
         <div class="row">
             <div class="col-md-2 mb-3">
-                <label class="form-label">Ngày</label>
+                <label class="form-label">Day</label>
                 <input class="form-control"
                        type="number" name="dayNumber"
                        min="1" max="14" value="1" required>
             </div>
 
             <div class="col-md-3 mb-3">
-                <label class="form-label">Loại hoạt động</label>
+                <label class="form-label">Activity Type</label>
                 <select class="form-select" name="activityType" required>
-                    <option value="VISIT">Tham quan</option>
-                    <option value="MEAL">Ăn uống</option>
-                    <option value="CAFE">Cà phê</option>
-                    <option value="REST">Nghỉ</option>
+                    <option value="VISIT">Sightseeing</option>
+                    <option value="MEAL">Dining</option>
+                    <option value="CAFE">Cafe</option>
+                    <option value="REST">Rest / Free Time</option>
                 </select>
             </div>
 
             <div class="col-md-7 mb-3">
-                <label class="form-label">Địa điểm</label>
+                <label class="form-label">Place</label>
                 <select class="form-select" name="placeId">
-                    <option value="">Không chọn — chỉ dành cho nghỉ</option>
+                    <option value="">None — rest / free time only</option>
                     <c:forEach var="place" items="${places}">
                         <option value="${place.placeId}">
                             <c:out value="${place.placeName}"/>
@@ -365,33 +362,33 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Tên hoạt động</label>
+            <label class="form-label">Activity Title</label>
             <input class="form-control"
                    name="activityTitle" maxlength="200" required>
         </div>
 
         <div class="row">
             <div class="col-md-4 mb-3">
-                <label class="form-label">Bắt đầu</label>
+                <label class="form-label">Start Time</label>
                 <input class="form-control"
                        type="time" name="startTime" required>
             </div>
 
             <div class="col-md-4 mb-3">
-                <label class="form-label">Kết thúc</label>
+                <label class="form-label">End Time</label>
                 <input class="form-control"
                        type="time" name="endTime" required>
             </div>
 
             <div class="col-md-4 mb-3">
-                <label class="form-label">Chi phí/người (đ)</label>
+                <label class="form-label">Cost/Person (VND)</label>
                 <input class="form-control"
                        type="number" name="cost"
                        min="0" step="0.01" value="0" required>
             </div>
         </div>
 
-        <label class="form-label">Ghi chú</label>
+        <label class="form-label">Notes</label>
         <textarea class="form-control"
                   name="note" rows="2" maxlength="500"></textarea>
     </div>
@@ -405,7 +402,7 @@
 
         function addActivity() {
             if (container.children.length >= 60) {
-                alert('Tối đa 60 hoạt động trong một combo.');
+                alert('Maximum 60 activities allowed per combo.');
                 return;
             }
 
@@ -425,7 +422,7 @@
                 .addEventListener('submit', function (event) {
                     if (!container.children.length) {
                         event.preventDefault();
-                        alert('Hãy thêm ít nhất một hoạt động.');
+                        alert('Please add at least one activity.');
                     }
                 });
 
@@ -450,12 +447,12 @@
     const district = document.getElementById('comboDistrict');
     const options = Array.from(document.getElementById('comboRegionOptions').content.querySelectorAll('option'));
     function updateDistricts(saved) {
-        district.replaceChildren(new Option('Chọn quận/huyện', ''));
+        district.replaceChildren(new Option('Select district', ''));
         options.filter(option => option.dataset.city === city.value).forEach(option => {
             district.appendChild(new Option(option.textContent, option.value));
         });
         if (saved && !Array.from(district.options).some(option => option.value === saved)) {
-            district.appendChild(new Option(saved + ' — kiểm tra lại dữ liệu địa điểm', saved));
+            district.appendChild(new Option(saved + ' — check place data', saved));
         }
         district.value = saved || '';
     }

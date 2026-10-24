@@ -280,17 +280,30 @@
                         </div>
                     </div>
 
-                    <div class="small text-muted mt-2">
-                        <c:choose>
-                            <c:when test="${badge.earned}">
-                                Completed
-                            </c:when>
-                            <c:otherwise>
-                                <c:out value="${badge.progress}" /> /
-                                <c:out value="${badge.threshold}" />
-                                progress
-                            </c:otherwise>
-                        </c:choose>
+                    <div class="small mt-2 d-flex justify-content-between align-items-center flex-wrap gap-1">
+                        <span class="text-secondary" style="font-size: 11.5px;">
+                            <c:choose>
+                                <c:when test="${badge.criteriaType == 'UNIQUE_PLACES'}">
+                                    Unlocks after <c:out value="${badge.threshold}"/> unique destinations
+                                </c:when>
+                                <c:when test="${badge.criteriaType == 'PHOTO_CHECKINS'}">
+                                    Unlocks after <c:out value="${badge.threshold}"/> photo check-ins
+                                </c:when>
+                                <c:otherwise>
+                                    Unlocks after <c:out value="${badge.threshold}"/> cultural/sightseeing spots
+                                </c:otherwise>
+                            </c:choose>
+                        </span>
+                        <span class="fw-bold" style="font-size: 11.5px; color: ${badge.earned ? '#047857' : '#175b43'};">
+                            <c:choose>
+                                <c:when test="${badge.earned}">
+                                    ✓ Earned
+                                </c:when>
+                                <c:otherwise>
+                                    Progress: <c:out value="${badge.progress}" />/<c:out value="${badge.threshold}" /> (<fmt:formatNumber value="${badgePercent}" maxFractionDigits="0"/>%)
+                                </c:otherwise>
+                            </c:choose>
+                        </span>
                     </div>
                 </div>
             </c:forEach>

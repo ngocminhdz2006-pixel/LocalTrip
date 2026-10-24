@@ -35,7 +35,7 @@ public class GroupFundDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể tải số dư quỹ nhóm.", e);
+            throw new RuntimeException("Failed to load group fund balance.", e);
         }
         return new GroupFundSummary();
     }
@@ -63,7 +63,7 @@ public class GroupFundDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể tải lịch sử đóng quỹ.", e);
+            throw new RuntimeException("Failed to load fund contribution history.", e);
         }
         return list;
     }
@@ -103,7 +103,7 @@ public class GroupFundDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể tải tổng đóng góp của thành viên.", e);
+            throw new RuntimeException("Failed to load member total contributions.", e);
         }
         return list;
     }
@@ -122,7 +122,7 @@ public class GroupFundDAO {
                 return rs.next();
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể kiểm tra thành viên của Trip.", e);
+            throw new RuntimeException("Failed to verify trip membership.", e);
         }
     }
 
@@ -131,7 +131,7 @@ public class GroupFundDAO {
         String sql =
             "SELECT transaction_type, amount, description, member_name, created_at FROM (" +
             " SELECT 'CONTRIBUTION' AS transaction_type, c.amount AS amount, " +
-            " COALESCE(NULLIF(c.note, ''), 'Đóng góp vào quỹ') AS description, " +
+            " COALESCE(NULLIF(c.note, ''), 'Contribution to group fund') AS description, " +
             " u.full_name AS member_name, c.created_at AS created_at " +
             " FROM GroupFundContributions c INNER JOIN Users u ON u.user_id = c.user_id WHERE c.trip_id = ? " +
             " UNION ALL " +
@@ -155,7 +155,7 @@ public class GroupFundDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể tải lịch sử giao dịch quỹ.", e);
+            throw new RuntimeException("Failed to load fund transaction history.", e);
         }
         return list;
     }
@@ -181,7 +181,7 @@ public class GroupFundDAO {
             ps.setInt(11, userId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            throw new RuntimeException("Không thể ghi nhận đóng góp vào quỹ.", e);
+            throw new RuntimeException("Failed to record fund contribution.", e);
         }
     }
 }

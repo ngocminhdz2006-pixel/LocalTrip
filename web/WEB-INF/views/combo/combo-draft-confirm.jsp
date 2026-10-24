@@ -104,17 +104,6 @@
         </div>
     </c:forEach>
 
-    <div class="alert alert-warning">
-        Confirmation will replace upcoming activities from
-        <strong>
-            <fmt:formatDate value="${comboDraft.fromDate}"
-                            pattern="dd MMM yyyy"/>
-        </strong>
-        onward.
-        Activities in progress, completed activities and cancelled
-        history will be preserved.
-    </div>
-
     <form method="post"
           action="${pageContext.request.contextPath}/combos/draft/confirm">
 
@@ -126,19 +115,69 @@
                name="draftToken"
                value="${comboDraft.token}">
 
-        <div class="form-check mb-3">
-            <input id="acceptReplacement"
-                   class="form-check-input"
-                   type="checkbox"
-                   name="acceptReplacement"
-                   value="yes"
-                   required>
+        <c:choose>
+            <c:when test="${hasExistingItems}">
+                <div class="rd-card p-4 mb-4 border-warning" style="background: #fffdf5; border-radius: 14px;">
+                    <h5 class="fw-bold mb-2 text-dark">Existing Schedule Detected</h5>
+                    <p class="small text-muted mb-3">
+                        Your trip already has <strong>${existingItems.size()} activities</strong>. Please select how you want to apply this curated combo:
+                    </p>
 
-            <label for="acceptReplacement"
-                   class="form-check-label">
-                I agree to replace the upcoming itinerary with this draft.
-            </label>
-        </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="applyMode" id="applyModeAppend" value="APPEND" checked>
+                        <label class="form-check-label fw-bold" for="applyModeAppend" style="color: #175b43;">
+                            ➕ Append to current itinerary (Keep existing activities)
+                        </label>
+                        <div class="small text-muted ms-4">
+                            Preserves your current activities (especially pinned/locked ones) and adds activities from this Combo.
+                        </div>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="applyMode" id="applyModeReplace" value="REPLACE">
+                        <label class="form-check-label fw-bold text-danger" for="applyModeReplace">
+                            🔄 Replace current itinerary
+                        </label>
+                        <div class="small text-muted ms-4">
+                            Removes unlocked upcoming activities from <fmt:formatDate value="${comboDraft.fromDate}" pattern="dd MMM yyyy"/> onward and replaces them with this complete Combo template.
+                        </div>
+                    </div>
+                </div>
+
+                <div id="replaceAcknowledgment" class="form-check mb-3 d-none">
+                    <input id="acceptReplacement"
+                           class="form-check-input"
+                           type="checkbox"
+                           name="acceptReplacement"
+                           value="yes">
+
+                    <label for="acceptReplacement"
+                           class="form-check-label text-danger fw-semibold">
+                        I confirm and agree to replace unlocked upcoming activities with this combo.
+                    </label>
+                </div>
+            </c:when>
+
+            <c:otherwise>
+                <input type="hidden" name="applyMode" value="REPLACE"/>
+                <div class="alert alert-warning mb-3">
+                    Confirmation will set this draft as your trip's itinerary.
+                </div>
+                <div class="form-check mb-3">
+                    <input id="acceptReplacement"
+                           class="form-check-input"
+                           type="checkbox"
+                           name="acceptReplacement"
+                           value="yes"
+                           required>
+
+                    <label for="acceptReplacement"
+                           class="form-check-label">
+                        I agree to apply this itinerary draft to my trip.
+                    </label>
+                </div>
+            </c:otherwise>
+        </c:choose>
 
         <div class="d-flex flex-wrap gap-2 mb-4">
             <button type="submit" class="btn btn-brand">
@@ -153,5 +192,32 @@
     </form>
 
 </div>
+
+<script>
+    (function () {
+        const replaceRadio = document.getElementById('applyModeReplace');
+        const appendRadio = document.getElementById('applyModeAppend');
+        const ackBox = document.getElementById('replaceAcknowledgment');
+        const ackCheck = document.getElementById('acceptReplacement');
+
+        function toggleAck() {
+            if (!ackBox || !ackCheck) return;
+            if (replaceRadio && replaceRadio.checked) {
+                ackBox.classList.remove('d-none');
+                ackCheck.required = true;
+            } else {
+                ackBox.classList.add('d-none');
+                ackCheck.required = false;
+                ackCheck.checked = false;
+            }
+        }
+
+        if (replaceRadio && appendRadio) {
+            replaceRadio.addEventListener('change', toggleAck);
+            appendRadio.addEventListener('change', toggleAck);
+            toggleAck();
+        }
+    })();
+</script>
 
 <%@ include file="/WEB-INF/views/common/footer.jsp" %>

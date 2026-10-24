@@ -44,7 +44,7 @@ public class AdminComboStatusServlet extends HttpServlet {
                 || !expectedToken.equals(
                         request.getParameter("csrfToken"))) {
             response.sendError(403,
-                    "Biểu mẫu hết hiệu lực. Hãy tải lại trang combo.");
+                    "Form session expired. Please reload the combo page.");
             return;
         }
 
@@ -57,7 +57,7 @@ public class AdminComboStatusServlet extends HttpServlet {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException e) {
-            response.sendError(400, "Mã combo không hợp lệ.");
+            response.sendError(400, "Invalid combo ID.");
             return;
         }
 
@@ -72,18 +72,18 @@ public class AdminComboStatusServlet extends HttpServlet {
 
             session.setAttribute("successMessage",
                     "ACTIVE".equals(newStatus)
-                    ? "Combo đã được kích hoạt."
-                    : "Combo đã ngừng sử dụng.");
+                    ? "Combo has been activated."
+                    : "Combo has been deactivated.");
 
         } catch (IllegalArgumentException e) {
             session.setAttribute("errorMessage", e.getMessage());
 
         } catch (RuntimeException e) {
-            log("Không thể đổi trạng thái combo.", e);
+            log("Failed to change combo status.", e);
 
             session.setAttribute("errorMessage",
-                    "Không thể đổi trạng thái combo. "
-                    + "Kiểm tra kết nối và cấu trúc database.");
+                    "Failed to change combo status. "
+                    + "Please check database connection.");
         }
 
         response.sendRedirect(

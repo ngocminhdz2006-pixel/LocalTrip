@@ -72,7 +72,7 @@ public class NotificationServlet extends HttpServlet {
                         "accepted your friend request.", "1 day ago", false, true));
             }
         } catch (RuntimeException e) {
-            throw new ServletException("Không thể tải thông báo.", e);
+            throw new ServletException("Unable to load notifications.", e);
         }
 
         int unreadCount = 0;

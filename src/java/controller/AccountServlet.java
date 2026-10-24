@@ -88,7 +88,33 @@ public class AccountServlet extends HttpServlet {
 
             preferenceDAO.saveUserPreferences(user.getUserId(), categoryIds);
             session.setAttribute("successMessage", "Travel preferences updated successfully! New trips will now auto-match your taste.");
-            response.sendRedirect(request.getContextPath() + "/account");
+            if ("deleteAccount".equals(action)) {
+            new dao.UserDAO().deactivateAndAnonymize(user.getUserId());
+            try {
+                controller.auth.RememberMeUtil.revoke(request, response);
+            } catch (Exception ignored) {
+            }
+            session.invalidate();
+            HttpSession newSession = request.getSession(true);
+            newSession.setAttribute("authMessage", "Your account has been deleted and deactivated successfully.");
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        response.sendRedirect(request.getContextPath() + "/account");
+            return;
+        }
+
+        if ("deleteAccount".equals(action)) {
+            new dao.UserDAO().deactivateAndAnonymize(user.getUserId());
+            try {
+                controller.auth.RememberMeUtil.revoke(request, response);
+            } catch (Exception ignored) {
+            }
+            session.invalidate();
+            HttpSession newSession = request.getSession(true);
+            newSession.setAttribute("authMessage", "Your account has been deleted and deactivated successfully.");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 

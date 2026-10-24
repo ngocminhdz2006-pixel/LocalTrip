@@ -12,8 +12,484 @@
 <%@ include file="/WEB-INF/jspf/trip-tabs.jspf" %>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+/* Card Container */
+.lt-stop-card {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 14px 16px 12px 16px !important;
+    background: #ffffff !important;
+    border: 1.5px solid #d1ded6 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 2px 8px rgba(20, 59, 45, 0.04) !important;
+    transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+    margin-bottom: 12px !important;
+}
+.lt-stop-card:hover {
+    box-shadow: 0 4px 12px rgba(20, 59, 45, 0.08) !important;
+}
+
+/* Tier 1: Header Row */
+.lt-card-tier1 {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    gap: 8px !important;
+}
+.lt-tier1-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+    flex: 1 !important;
+}
+.lt-tier1-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+}
+.lt-drag-handle {
+    color: #94a3b8 !important;
+    font-size: 14px !important;
+    cursor: grab !important;
+    user-select: none !important;
+    flex-shrink: 0 !important;
+}
+.lt-stop-badge {
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 50% !important;
+    background: #175b43 !important;
+    color: #ffffff !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+.lt-tier1-time {
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    color: #1e293b !important;
+    letter-spacing: -0.2px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+.lt-tier1-duration {
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    color: #64748b !important;
+    margin-left: 2px !important;
+}
+.lt-status-pill {
+    padding: 3px 10px !important;
+    border-radius: 999px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+.lt-status-upcoming {
+    background: #e8f5e9 !important;
+    color: #166534 !important;
+    border: 1px solid #bbf7d0 !important;
+}
+.lt-status-ongoing {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+    border: 1px solid #fde68a !important;
+}
+.lt-status-done {
+    background: #dcfce7 !important;
+    color: #166534 !important;
+    border: 1px solid #86efac !important;
+}
+.lt-status-skipped {
+    background: #f1f5f9 !important;
+    color: #64748b !important;
+    border: 1px solid #cbd5e1 !important;
+}
+.lt-btn-lock-sq {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #f8fafc !important;
+    color: #64748b !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    text-decoration: none !important;
+    transition: all 0.15s ease !important;
+}
+.lt-btn-lock-sq:hover {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+}
+.lt-btn-lock-sq.is-locked {
+    background: #fff7ed !important;
+    border-color: #fed7aa !important;
+    color: #c2410c !important;
+}
+
+/* Tier 2: Card Body */
+.lt-card-tier2 {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin-top: 10px !important;
+    min-width: 0 !important;
+    width: 100% !important;
+}
+.lt-stop-thumb {
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 12px !important;
+    object-fit: cover !important;
+    flex-shrink: 0 !important;
+    background: #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+}
+.lt-card-body-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 3px !important;
+}
+.lt-stop-name {
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    color: #143b2d !important;
+    line-height: 1.3 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    word-break: break-word !important;
+}
+.lt-card-meta-row {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    font-size: 12px !important;
+}
+.lt-meta-cost {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    padding: 2px 8px !important;
+    border-radius: 999px !important;
+    border: 1px solid #cbd5e1 !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+.lt-meta-dot {
+    color: #94a3b8 !important;
+    font-size: 12px !important;
+    display: inline-block !important;
+}
+.lt-meta-note {
+    color: #475569 !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 210px !important;
+}
+
+/* Live Trip Control Sub-bar (Trip ONGOING & Role OWNER) */
+.lt-live-activity-bar {
+    display: flex !important;
+    gap: 8px !important;
+    align-items: center !important;
+    margin-top: 10px !important;
+    padding: 6px 10px !important;
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+.lt-btn-live-start {
+    background: #175b43 !important;
+    color: #ffffff !important;
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    height: 32px !important;
+    border: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 12px !important;
+}
+.lt-btn-live-start:hover {
+    background: #124935 !important;
+    color: #ffffff !important;
+}
+.lt-btn-live-complete {
+    background: #059669 !important;
+    color: #ffffff !important;
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    height: 32px !important;
+    border: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 12px !important;
+}
+.lt-btn-live-complete:hover {
+    background: #047857 !important;
+    color: #ffffff !important;
+}
+.lt-btn-live-skip, .lt-btn-live-extend {
+    border: 1px solid #cbd5e1 !important;
+    background: #ffffff !important;
+    color: #64748b !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 10px !important;
+}
+.lt-btn-live-skip:hover, .lt-btn-live-extend:hover {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+}
+
+/* Tier 3: Action Buttons (Strictly 4 equal columns in 1 single row) */
+.lt-card-tier3 {
+    border-top: 1px dashed #e2e8f0 !important;
+    padding-top: 10px !important;
+    margin-top: 10px !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+.lt-act-btn {
+    height: 34px !important;
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 10px !important;
+    color: #1e293b !important;
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    text-decoration: none !important;
+    padding: 0 4px !important;
+    white-space: nowrap !important;
+    transition: all 0.15s ease !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    cursor: pointer !important;
+}
+.lt-act-btn:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    border-color: #94a3b8 !important;
+}
+.lt-act-btn-checkin {
+    background: #ffffff !important;
+    border: 1.5px solid #175b43 !important;
+    color: #175b43 !important;
+}
+.lt-act-btn-checkin:hover {
+    background: #ecfdf5 !important;
+    color: #065f46 !important;
+    border-color: #065f46 !important;
+}
+.lt-act-btn-checked {
+    background: #ecfdf5 !important;
+    border: 1.5px solid #175b43 !important;
+    color: #175b43 !important;
+}
+.lt-act-btn-checked:hover {
+    background: #d1fae5 !important;
+    color: #047857 !important;
+}
+.lt-act-btn.disabled, span.lt-act-btn.disabled {
+    opacity: 0.45 !important;
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+    color: #94a3b8 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+}
+.lt-act-icon {
+    font-size: 12px !important;
+    line-height: 1 !important;
+}
+
+@media (max-width: 375px) {
+    .lt-act-btn {
+        font-size: 10.5px !important;
+        gap: 2px !important;
+        padding: 0 2px !important;
+        letter-spacing: -0.3px !important;
+    }
+}
+</style>
 
 <div class="lt-itinerary-container">
+
+    <%-- Flash Messages --%>
+    <c:if test="${not empty sessionScope.errorMessage}">
+        <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert" style="border-radius: 12px; font-size: 13px;">
+            <c:out value="${sessionScope.errorMessage}"/>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <c:remove var="errorMessage" scope="session"/>
+    </c:if>
+    <c:if test="${not empty sessionScope.successMessage}">
+        <div class="alert alert-success alert-dismissible fade show mb-3" role="alert" style="border-radius: 12px; font-size: 13px;">
+            <c:out value="${sessionScope.successMessage}"/>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <c:remove var="successMessage" scope="session"/>
+    </c:if>
+
+    <%-- Phase 3: Completion Banner if trip date passed --%>
+    <c:if test="${trip.status == 'ONGOING' and isTripEnded}">
+        <div class="alert alert-warning d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 p-3" style="border-radius: 12px; border: 1px solid #fde68a; background: #fffbeb;">
+            <div class="d-flex align-items-center gap-2">
+                <span style="font-size: 22px;">🏁</span>
+                <div>
+                    <strong style="color: #92400e; font-size: 13px;">Trip end date has passed!</strong>
+                    <div style="color: #b45309; font-size: 12px;">Scheduled dates have concluded. Ready to finalize your trip memories?</div>
+                </div>
+            </div>
+            <c:if test="${trip.role == 'OWNER'}">
+                <a href="${pageContext.request.contextPath}/trip/detail?tripId=${trip.id}" class="btn btn-sm" style="background: #175b43; color: #fff; font-size: 12px; font-weight: 600; border-radius: 8px;">
+                    Complete Trip in Trip Details &rarr;
+                </a>
+            </c:if>
+        </div>
+    </c:if>
+
+    <%-- Phase 2: Live "Trip Day" Card --%>
+    <c:if test="${trip.status == 'ONGOING'}">
+        <div class="lt-live-trip-card mb-3 p-3" style="background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%); border: 1.5px solid #86efac; border-radius: 14px; box-shadow: 0 2px 8px rgba(23, 91, 67, 0.08);">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2 pb-2 border-bottom" style="border-color: #dcfce7 !important;">
+                <div class="d-flex align-items-center gap-2">
+                    <c:choose>
+                        <c:when test="${liveMode == 'NOW'}">
+                            <span class="badge" style="background: #ef4444; color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 20px;">
+                                &#128308; Happening Now
+                            </span>
+                        </c:when>
+                        <c:when test="${liveMode == 'NEXT'}">
+                            <span class="badge" style="background: #0284c7; color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 20px;">
+                                &#9203; Next Up
+                            </span>
+                        </c:when>
+                        <c:otherwise>
+                            <span class="badge" style="background: #64748b; color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 20px;">
+                                &#128203; Trip Status
+                            </span>
+                        </c:otherwise>
+                    </c:choose>
+                    <span style="font-size: 12px; font-weight: 700; color: #143b2d;">Live Schedule</span>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <a href="${pageContext.request.contextPath}/expenses/add?tripId=${trip.id}" class="btn btn-sm" style="background: #175b43; color: #fff; font-size: 11px; font-weight: 600; border-radius: 6px; text-decoration: none; padding: 3px 8px;">
+                        + Add Expense
+                    </a>
+                    <a href="${pageContext.request.contextPath}/expenses?tripId=${trip.id}" class="btn btn-sm btn-outline-secondary" style="font-size: 11px; border-radius: 6px; padding: 3px 8px;">
+                        View Expenses
+                    </a>
+                </div>
+            </div>
+
+            <c:choose>
+                <c:when test="${not empty liveItem}">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                        <div>
+                            <div style="font-size: 15px; font-weight: 700; color: #143b2d;">
+                                <c:out value="${liveItem.placeName}"/>
+                            </div>
+                            <div class="text-muted" style="font-size: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <span>&#128343;
+                                    <c:choose>
+                                        <c:when test="${not empty liveItem.startTime}">
+                                            <fmt:formatDate value="${liveItem.startTime}" pattern="HH:mm"/>
+                                            <c:if test="${not empty liveItem.endTime}">
+                                                &ndash; <fmt:formatDate value="${liveItem.endTime}" pattern="HH:mm"/>
+                                            </c:if>
+                                        </c:when>
+                                        <c:otherwise>Scheduled for today</c:otherwise>
+                                    </c:choose>
+                                </span>
+                                <c:if test="${not empty liveItem.visitDate}">
+                                    <span>&#128197; <fmt:formatDate value="${liveItem.visitDate}" pattern="dd/MM/yyyy"/></span>
+                                </c:if>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-1">
+                            <c:if test="${not empty liveItem.latitude and not empty liveItem.longitude}">
+                                <a class="btn btn-sm"
+                                   href="https://www.google.com/maps/dir/?api=1&destination=${liveItem.latitude},${liveItem.longitude}&travelmode=driving"
+                                   target="_blank" rel="noopener noreferrer"
+                                   style="background: #10b981; color: #fff; font-size: 11px; font-weight: 600; border-radius: 6px; padding: 4px 8px; text-decoration: none;">
+                                    &#129517; Directions &nearr;
+                                </a>
+                            </c:if>
+                        </div>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="text-muted mb-2" style="font-size: 13px;">
+                        No more activities scheduled for today.
+                        <c:if test="${trip.role == 'OWNER'}">
+                            <a href="${pageContext.request.contextPath}/places?tripId=${trip.id}" style="color: #175b43; font-weight: 600; text-decoration: underline;">
+                                + Add destination
+                            </a>
+                        </c:if>
+                    </div>
+                </c:otherwise>
+            </c:choose>
+
+            <%-- Progress Indicator --%>
+            <div class="pt-2 border-top" style="border-color: #dcfce7 !important;">
+                <div class="d-flex justify-content-between align-items-center" style="font-size: 11px; color: #475569; margin-bottom: 4px;">
+                    <span>Today: <strong>${todayCompletedActivities} of ${todayTotalActivities}</strong> completed</span>
+                    <span>Trip: <strong>${completedActivities} of ${totalActivities}</strong> completed</span>
+                </div>
+                <div class="progress" style="height: 6px; border-radius: 3px; background: #e2e8f0;">
+                    <c:set var="overallPct" value="${totalActivities > 0 ? (completedActivities * 100 / totalActivities) : 0}"/>
+                    <div class="progress-bar" role="progressbar" style="width: ${overallPct}%; background: #175b43;" aria-valuenow="${overallPct}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+    </c:if>
 
     <%-- 1. Quick Planning Actions Hub (Add Destinations & Auto-Schedule) --%>
     <div class="lt-itinerary-actions-hub">
@@ -118,65 +594,276 @@
                 </div>
             </c:when>
             <c:otherwise>
+                <c:set var="prevTimelineDate" value=""/>
                 <c:forEach var="item" items="${items}" varStatus="status">
+                    <c:if test="${item.date != prevTimelineDate}">
+                        <c:set var="prevTimelineDate" value="${item.date}"/>
+                        <div class="lt-day-group-header" data-day-group="${item.date}" style="margin: 16px 0 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; padding: 4px 0; border-bottom: 2px solid #e2e8f0;">
+                            <span style="font-size: 13px; font-weight: 800; color: #175b43;">
+                                📅 <fmt:formatDate value="${item.visitDate}" pattern="EEEE, dd/MM/yyyy"/>
+                            </span>
+                            <c:if test="${packedDays.contains(item.visitDate)}">
+                                <span class="badge" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-size: 10px;">
+                                    ⚠️ Packed day (>6 activities) — consider adding rest time
+                                </span>
+                            </c:if>
+                        </div>
+                    </c:if>
                     <div class="lt-stop-card lt-activity-row" data-activity-date="${item.date}" data-lat="${item.latitude}" data-lng="${item.longitude}">
-                        <div class="lt-stop-left">
-                            <span class="lt-drag-handle" title="Order">⋮⋮</span>
-                            <span class="lt-stop-badge">${status.index + 1}</span>
-                            <img src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=100&auto=format&fit=crop&q=80"
-                                 class="lt-stop-thumb"
-                                 alt="<c:out value='${item.placeName}'/>"
-                                 loading="lazy" />
-                            <div class="lt-stop-info">
-                                <div class="lt-stop-time">
+                        <%-- TIER 1: Card Header (Drag handle, Order badge, Time on Left; Status, Lock on Right) --%>
+                        <div class="lt-card-tier1">
+                            <div class="lt-tier1-left">
+                                <span class="lt-drag-handle" title="Drag to reorder">⋮⋮</span>
+                                <span class="lt-stop-badge">${status.index + 1}</span>
+                                <span class="lt-tier1-time">
                                     <c:choose>
                                         <c:when test="${not empty item.startTime}">
-                                            <fmt:formatDate value="${item.startTime}" pattern="HH:mm"/>
+                                            🕒 <fmt:formatDate value="${item.startTime}" pattern="HH:mm"/>
                                             <c:if test="${not empty item.endTime}">
                                                 – <fmt:formatDate value="${item.endTime}" pattern="HH:mm"/>
                                             </c:if>
+                                            <span class="lt-tier1-duration">(${item.durationMinutes} mins)</span>
                                         </c:when>
-                                        <c:otherwise>All day</c:otherwise>
+                                        <c:otherwise>🕒 All day</c:otherwise>
                                     </c:choose>
-                                </div>
-                                <div class="lt-stop-name" title="<c:out value='${item.placeName}'/>">
-                                    <c:out value="${item.placeName}"/>
-                                </div>
+                                </span>
+                            </div>
+                            <div class="lt-tier1-right">
+                                <c:choose>
+                                    <c:when test="${item.activityStatus == 'COMPLETED'}">
+                                        <span class="lt-status-pill lt-status-done">&#10003; Done</span>
+                                    </c:when>
+                                    <c:when test="${item.activityStatus == 'IN_PROGRESS'}">
+                                        <span class="lt-status-pill lt-status-ongoing">Ongoing</span>
+                                    </c:when>
+                                    <c:when test="${item.activityStatus == 'CANCELLED'}">
+                                        <span class="lt-status-pill lt-status-skipped">Skipped</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="lt-status-pill lt-status-upcoming">Upcoming</span>
+                                    </c:otherwise>
+                                </c:choose>
+
+                                <c:if test="${trip.role == 'OWNER' and (trip.status == 'PLANNING' or trip.status == 'ONGOING')}">
+                                    <form method="post" action="${pageContext.request.contextPath}/itinerary/lock" style="margin: 0; display: inline-flex;">
+                                        <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
+                                        <input type="hidden" name="tripId" value="${trip.id}">
+                                        <input type="hidden" name="itemId" value="${item.itemId}">
+                                        <input type="hidden" name="locked" value="${item.locked ? 'false' : 'true'}">
+                                        <button type="submit" class="lt-btn-lock-sq ${item.locked ? 'is-locked' : ''}"
+                                                title="${item.locked ? 'Activity is locked (Pinned). Click to unlock' : 'Pin activity so auto-scheduling keeps it'}">
+                                            ${item.locked ? '🔒' : '🔓'}
+                                        </button>
+                                    </form>
+                                </c:if>
+                                <c:if test="${trip.role != 'OWNER' and item.locked}">
+                                    <span class="lt-btn-lock-sq is-locked" title="Activity is pinned">🔒</span>
+                                </c:if>
                             </div>
                         </div>
 
-                        <div class="d-flex align-items-center gap-1">
-                            <c:if test="${item.activityStatus == 'COMPLETED'}">
-                                <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size:9px;">Done</span>
-                            </c:if>
-                            <c:if test="${item.activityStatus == 'IN_PROGRESS'}">
-                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle" style="font-size:9px;">Ongoing</span>
-                            </c:if>
+                        <%-- TIER 2: Card Body (Left: 56x56 thumbnail, Right: Place name, Cost pill, Cleaned note & tags) --%>
+                        <div class="lt-card-tier2">
+                            <img src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=120&auto=format&fit=crop&q=80"
+                                 class="lt-stop-thumb"
+                                 alt="<c:out value='${item.placeName}'/>"
+                                 loading="lazy" />
+                            <div class="lt-card-body-info">
+                                <div class="lt-stop-name" title="<c:out value='${item.placeName}'/>">
+                                    <c:out value="${item.placeName}"/>
+                                </div>
+                                <div class="lt-card-meta-row">
+                                    <c:if test="${item.estimatedCost != null and item.estimatedCost > 0}">
+                                        <span class="lt-meta-cost">
+                                            <fmt:formatNumber value="${item.estimatedCost}" type="currency" currencyCode="VND" maxFractionDigits="0"/>
+                                        </span>
+                                    </c:if>
+                                    <c:set var="displayNote" value="${item.cleanedNote}"/>
+                                    <c:if test="${empty displayNote and not empty item.note}">
+                                        <c:set var="displayNote" value="${item.note}"/>
+                                    </c:if>
+                                    <c:if test="${not empty displayNote}">
+                                        <c:if test="${item.estimatedCost != null and item.estimatedCost > 0}">
+                                            <span class="lt-meta-dot">•</span>
+                                        </c:if>
+                                        <span class="lt-meta-note" title="<c:out value='${displayNote}'/>">
+                                            <c:out value="${displayNote}"/>
+                                        </span>
+                                    </c:if>
+                                    <c:if test="${item.sourceType == 'COMBO'}">
+                                        <span class="badge" style="background: #fef3c7; color: #92400e; font-size: 9.5px; border: 1px solid #fde68a;">🍱 Combo</span>
+                                    </c:if>
+                                    <c:if test="${item.sourceType == 'AI'}">
+                                        <span class="badge" style="background: #ecfdf5; color: #065f46; font-size: 9.5px; border: 1px solid #a7f3d0;">✨ AI</span>
+                                    </c:if>
+                                </div>
+                                <c:if test="${not empty itemWarnings[item.itemId]}">
+                                    <div class="lt-card-warning" style="margin-top: 3px;">
+                                        <span class="badge" style="background: #fffbeb; color: #b45309; border: 1px solid #fcd34d; font-size: 10px;">
+                                            ⚠️ <c:out value="${itemWarnings[item.itemId]}"/>
+                                        </span>
+                                    </div>
+                                </c:if>
+                            </div>
+                        </div>
 
-                            <%-- One-click Google Maps directions button --%>
-                            <c:if test="${not empty item.latitude and not empty item.longitude}">
-                                <a class="lt-stop-directions-link"
-                                   href="https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}&travelmode=driving"
-                                   target="_blank" rel="noopener noreferrer"
-                                   title="Google Maps directions to this place">
-                                    🧭 Directions
-                                </a>
-                            </c:if>
+                        <%-- LIVE TRIP CONTROLS: Shown when Trip is ONGOING & User is OWNER --%>
+                        <c:if test="${trip.status == 'ONGOING' and trip.role == 'OWNER' and (item.activityStatus == 'UPCOMING' or item.activityStatus == 'IN_PROGRESS')}">
+                            <div class="lt-live-activity-bar">
+                                <c:choose>
+                                    <c:when test="${item.activityStatus == 'UPCOMING'}">
+                                        <c:choose>
+                                            <c:when test="${hasRunningActivity}">
+                                                <button type="button" class="btn btn-sm lt-btn-live-start disabled flex-fill" disabled title="Finish current running activity first.">
+                                                    ▶ Start Activity
+                                                </button>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <form method="post" action="${pageContext.request.contextPath}/itinerary/activity/status" style="margin: 0; flex: 1;">
+                                                    <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
+                                                    <input type="hidden" name="tripId" value="${trip.id}">
+                                                    <input type="hidden" name="itemId" value="${item.id}">
+                                                    <input type="hidden" name="expectedStatus" value="UPCOMING">
+                                                    <input type="hidden" name="nextStatus" value="IN_PROGRESS">
+                                                    <button type="submit" class="btn btn-sm lt-btn-live-start w-100">
+                                                        ▶ Start Activity
+                                                    </button>
+                                                </form>
+                                            </c:otherwise>
+                                        </c:choose>
+                                        <form method="post" action="${pageContext.request.contextPath}/itinerary/activity/status" style="margin: 0;" onsubmit="return confirm('Skip this activity?');">
+                                            <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
+                                            <input type="hidden" name="tripId" value="${trip.id}">
+                                            <input type="hidden" name="itemId" value="${item.id}">
+                                            <input type="hidden" name="expectedStatus" value="UPCOMING">
+                                            <input type="hidden" name="nextStatus" value="CANCELLED">
+                                            <button type="submit" class="btn btn-sm lt-btn-live-skip">
+                                                Skip
+                                            </button>
+                                        </form>
+                                    </c:when>
 
-                            <c:if test="${trip.role == 'OWNER' and (trip.status == 'PLANNING' or trip.status == 'ONGOING')}">
-                                <a class="lt-stop-change-link" href="${pageContext.request.contextPath}/itinerary/edit?tripId=${trip.id}&amp;itemId=${item.id}">
-                                    Edit
-                                </a>
-                            </c:if>
+                                    <c:when test="${item.activityStatus == 'IN_PROGRESS'}">
+                                        <form method="post" action="${pageContext.request.contextPath}/itinerary/activity/status" style="margin: 0; flex: 1;">
+                                            <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
+                                            <input type="hidden" name="tripId" value="${trip.id}">
+                                            <input type="hidden" name="itemId" value="${item.id}">
+                                            <input type="hidden" name="expectedStatus" value="IN_PROGRESS">
+                                            <input type="hidden" name="nextStatus" value="COMPLETED">
+                                            <button type="submit" class="btn btn-sm lt-btn-live-complete w-100">
+                                                &#10003; Complete Activity
+                                            </button>
+                                        </form>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm lt-btn-live-extend dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Extend
+                                            </button>
+                                            <div class="dropdown-menu dropdown-menu-end p-2 shadow-sm" style="min-width: 170px;">
+                                                <form method="post" action="${pageContext.request.contextPath}/itinerary/activity/status" class="m-0">
+                                                    <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
+                                                    <input type="hidden" name="tripId" value="${trip.id}">
+                                                    <input type="hidden" name="itemId" value="${item.id}">
+                                                    <input type="hidden" name="action" value="endTime">
+                                                    <input type="hidden" name="expectedEnd" value="${item.endTime}">
+                                                    <label class="form-label mb-1" style="font-size: 11px; font-weight: 600;">New End Time</label>
+                                                    <input type="time" name="endTime" class="form-control form-control-sm mb-2" required style="font-size: 12px;">
+                                                    <button type="submit" class="btn btn-sm w-100" style="background: #175b43; color: #fff; font-size: 11px;">
+                                                        Save End Time
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </c:when>
+                                </c:choose>
+                            </div>
+                        </c:if>
+
+                        <%-- TIER 3: Action Buttons (Exactly 4 buttons, uniform 34px height, in a 4-column grid) --%>
+                        <div class="lt-card-tier3">
+                            <%-- 1. Directions --%>
+                            <c:choose>
+                                <c:when test="${not empty item.latitude and not empty item.longitude}">
+                                    <a class="lt-act-btn"
+                                       href="https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}&travelmode=driving"
+                                       target="_blank" rel="noopener noreferrer"
+                                       title="Google Maps directions to this place">
+                                        <span class="lt-act-icon">📍</span> Directions
+                                    </a>
+                                </c:when>
+                                <c:otherwise>
+                                    <a class="lt-act-btn"
+                                       href="https://www.google.com/maps/search/?api=1&query=${fn:escapeXml(item.placeName)}"
+                                       target="_blank" rel="noopener noreferrer"
+                                       title="Search directions on Google Maps">
+                                        <span class="lt-act-icon">📍</span> Directions
+                                    </a>
+                                </c:otherwise>
+                            </c:choose>
+
+                            <%-- 2. Check-in --%>
+                            <c:choose>
+                                <c:when test="${not empty item.placeId and checkedInPlaceIds.contains(item.placeId)}">
+                                    <a href="${pageContext.request.contextPath}/passport"
+                                       class="lt-act-btn lt-act-btn-checked" title="Already checked in! Click to view passport">
+                                        <span class="lt-act-icon">✓</span> Checked In
+                                    </a>
+                                </c:when>
+                                <c:when test="${not empty item.placeId and item.placeId > 0}">
+                                    <a href="${pageContext.request.contextPath}/checkin?tripId=${trip.id}&amp;placeId=${item.placeId}"
+                                       class="lt-act-btn lt-act-btn-checkin" title="Check-in to this place">
+                                        <span class="lt-act-icon">📸</span> Check-in
+                                    </a>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="lt-act-btn disabled" title="Custom activity without location check-in">
+                                        <span class="lt-act-icon">📸</span> Check-in
+                                    </span>
+                                </c:otherwise>
+                            </c:choose>
+
+                            <%-- 3. Share --%>
+                            <c:choose>
+                                <c:when test="${not empty item.placeId and item.placeId > 0}">
+                                    <a href="${pageContext.request.contextPath}/dump?tripId=${trip.id}&amp;placeId=${item.placeId}"
+                                       class="lt-act-btn" title="Share travel memory">
+                                        <span class="lt-act-icon">📝</span> Share
+                                    </a>
+                                </c:when>
+                                <c:otherwise>
+                                    <a href="${pageContext.request.contextPath}/dump?tripId=${trip.id}"
+                                       class="lt-act-btn" title="Share trip memory">
+                                        <span class="lt-act-icon">📝</span> Share
+                                    </a>
+                                </c:otherwise>
+                            </c:choose>
+
+                            <%-- 4. Edit --%>
+                            <c:choose>
+                                <c:when test="${trip.role == 'OWNER' and (trip.status == 'PLANNING' or trip.status == 'ONGOING') and item.activityStatus == 'UPCOMING'}">
+                                    <a class="lt-act-btn"
+                                       href="${pageContext.request.contextPath}/itinerary/edit?tripId=${trip.id}&amp;itemId=${item.id}"
+                                       title="Edit activity details">
+                                        <span class="lt-act-icon">✏️</span> Edit
+                                    </a>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="lt-act-btn disabled" title="${item.activityStatus != 'UPCOMING' ? 'Only upcoming activities can be edited' : 'Only trip owner can edit'}">
+                                        <span class="lt-act-icon">✏️</span> Edit
+                                    </span>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                     </div>
 
                     <%-- Travel connector between 2 stops --%>
-                    <div class="lt-travel-connector lt-connector-row" data-activity-date="${item.date}">
+                    <div class="lt-travel-connector lt-connector-row" data-activity-date="${item.date}" style="display: none;">
                         <span class="lt-connector-line"></span>
-                        <span class="lt-connector-text">🚶 800m • 10 mins walk</span>
+                        <span class="lt-connector-text"></span>
                     </div>
                 </c:forEach>
+
+                <div id="itineraryDayEmptyNotice" class="alert alert-light border text-center p-3 my-2 d-none" style="font-size: 13px; border-radius: 12px; color: #64748b;">
+                </div>
             </c:otherwise>
         </c:choose>
 
@@ -243,9 +930,9 @@
 
         <c:choose>
             <c:when test="${trip.status == 'ONGOING'}">
-                <button type="button" class="lt-btn-confirm-action" style="background: #059669; opacity: 0.95;" disabled>
-                    ✓ Schedule Active
-                </button>
+                <a href="${pageContext.request.contextPath}/expenses?tripId=${trip.id}" class="lt-btn-confirm-action" style="background: #175b43; color: #ffffff; text-decoration: none; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                    &#128179; View &amp; Track Expenses &rarr;
+                </a>
             </c:when>
             <c:when test="${trip.status == 'COMPLETED' or trip.status == 'CANCELLED'}">
                 <button type="button" class="lt-btn-confirm-action" style="background: #94a3b8;" disabled>
@@ -551,7 +1238,7 @@
     })();
 </script>
 
-<%-- SCRIPT 2: Day Tabs Navigation & Inter-stop Distance Measurement --%>
+<%-- SCRIPT 2: Day Tabs Navigation & Straight-line Distance Measurement --%>
 <script>
     (function () {
         const tabs = document.getElementById('itineraryDayTabs');
@@ -559,10 +1246,25 @@
 
         const rows = Array.from(document.querySelectorAll('.lt-stop-card.lt-activity-row'));
         const connectors = Array.from(document.querySelectorAll('.lt-travel-connector.lt-connector-row'));
+        const emptyDayNotice = document.getElementById('itineraryDayEmptyNotice');
         const mapDayFilter = document.getElementById('mapDayFilter');
         const weatherDayFilter = document.getElementById('weatherDayFilter');
         const addBtn = document.getElementById('addDestinationBtn');
-        const dates = [...new Set(rows.map(row => row.dataset.activityDate).filter(Boolean))];
+
+        const tripStatus = '${trip.status}';
+        const todayStr = '${todayStr}';
+        const tripStartDate = '<fmt:formatDate value="${trip.startDate}" pattern="yyyy-MM-dd"/>';
+        const tripEndDate = '<fmt:formatDate value="${trip.endDate}" pattern="yyyy-MM-dd"/>';
+
+        let dates = [...new Set(rows.map(row => row.dataset.activityDate).filter(Boolean))];
+
+        // If ongoing trip and today is in trip date range, ensure today is in dates list
+        if (tripStatus === 'ONGOING' && todayStr && tripStartDate && tripEndDate) {
+            if (todayStr >= tripStartDate && todayStr <= tripEndDate && !dates.includes(todayStr)) {
+                dates.push(todayStr);
+                dates.sort();
+            }
+        }
 
         dates.forEach((date, index) => {
             const button = document.createElement('button');
@@ -572,14 +1274,16 @@
 
             const parts = date.split('-');
             const dateLabel = parts.length === 3 ? parts[2] + '/' + parts[1] : date;
+            const isToday = (date === todayStr);
 
-            button.innerHTML = '<span>Day ' + (index + 1) + '</span><small>• ' + dateLabel + '</small>';
+            button.innerHTML = '<span>Day ' + (index + 1) + (isToday ? ' (Today)' : '') + '</span><small>&bull; ' + dateLabel + '</small>';
             tabs.appendChild(button);
         });
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            if (!lat1 || !lon1 || !lat2 || !lon2) return null;
-            const R = 6371e3;
+            if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
+            if (isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)) return null;
+            const R = 6371e3; // meters
             const phi1 = lat1 * Math.PI / 180;
             const phi2 = lat2 * Math.PI / 180;
             const deltaPhi = (lat2 - lat1) * Math.PI / 180;
@@ -606,36 +1310,52 @@
                 }
             });
 
+            // Empty state notice for filtered day
+            if (emptyDayNotice) {
+                if (visibleRows.length === 0 && selectedDay !== 'ALL') {
+                    emptyDayNotice.classList.remove('d-none');
+                    emptyDayNotice.textContent = (selectedDay === todayStr)
+                        ? 'No activities scheduled for today.'
+                        : 'No activities scheduled for this day.';
+                } else {
+                    emptyDayNotice.classList.add('d-none');
+                }
+            }
+
+            // Update connectors between visible stops
             connectors.forEach((conn, idx) => {
                 const parentRow = rows[idx];
-                const nextRow = rows[idx + 1];
                 const match = selectedDay === 'ALL' || conn.dataset.activityDate === selectedDay;
-                const isLastVisible = parentRow === visibleRows[visibleRows.length - 1];
 
-                if (!match || isLastVisible || !parentRow || parentRow.style.display === 'none') {
+                if (!match || !parentRow || parentRow.style.display === 'none') {
                     conn.style.display = 'none';
-                } else {
+                    return;
+                }
+
+                const currentVisibleIdx = visibleRows.indexOf(parentRow);
+                const nextRow = (currentVisibleIdx >= 0 && currentVisibleIdx + 1 < visibleRows.length)
+                    ? visibleRows[currentVisibleIdx + 1]
+                    : null;
+
+                if (!nextRow) {
+                    conn.style.display = 'none';
+                    return;
+                }
+
+                const lat1 = parseFloat(parentRow.dataset.lat);
+                const lng1 = parseFloat(parentRow.dataset.lng);
+                const lat2 = parseFloat(nextRow.dataset.lat);
+                const lng2 = parseFloat(nextRow.dataset.lng);
+
+                const dist = calculateDistance(lat1, lng1, lat2, lng2);
+                const textEl = conn.querySelector('.lt-connector-text');
+
+                if (dist != null && dist > 0 && textEl) {
                     conn.style.display = 'flex';
-                    const lat1 = parseFloat(parentRow.dataset.lat);
-                    const lng1 = parseFloat(parentRow.dataset.lng);
-                    const lat2 = nextRow ? parseFloat(nextRow.dataset.lat) : null;
-                    const lng2 = nextRow ? parseFloat(nextRow.dataset.lng) : null;
-                    const dist = calculateDistance(lat1, lng1, lat2, lng2);
-                    const textEl = conn.querySelector('.lt-connector-text');
-                    if (textEl) {
-                        if (dist && dist > 0) {
-                            if (dist < 1000) {
-                                const mins = Math.max(3, Math.round(dist / 80));
-                                textEl.textContent = '🚶 ' + Math.round(dist) + 'm • ' + mins + ' mins walk';
-                            } else {
-                                const km = (dist / 1000).toFixed(1);
-                                const mins = Math.max(4, Math.round(dist / 350));
-                                textEl.textContent = '🚕 ' + km + ' km • ' + mins + ' mins taxi';
-                            }
-                        } else {
-                            textEl.textContent = '🚶 800m • 10 mins walk';
-                        }
-                    }
+                    const km = (dist / 1000).toFixed(1);
+                    textEl.textContent = '~' + km + ' km straight line';
+                } else {
+                    conn.style.display = 'none';
                 }
             });
 
@@ -649,14 +1369,9 @@
             }
         }
 
-        tabs.addEventListener('click', event => {
-            const button = event.target.closest('[data-day]');
-            if (!button) return;
-
-            const selectedDay = button.dataset.day;
-
+        function selectDayTab(selectedDay) {
             tabs.querySelectorAll('.lt-day-tab').forEach(tab => {
-                const active = tab === button;
+                const active = tab.dataset.day === selectedDay;
                 tab.classList.toggle('is-active', active);
                 tab.setAttribute('aria-pressed', active);
             });
@@ -671,9 +1386,25 @@
                 weatherDayFilter.value = selectedDay;
                 weatherDayFilter.dispatchEvent(new Event('change', {bubbles: true}));
             }
+        }
+
+        tabs.addEventListener('click', event => {
+            const button = event.target.closest('[data-day]');
+            if (!button) return;
+            selectDayTab(button.dataset.day);
         });
 
-        updateConnectorsAndIndices('ALL');
+        // Determine initial day tab
+        let initialDay = 'ALL';
+        if (tripStatus === 'ONGOING') {
+            if (dates.includes(todayStr)) {
+                initialDay = todayStr;
+            } else if (dates.length > 0) {
+                initialDay = dates[0];
+            }
+        }
+
+        selectDayTab(initialDay);
     })();
 </script>
 

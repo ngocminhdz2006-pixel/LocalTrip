@@ -21,8 +21,7 @@ import model.User;
 public class SettlementServlet extends HttpServlet {
 
     private final TripDAO tripDAO = new TripDAO();
-    private final SettlementDAO settlementDAO
-            = new SettlementDAO();
+    private final SettlementDAO settlementDAO = new SettlementDAO();
 
     @Override
     protected void doGet(
@@ -30,27 +29,19 @@ public class SettlementServlet extends HttpServlet {
             HttpServletResponse response
     ) throws ServletException, IOException {
 
-        HttpSession session
-                = request.getSession(false);
+        HttpSession session = request.getSession(false);
 
-        if (session == null
-                || session.getAttribute("user") == null) {
-
-            response.sendRedirect(
-                    request.getContextPath() + "/login"
-            );
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
-        User currentUser
-                = (User) session.getAttribute("user");
+        User currentUser = (User) session.getAttribute("user");
 
-        if (!"USER".equalsIgnoreCase(
-                currentUser.getRole()
-        )) {
+        if (!"USER".equalsIgnoreCase(currentUser.getRole())) {
             response.sendError(
                     HttpServletResponse.SC_FORBIDDEN,
-                    "Bạn không có quyền sử dụng chức năng này."
+                    "You do not have permission to access this feature."
             );
             return;
         }
@@ -58,53 +49,39 @@ public class SettlementServlet extends HttpServlet {
         int tripId;
 
         try {
-            tripId = Integer.parseInt(
-                    request.getParameter("tripId")
-            );
-
+            tripId = Integer.parseInt(request.getParameter("tripId"));
             if (tripId <= 0) {
                 throw new NumberFormatException();
             }
-
         } catch (NumberFormatException e) {
             response.sendError(
                     HttpServletResponse.SC_BAD_REQUEST,
-                    "Trip ID không hợp lệ."
+                    "Invalid Trip ID."
             );
             return;
         }
 
         try {
-            Trip trip = tripDAO.findByIdForUser(
-                    tripId,
-                    currentUser.getUserId()
-            );
+            Trip trip = tripDAO.findByIdForUser(tripId, currentUser.getUserId());
 
             if (trip == null) {
                 response.sendError(
                         HttpServletResponse.SC_NOT_FOUND,
-                        "Không tìm thấy Trip hoặc bạn không có quyền truy cập."
+                        "Trip not found or access denied."
                 );
                 return;
             }
 
-            List<SettlementBalance> balances
-                    = settlementDAO.findBalances(tripId);
+            List<SettlementBalance> balances = settlementDAO.findBalances(tripId);
+            List<SettlementTransfer> transfers = settlementDAO.calculateTransfers(balances);
 
-            List<SettlementTransfer> transfers
-                    = settlementDAO.calculateTransfers(
-                            balances
-                    );
+            // Sync payment status records (PENDING, SENT, CONFIRMED)
+            settlementDAO.syncAndLoadPaymentStatuses(tripId, transfers);
 
             request.setAttribute("trip", trip);
-            request.setAttribute(
-                    "balances",
-                    balances
-            );
-            request.setAttribute(
-                    "transfers",
-                    transfers
-            );
+            request.setAttribute("balances", balances);
+            request.setAttribute("transfers", transfers);
+            request.setAttribute("currentUser", currentUser);
 
             request.getRequestDispatcher(
                     "/WEB-INF/views/expense/settlement.jsp"
@@ -112,9 +89,64 @@ public class SettlementServlet extends HttpServlet {
 
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể tính toán Settlement.",
+                    "Unable to calculate settlement.",
                     e
             );
+        }
+    }
+
+    @Override
+    protected void doPost(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws ServletException, IOException {
+
+        request.setCharacterEncoding("UTF-8");
+        HttpSession session = request.getSession(false);
+
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        User currentUser = (User) session.getAttribute("user");
+
+        int tripId = parsePositiveInt(request.getParameter("tripId"));
+        int paymentId = parsePositiveInt(request.getParameter("paymentId"));
+        String action = request.getParameter("action");
+
+        if (tripId <= 0 || paymentId <= 0) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid trip or payment ID.");
+            return;
+        }
+
+        String newStatus = null;
+        if ("markSent".equalsIgnoreCase(action)) {
+            newStatus = "SENT";
+        } else if ("confirmReceived".equalsIgnoreCase(action)) {
+            newStatus = "CONFIRMED";
+        }
+
+        if (newStatus != null) {
+            boolean ok = settlementDAO.updatePaymentStatus(paymentId, tripId, currentUser.getUserId(), newStatus);
+            if (ok) {
+                session.setAttribute("successMessage", "SENT".equals(newStatus)
+                        ? "Payment marked as SENT. Waiting for recipient confirmation."
+                        : "Payment confirmed successfully!");
+            } else {
+                session.setAttribute("errorMessage", "Unable to update payment status. Access denied or invalid state.");
+            }
+        }
+
+        response.sendRedirect(request.getContextPath() + "/settlement?tripId=" + tripId);
+    }
+
+    private int parsePositiveInt(String value) {
+        try {
+            int number = Integer.parseInt(value);
+            return number > 0 ? number : -1;
+        } catch (Exception e) {
+            return -1;
         }
     }
 }

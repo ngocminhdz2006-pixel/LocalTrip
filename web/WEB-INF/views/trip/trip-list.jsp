@@ -66,7 +66,7 @@
                         <div class="lt-home-card-cover">
                             <img class="lt-home-cover-img"
                                  src="${pageContext.request.contextPath}/images/trip-cover.jpg"
-                                 alt="${trip.name}"
+                                 alt="${fn:escapeXml(trip.name)}"
                                  onerror="this.src='https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=600&auto=format&fit=crop&q=80'">
                             <div class="lt-home-cover-overlay"></div>
 

@@ -72,7 +72,7 @@ public class LoginServlet extends HttpServlet {
             forwardToLogin(
                     request,
                     response,
-                    "Vui lòng nhập đầy đủ email và mật khẩu."
+                    "Please enter both email and password."
             );
             return;
         }
@@ -96,8 +96,8 @@ public class LoginServlet extends HttpServlet {
             forwardToLogin(
                     request,
                     response,
-                    "Bạn đã đăng nhập sai quá nhiều lần. "
-                    + "Vui lòng thử lại sau 15 phút."
+                    "Too many failed login attempts. "
+                    + "Please try again after 15 minutes."
             );
             return;
         }
@@ -120,7 +120,7 @@ public class LoginServlet extends HttpServlet {
             forwardToLogin(
                     request,
                     response,
-                    "Không thể kết nối hệ thống, vui lòng thử lại."
+                    "Unable to connect to the authentication service. Please try again."
             );
             return;
         }
@@ -138,7 +138,7 @@ public class LoginServlet extends HttpServlet {
             forwardToLogin(
                     request,
                     response,
-                    "Email hoặc mật khẩu không đúng."
+                    "Incorrect email or password."
             );
             return;
         }
@@ -156,7 +156,7 @@ public class LoginServlet extends HttpServlet {
             forwardToLogin(
                     request,
                     response,
-                    "Email hoặc mật khẩu không đúng."
+                    "Incorrect email or password."
             );
             return;
         }
@@ -174,7 +174,7 @@ public class LoginServlet extends HttpServlet {
             forwardToLogin(
                     request,
                     response,
-                    "Email hoặc mật khẩu không đúng."
+                    "Incorrect email or password."
             );
             return;
         }
@@ -238,7 +238,7 @@ public class LoginServlet extends HttpServlet {
         if (errorMessage != null) {
             request.setAttribute("errorMessage", errorMessage);
         }
-        request.setAttribute("pageTitle", "Đăng nhập");
+        request.setAttribute("pageTitle", "Sign in");
         RequestDispatcher dispatcher = request.getRequestDispatcher(LOGIN_VIEW);
         dispatcher.forward(request, response);
     }

@@ -129,206 +129,228 @@
     </c:if>
 
     <%-- 0. Trip Planning Checklist (3 Steps) Wizard (Only shown when trip.status == 'PLANNING') --%>
-    <c:if test="${trip.status == 'PLANNING'}">
-        <section class="lt-overview-card lt-planning-wizard-card">
-            <div class="lt-overview-head" style="margin-bottom: 14px;">
-                <div>
-                    <h2 class="lt-overview-title" style="display: flex; align-items: center; gap: 8px;">
-                        <span>📋</span> Trip Planning Checklist
-                    </h2>
-                    <span style="font-size: 12px; color: #64748b;">Complete 3 steps to get your trip ready</span>
-                </div>
-                <c:choose>
-                    <c:when test="${itineraryCount > 0}">
-                        <span class="lt-step-badge lt-step-badge-ready">✓ Ready to roll</span>
-                    </c:when>
-                    <c:otherwise>
-                        <span class="lt-step-badge lt-step-badge-progress">Step-by-step</span>
-                    </c:otherwise>
-                </c:choose>
-            </div>
-
-            <div class="lt-wizard-steps">
-                <%-- STEP 1: Group & Preferences --%>
-                <div class="lt-wizard-step-item">
-                    <div class="lt-wizard-step-header">
-                        <div class="lt-step-circle ${hasUserPreference ? 'is-complete' : 'is-active'}">
-                            <c:choose>
-                                <c:when test="${hasUserPreference}">✓</c:when>
-                                <c:otherwise>1</c:otherwise>
-                            </c:choose>
-                        </div>
-                        <div class="lt-step-meta">
-                            <div class="lt-step-title-row">
-                                <h3 class="lt-step-title">Step 1: Group & Preferences</h3>
-                                <c:choose>
-                                    <c:when test="${hasUserPreference}">
-                                        <span class="lt-pill-status lt-pill-success">✓ Preferences set</span>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <span class="lt-pill-status lt-pill-pending">Pending preferences</span>
-                                    </c:otherwise>
-                                </c:choose>
-                            </div>
-                            <p class="lt-step-desc">
-                                ${fn:length(members)} <c:out value="${fn:length(members) > 1 ? 'members joined' : 'member (You)'}"/>. Set dining, activity & budget preferences for group suggestions.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="lt-step-action-row">
-                        <a href="${pageContext.request.contextPath}/preferences?tripId=${trip.id}" class="lt-btn-step-action">
-                            🎯 ${hasUserPreference ? 'Update Travel Preferences' : 'Set Travel Preferences'}
-                        </a>
-                    </div>
-                </div>
-
-                <%-- STEP 2: Build Your Itinerary --%>
-                <div class="lt-wizard-step-item">
-                    <div class="lt-wizard-step-header">
-                        <div class="lt-step-circle ${itineraryCount > 0 ? 'is-complete' : 'is-active'}">
-                            <c:choose>
-                                <c:when test="${itineraryCount > 0}">✓</c:when>
-                                <c:otherwise>2</c:otherwise>
-                            </c:choose>
-                        </div>
-                        <div class="lt-step-meta">
-                            <div class="lt-step-title-row">
-                                <h3 class="lt-step-title">Step 2: Build Your Itinerary</h3>
-                                <c:choose>
-                                    <c:when test="${itineraryCount > 0}">
-                                        <span class="lt-pill-status lt-pill-success">✓ ${itineraryCount} activities scheduled</span>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <span class="lt-pill-status lt-pill-warning">Need activities</span>
-                                    </c:otherwise>
-                                </c:choose>
-                            </div>
-                            <p class="lt-step-desc">
-                                Choose how you want to schedule: generate automatically with AI, pick a curated combo, or add places manually.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="lt-builder-grid">
-                        <a href="${pageContext.request.contextPath}/itinerary/auto?tripId=${trip.id}" class="lt-builder-card">
-                            <div class="lt-builder-icon">✨</div>
-                            <div class="lt-builder-info">
-                                <strong>Auto-Generate Schedule</strong>
-                                <span>AI creates a smart schedule from group preferences</span>
-                            </div>
-                            <span class="lt-builder-arrow">→</span>
-                        </a>
-
-                        <a href="${pageContext.request.contextPath}/combos?tripId=${trip.id}" class="lt-builder-card">
-                            <div class="lt-builder-icon">🍱</div>
-                            <div class="lt-builder-info">
-                                <strong>Choose Curated Combo</strong>
-                                <span>Explore proven day-plans and vote with friends</span>
-                            </div>
-                            <span class="lt-builder-arrow">→</span>
-                        </a>
-
-                        <a href="${pageContext.request.contextPath}/places?tripId=${trip.id}" class="lt-builder-card">
-                            <div class="lt-builder-icon">📍</div>
-                            <div class="lt-builder-info">
-                                <strong>Add Places Manually</strong>
-                                <span>Browse local spots and handcraft your itinerary</span>
-                            </div>
-                            <span class="lt-builder-arrow">→</span>
-                        </a>
-                    </div>
-                </div>
-
-                <%-- STEP 3: Review Map & Start Trip --%>
-                <div class="lt-wizard-step-item">
-                    <div class="lt-wizard-step-header">
-                        <div class="lt-step-circle ${viewCanStart ? 'is-complete' : ''}">
-                            3
-                        </div>
-                        <div class="lt-step-meta">
-                            <div class="lt-step-title-row">
-                                <h3 class="lt-step-title">Step 3: Review Map & Start Trip</h3>
-                                <c:choose>
-                                    <c:when test="${viewCanStart}">
-                                        <span class="lt-pill-status lt-pill-success">Ready to start</span>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <span class="lt-pill-status lt-pill-muted">
-                                            ${itineraryCount == 0 ? 'Waiting for activities' : 'Awaiting travel date'}
-                                        </span>
-                                    </c:otherwise>
-                                </c:choose>
-                            </div>
-                            <p class="lt-step-desc">
-                                <c:choose>
-                                    <c:when test="${itineraryCount > 0}">
-                                        ${itineraryCount} activity/activities scheduled. Review timeline and launch when ready!
-                                    </c:when>
-                                    <c:otherwise>
-                                        No activities added yet. Complete Step 2 first to enable starting the trip.
-                                    </c:otherwise>
-                                </c:choose>
-                            </p>
-                        </div>
-                    </div>
-                    <div class="lt-step-action-row" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <c:if test="${itineraryCount > 0}">
-                            <a href="${pageContext.request.contextPath}/itinerary?tripId=${trip.id}" class="lt-btn-step-action lt-btn-step-outline">
-                                🗺️ View Itinerary (${itineraryCount})
-                            </a>
-                        </c:if>
-                        <c:if test="${trip.role == 'OWNER'}">
-                            <form method="post" action="${pageContext.request.contextPath}/trip/status"
-                                  onsubmit="return confirm('Confirm current itinerary and start trip?');" style="margin: 0;">
-                                <input type="hidden" name="tripId" value="${trip.id}">
-                                <input type="hidden" name="status" value="ONGOING">
-                                <input type="hidden" name="statusToken" value="${sessionScope.tripStatusToken}">
-                                <button type="submit" class="lt-btn-step-action lt-btn-step-primary" ${viewCanStart ? '' : 'disabled'}>
-                                    🚀 Start trip now
-                                </button>
-                            </form>
-                        </c:if>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </c:if>
-
-        <%-- Auto-Matched Group Vibes Card --%>
-    <section class="lt-overview-card" style="margin-bottom: 16px;">
-        <div class="lt-overview-head">
+    <%-- UNIFIED DASHBOARD: Trip Progress & Next Steps --%>
+    <section class="lt-overview-card lt-planning-wizard-card" style="margin-bottom: 16px;">
+        <div class="lt-overview-head" style="margin-bottom: 14px;">
             <div>
-                <h2 class="lt-overview-title" style="display: flex; align-items: center; gap: 6px;">
-                    <span>✨</span> Auto-Matched Group Vibes
+                <h2 class="lt-overview-title" style="display: flex; align-items: center; gap: 8px;">
+                    <span>🧭</span> Trip Progress & Next Steps
                 </h2>
-                <span style="font-size: 11px; color: #64748b;">Synced automatically from member profile tastes</span>
+                <span style="font-size: 12px; color: #64748b;">Complete setup to launch your journey smoothly</span>
             </div>
-            <a href="${pageContext.request.contextPath}/account" style="font-size: 11px; font-weight: 700; color: #175b43; text-decoration: none;">
-                My Profile Vibes →
-            </a>
+            <c:choose>
+                <c:when test="${trip.status == 'ONGOING'}">
+                    <span class="lt-step-badge lt-step-badge-ready" style="background:#d1fae5; color:#065f46;">🚀 Trip Active</span>
+                </c:when>
+                <c:when test="${trip.status == 'COMPLETED'}">
+                    <span class="lt-step-badge lt-step-badge-ready" style="background:#e0e7ff; color:#3730a3;">✓ Completed</span>
+                </c:when>
+                <c:when test="${viewCanStart}">
+                    <span class="lt-step-badge lt-step-badge-ready">✓ Ready to launch</span>
+                </c:when>
+                <c:otherwise>
+                    <span class="lt-step-badge lt-step-badge-progress">In Planning</span>
+                </c:otherwise>
+            </c:choose>
         </div>
 
-        <c:choose>
-            <c:when test="${not empty groupMatchedPrefs}">
-                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;">
-                    <c:forEach var="gp" items="${groupMatchedPrefs}">
-                        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 20px; font-size: 12px; font-weight: 700; color: #143b2d;">
-                            <span>🎯 <c:out value="${gp.categoryName}"/></span>
-                            <span style="font-size: 10px; background: #175b43; color: #ffffff; padding: 1px 6px; border-radius: 10px;">
-                                <fmt:formatNumber value="${gp.percentage}" maxFractionDigits="0"/>% (${gp.memberCount} members)
-                            </span>
+        <div class="lt-wizard-steps">
+            <%-- STEP 1: Invite Companions & Sync Vibes --%>
+            <div class="lt-wizard-step-item">
+                <div class="lt-wizard-step-header">
+                    <div class="lt-step-circle ${fn:length(members) > 0 ? 'is-complete' : 'is-active'}">
+                        ✓
+                    </div>
+                    <div class="lt-step-meta" style="flex: 1;">
+                        <div class="lt-step-title-row">
+                            <h3 class="lt-step-title">Step 1: Invite Companions & Sync Vibes</h3>
+                            <span class="lt-pill-status lt-pill-success">${fn:length(members)} traveler(s) connected</span>
                         </div>
-                    </c:forEach>
+                        <p class="lt-step-desc" style="margin-bottom: 8px;">
+                            Calculated automatically from ${fn:length(members)} members' profile preferences — 
+                            <a href="${pageContext.request.contextPath}/account" style="color: #175b43; font-weight: 700; text-decoration: underline;">
+                                [Edit my vibes in Account]
+                            </a>
+                        </p>
+
+                        <%-- Group Matched Vibes Tags --%>
+                        <c:choose>
+                            <c:when test="${not empty groupMatchedPrefs}">
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px;">
+                                    <c:forEach var="gp" items="${groupMatchedPrefs}">
+                                        <div style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 16px; font-size: 11.5px; font-weight: 700; color: #143b2d;">
+                                            <span>🎯 <c:out value="${gp.categoryName}"/></span>
+                                            <span style="font-size: 9.5px; background: #175b43; color: #ffffff; padding: 1px 5px; border-radius: 8px;">
+                                                <fmt:formatNumber value="${gp.percentage}" maxFractionDigits="0"/>%
+                                            </span>
+                                        </div>
+                                    </c:forEach>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <p style="font-size: 11px; color: #64748b; margin: 4px 0 8px; font-style: italic;">
+                                    No common tastes found yet. Add members or update personal preferences in Account.
+                                </p>
+                            </c:otherwise>
+                        </c:choose>
+
+                        <%-- Invite Share Action Row --%>
+                        <c:if test="${not empty tripInvite}">
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
+                                <button type="button" class="lt-btn-step-action" style="background: #175b43; color: #fff; border: none; font-size: 11.5px; padding: 6px 12px;" onclick="copyTripInviteLink('${pageContext.request.scheme}://${pageContext.request.serverName}:${pageContext.request.serverPort}${pageContext.request.contextPath}/trip/join?token=${tripInvite.inviteToken}')">
+                                    📋 Copy Invite Link
+                                </button>
+                                <button type="button" class="lt-btn-step-action lt-btn-step-outline" style="font-size: 11.5px; padding: 6px 12px;" onclick="openTripQrModal('${pageContext.request.scheme}://${pageContext.request.serverName}:${pageContext.request.serverPort}${pageContext.request.contextPath}/trip/join?token=${tripInvite.inviteToken}')">
+                                    📲 Invite QR
+                                </button>
+                                <c:if test="${trip.role == 'OWNER'}">
+                                    <form method="post" action="${pageContext.request.contextPath}/trip/invite" style="margin:0;">
+                                        <input type="hidden" name="tripId" value="${trip.id}">
+                                        <button type="submit" class="btn btn-link btn-sm text-secondary text-decoration-none" style="font-size: 11px;" title="Revoke and generate a fresh invite link">
+                                            🔄 Refresh link
+                                        </button>
+                                    </form>
+                                </c:if>
+                            </div>
+                        </c:if>
+                    </div>
                 </div>
-            </c:when>
-            <c:otherwise>
-                <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 14px; text-align: center; margin-top: 8px;">
-                    <p style="font-size: 11.5px; color: #64748b; margin: 0 0 6px;">No group tastes matched yet.</p>
-                    <a href="${pageContext.request.contextPath}/account" style="font-size: 11px; color: #175b43; font-weight: 700;">
-                        Set your travel vibes in Account Profile
-                    </a>
+            </div>
+
+            <%-- STEP 2: Build Your Schedule --%>
+            <div class="lt-wizard-step-item">
+                <div class="lt-wizard-step-header">
+                    <div class="lt-step-circle ${itineraryCount > 0 ? 'is-complete' : 'is-active'}">
+                        <c:choose>
+                            <c:when test="${itineraryCount > 0}">✓</c:when>
+                            <c:otherwise>2</c:otherwise>
+                        </c:choose>
+                    </div>
+                    <div class="lt-step-meta" style="flex: 1;">
+                        <div class="lt-step-title-row">
+                            <h3 class="lt-step-title">Step 2: Build Your Schedule</h3>
+                            <c:choose>
+                                <c:when test="${itineraryCount > 0}">
+                                    <span class="lt-pill-status lt-pill-success">✓ ${itineraryCount} activities scheduled</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="lt-pill-status lt-pill-warning">Schedule empty</span>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                        <p class="lt-step-desc">
+                            <c:choose>
+                                <c:when test="${itineraryCount > 0}">
+                                    You have ${itineraryCount} activities planned across travel days. You can fine-tune stops or review map routes.
+                                </c:when>
+                                <c:otherwise>
+                                    Choose how to craft your itinerary: apply an expert curated combo, auto-generate with AI, or handpick local spots.
+                                </c:otherwise>
+                            </c:choose>
+                        </p>
+
+                        <c:choose>
+                            <c:when test="${itineraryCount == 0}">
+                                <div class="lt-builder-grid">
+                                    <a href="${pageContext.request.contextPath}/combos?tripId=${trip.id}" class="lt-builder-card">
+                                        <div class="lt-builder-icon">🍱</div>
+                                        <div class="lt-builder-info">
+                                            <strong>Apply Curated Combo</strong>
+                                            <span>Explore proven day-plans crafted by local experts</span>
+                                        </div>
+                                        <span class="lt-builder-arrow">→</span>
+                                    </a>
+                                    <a href="${pageContext.request.contextPath}/itinerary/auto?tripId=${trip.id}" class="lt-builder-card">
+                                        <div class="lt-builder-icon">✨</div>
+                                        <div class="lt-builder-info">
+                                            <strong>AI Auto-Schedule</strong>
+                                            <span>Generate optimized timeline from group tastes & pace</span>
+                                        </div>
+                                        <span class="lt-builder-arrow">→</span>
+                                    </a>
+                                    <a href="${pageContext.request.contextPath}/places?tripId=${trip.id}" class="lt-builder-card">
+                                        <div class="lt-builder-icon">📍</div>
+                                        <div class="lt-builder-info">
+                                            <strong>Browse & Add Places</strong>
+                                            <span>Search verified attractions and add directly</span>
+                                        </div>
+                                        <span class="lt-builder-arrow">→</span>
+                                    </a>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+                                    <a href="${pageContext.request.contextPath}/itinerary?tripId=${trip.id}" class="lt-btn-step-action lt-btn-step-primary" style="background: #175b43 !important; color: #ffffff !important; text-decoration: none;">
+                                        🗺️ View & Manage Itinerary (${itineraryCount})
+                                    </a>
+                                    <a href="${pageContext.request.contextPath}/places?tripId=${trip.id}" class="lt-btn-step-action lt-btn-step-outline" style="color: #175b43 !important; text-decoration: none;">
+                                        + Add More Places
+                                    </a>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
                 </div>
-            </c:otherwise>
-        </c:choose>
+            </div>
+
+            <%-- STEP 3: Launch & Track Expenses --%>
+            <div class="lt-wizard-step-item">
+                <div class="lt-wizard-step-header">
+                    <div class="lt-step-circle ${viewCanStart || trip.status == 'ONGOING' || trip.status == 'COMPLETED' ? 'is-complete' : ''}">
+                        3
+                    </div>
+                    <div class="lt-step-meta" style="flex: 1;">
+                        <div class="lt-step-title-row">
+                            <h3 class="lt-step-title">Step 3: Launch & Track Expenses</h3>
+                            <c:choose>
+                                <c:when test="${trip.status == 'ONGOING'}">
+                                    <span class="lt-pill-status lt-pill-success">Live & Tracking</span>
+                                </c:when>
+                                <c:when test="${trip.status == 'COMPLETED'}">
+                                    <span class="lt-pill-status lt-pill-success">Finalized</span>
+                                </c:when>
+                                <c:when test="${viewCanStart}">
+                                    <span class="lt-pill-status lt-pill-success">Ready to launch</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="lt-pill-status lt-pill-muted">
+                                        ${itineraryCount == 0 ? 'Requires activities' : 'Awaiting start date'}
+                                    </span>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                        <p class="lt-step-desc">
+                            <c:choose>
+                                <c:when test="${trip.status == 'ONGOING'}">
+                                    Trip is in progress! Check in at locations, update activity milestones, and log shared expenses for VietQR split.
+                                </c:when>
+                                <c:when test="${viewCanStart}">
+                                    All prerequisites met! Schedule is confirmed and dates are active. Launch the live experience now.
+                                </c:when>
+                                <c:otherwise>
+                                    Condition to start: Requires at least 1 non-cancelled activity and current date must be between 
+                                    <fmt:formatDate value="${trip.startDate}" pattern="dd/MM/yyyy"/> and <fmt:formatDate value="${trip.endDate}" pattern="dd/MM/yyyy"/>.
+                                </c:otherwise>
+                            </c:choose>
+                        </p>
+
+                        <c:if test="${trip.status == 'PLANNING' and trip.role == 'OWNER'}">
+                            <div class="lt-step-action-row" style="margin-top: 8px;">
+                                <form method="post" action="${pageContext.request.contextPath}/trip/status"
+                                      onsubmit="return confirm('Launch this trip live now? You will be able to track live activity milestones and check-ins.');" style="margin: 0;">
+                                    <input type="hidden" name="tripId" value="${trip.id}">
+                                    <input type="hidden" name="status" value="ONGOING">
+                                    <input type="hidden" name="statusToken" value="${sessionScope.tripStatusToken}">
+                                    <button type="submit" class="lt-btn-step-action lt-btn-step-primary" ${viewCanStart ? '' : 'disabled'}>
+                                        🚀 Start Trip Now
+                                    </button>
+                                </form>
+                            </div>
+                        </c:if>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <%-- 1. Trip Members Card --%>
@@ -362,10 +384,10 @@
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <c:choose>
                                     <c:when test="${member.role == 'OWNER'}">
-                                        <span class="lt-member-tag-owner">Trip owner</span>
+                                        <span class="lt-member-tag-owner" title="Owner: Full control over itinerary, members, and status">Owner · Full control</span>
                                     </c:when>
                                     <c:otherwise>
-                                        <span class="lt-member-tag-member">Member</span>
+                                        <span class="lt-member-tag-member" title="Member: Collaborator - can suggest spots, add discussion notes, log expenses, and check in">Member · Collaborator</span>
                                         <c:if test="${trip.role == 'OWNER'}">
                                             <form method="post" action="${pageContext.request.contextPath}/trip/member/remove"
                                                   onsubmit="return confirm('Remove this member from the trip?');" style="margin: 0;">
@@ -410,7 +432,7 @@
                                     <form method="post" action="${pageContext.request.contextPath}/trip/member/add" style="margin: 0;">
                                         <input type="hidden" name="tripId" value="${trip.id}">
                                         <input type="hidden" name="email" value="${friend.email}">
-                                        <button type="submit" class="lt-btn-quick-add" title="Add ${friend.fullName} to trip">
+                                        <button type="submit" class="lt-btn-quick-add" title="Add ${fn:escapeXml(friend.fullName)} to trip">
                                             + Add
                                         </button>
                                     </form>
@@ -432,7 +454,66 @@
         </c:if>
     </section>
 
-    <%-- 2. Manage Trip Actions --%>
+    
+    <%-- 2. Trip Discussion & Quick Notes Card --%>
+    <section class="lt-overview-card" style="margin-bottom: 16px;">
+        <div class="lt-overview-head">
+            <div>
+                <h2 class="lt-overview-title" style="display: flex; align-items: center; gap: 6px;">
+                    <span>💬</span> Trip Discussion & Notes
+                </h2>
+                <span style="font-size: 11px; color: #64748b;">Keep questions, recommendations, and decisions in one place</span>
+            </div>
+            <span class="lt-overview-badge">${fn:length(tripNotes)} note(s)</span>
+        </div>
+
+        <c:choose>
+            <c:when test="${empty tripNotes}">
+                <p style="font-size: 12px; color: #64748b; margin: 10px 0; font-style: italic;">
+                    No notes posted yet. Start the conversation with your travel buddies below!
+                </p>
+            </c:when>
+            <c:otherwise>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin: 12px 0 16px; max-height: 280px; overflow-y: auto;">
+                    <c:forEach var="n" items="${tripNotes}">
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 14px; position: relative;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <strong style="font-size: 12px; color: #175b43;"><c:out value="${n.userName}"/></strong>
+                                <span style="font-size: 10px; color: #94a3b8;">
+                                    <fmt:formatDate value="${n.createdAt}" pattern="dd/MM HH:mm"/>
+                                </span>
+                            </div>
+                            <p style="font-size: 12.5px; color: #334155; margin: 0; line-height: 1.45; word-break: break-word;">
+                                <c:out value="${n.noteText}"/>
+                            </p>
+                            <c:if test="${n.userId == sessionScope.user.userId or trip.role == 'OWNER'}">
+                                <form method="post" action="${pageContext.request.contextPath}/trip/note" style="margin: 4px 0 0; text-align: right;" onsubmit="return confirm('Delete this note?');">
+                                    <input type="hidden" name="tripId" value="${trip.id}">
+                                    <input type="hidden" name="noteId" value="${n.noteId}">
+                                    <input type="hidden" name="noteAction" value="delete">
+                                    <button type="submit" class="btn btn-link btn-sm text-danger p-0 text-decoration-none" style="font-size: 10px;">
+                                        Delete
+                                    </button>
+                                </form>
+                            </c:if>
+                        </div>
+                    </c:forEach>
+                </div>
+            </c:otherwise>
+        </c:choose>
+
+        <form method="post" action="${pageContext.request.contextPath}/trip/note" style="display: flex; gap: 8px; margin-top: 8px;">
+            <input type="hidden" name="tripId" value="${trip.id}">
+            <input type="hidden" name="noteAction" value="add">
+            <input type="text" name="noteText" class="lt-form-input" style="min-height: 38px; font-size: 12px; flex: 1; border-radius: 10px;"
+                   placeholder="Write a quick note or idea for the group..." maxlength="1000" required>
+            <button type="submit" class="lt-btn-action-primary" style="padding: 0 16px; border-radius: 10px; font-size: 12px; font-weight: 700; white-space: nowrap;">
+                Post
+            </button>
+        </form>
+    </section>
+
+    <%-- 3. Manage Trip Actions --%>
     <c:choose>
         <c:when test="${trip.role == 'OWNER'}">
             <%
@@ -477,7 +558,7 @@
 
                     <c:if test="${trip.status == 'ONGOING'}">
                         <form method="post" action="${pageContext.request.contextPath}/trip/status"
-                              onsubmit="return confirm('Mark trip as completed?');" style="margin: 0;">
+                              onsubmit="var count = ${incompleteActivityCount != null ? incompleteActivityCount : 0}; if (count > 0) { return confirm('You still have ' + count + ' incomplete activity/activities in this itinerary. Completing the trip will finalize it. Are you sure you want to finish the trip?'); } return confirm('Mark trip as completed?');" style="margin: 0;">
                             <input type="hidden" name="tripId" value="${trip.id}">
                             <input type="hidden" name="status" value="COMPLETED">
                             <input type="hidden" name="statusToken" value="${sessionScope.tripStatusToken}">
@@ -491,30 +572,41 @@
             </section>
 
             <c:if test="${trip.status == 'PLANNING' or trip.status == 'ONGOING'}">
-                <section class="lt-overview-card" style="border-color: #fecdd3;">
-                    <h3 style="font-size: 13px; font-weight: 700; color: #e11d48; margin: 0 0 6px;">Cancel or Delete Trip</h3>
-                    <p style="font-size: 11px; color: #64748b; margin: 0 0 12px;">Cancelling the trip preserves history for group members to view.</p>
-
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <form method="post" action="${pageContext.request.contextPath}/trip/status"
-                              onsubmit="return confirm('Cancel this trip? Existing data will be preserved.');" style="margin: 0;">
-                            <input type="hidden" name="tripId" value="${trip.id}">
-                            <input type="hidden" name="status" value="CANCELLED">
-                            <input type="hidden" name="statusToken" value="${sessionScope.tripStatusToken}">
-                            <button type="submit" class="lt-btn-danger-outline">
-                                Cancel trip
-                            </button>
-                        </form>
-
-                        <c:if test="${trip.role == 'OWNER' and trip.status == 'PLANNING'}">
-                            <form method="post" action="${pageContext.request.contextPath}/trip/delete"
-                                  onsubmit="return confirm('Permanently delete trip, itinerary, and all associated data?');" style="margin: 0;">
+                <section class="lt-overview-card" style="border-color: #fecdd3; background: #fffcfc;">
+                    <h3 style="font-size: 13.5px; font-weight: 700; color: #991b1b; margin: 0 0 6px;">Cancel or Delete Trip</h3>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
+                        <div style="background: #ffffff; border: 1px solid #fee2e2; border-radius: 10px; padding: 10px 12px;">
+                            <strong style="font-size: 12px; color: #991b1b; display: block; margin-bottom: 2px;">Option 1: Cancel Trip</strong>
+                            <p style="font-size: 11px; color: #64748b; margin: 0 0 8px; line-height: 1.4;">
+                                Changes trip status to <strong>CANCELLED</strong>. Preserves all schedules, checked-in spots, and expense settlements so companions can still review history.
+                            </p>
+                            <form method="post" action="${pageContext.request.contextPath}/trip/status"
+                                  onsubmit="return confirm('Cancel this trip? Its itinerary and expense records will remain available for history.');" style="margin: 0;">
                                 <input type="hidden" name="tripId" value="${trip.id}">
-                                <input type="hidden" name="deleteToken" value="${sessionScope.tripDeleteToken}">
-                                <button type="submit" class="lt-btn-danger-outline" style="background: #fff1f2; border-color: #fda4af;">
-                                    Delete trip permanently
+                                <input type="hidden" name="status" value="CANCELLED">
+                                <input type="hidden" name="statusToken" value="${sessionScope.tripStatusToken}">
+                                <button type="submit" class="lt-btn-danger-outline" style="font-size: 12px; padding: 6px 14px;">
+                                    Cancel trip
                                 </button>
                             </form>
+                        </div>
+
+                        <c:if test="${trip.role == 'OWNER' and trip.status == 'PLANNING'}">
+                            <div style="background: #ffffff; border: 1px solid #fecdd3; border-radius: 10px; padding: 10px 12px;">
+                                <strong style="font-size: 12px; color: #b91c1c; display: block; margin-bottom: 2px;">Option 2: Delete Permanently</strong>
+                                <p style="font-size: 11px; color: #64748b; margin: 0 0 8px; line-height: 1.4;">
+                                    Permanently wipes this trip, its items, and member associations. Only permitted while in <strong>PLANNING</strong> phase. Cannot be undone.
+                                </p>
+                                <form method="post" action="${pageContext.request.contextPath}/trip/delete"
+                                      onsubmit="return confirm('PERMANENT DELETION: Are you sure you want to permanently delete this trip and all its data? This cannot be undone.');" style="margin: 0;">
+                                    <input type="hidden" name="tripId" value="${trip.id}">
+                                    <input type="hidden" name="deleteToken" value="${sessionScope.tripDeleteToken}">
+                                    <button type="submit" class="lt-btn-danger-outline" style="background: #fee2e2; border-color: #f87171; color: #991b1b; font-size: 12px; padding: 6px 14px;">
+                                        Delete trip permanently
+                                    </button>
+                                </form>
+                            </div>
                         </c:if>
                     </div>
                 </section>
@@ -532,6 +624,44 @@
     </c:choose>
 
 </div>
+
+<%-- Trip Invite QR Modal --%>
+<div id="tripQrModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: #fff; border-radius: 20px; padding: 24px; max-width: 320px; width: 90%; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);">
+        <h3 style="font-size: 16px; font-weight: 800; color: #175b43; margin-bottom: 4px;">Join "${fn:escapeXml(trip.name)}"</h3>
+        <p style="font-size: 11.5px; color: #64748b; margin-bottom: 14px;">Scan with phone camera or QR reader to join this trip instantly</p>
+        <div id="tripQrContainer" style="display: flex; justify-content: center; margin-bottom: 14px;"></div>
+        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" onclick="closeTripQrModal()">Close</button>
+    </div>
+</div>
+
+<script>
+function copyTripInviteLink(url) {
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(function() {
+            if (typeof showLocalTripToast === 'function') {
+                showLocalTripToast('Trip invite link copied to clipboard!', 'success');
+            } else {
+                alert('Trip invite link copied to clipboard!');
+            }
+        });
+    } else {
+        prompt('Copy invite link:', url);
+    }
+}
+function openTripQrModal(url) {
+    var modal = document.getElementById('tripQrModal');
+    var container = document.getElementById('tripQrContainer');
+    if (modal && container) {
+        container.innerHTML = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(url) + '" alt="Trip QR Code" style="width:180px;height:180px;border-radius:12px;border:1px solid #e2e8f0;">';
+        modal.style.display = 'flex';
+    }
+}
+function closeTripQrModal() {
+    var modal = document.getElementById('tripQrModal');
+    if (modal) modal.style.display = 'none';
+}
+</script>
 
 <style>
     /* Planning Wizard Styles */
@@ -667,21 +797,37 @@
     .lt-btn-step-action:not(.lt-btn-step-primary):not(.lt-btn-step-outline):hover {
         background: #143b2d;
     }
-    .lt-btn-step-primary {
-        background: #175b43;
-        color: #ffffff;
+    .lt-btn-step-primary,
+    a.lt-btn-step-primary,
+    a.lt-btn-step-primary:link,
+    a.lt-btn-step-primary:visited,
+    button.lt-btn-step-primary {
+        background: #175b43 !important;
+        color: #ffffff !important;
+        text-decoration: none !important;
     }
-    .lt-btn-step-primary:hover:not(:disabled) {
-        background: #143b2d;
+    .lt-btn-step-primary:hover:not(:disabled),
+    a.lt-btn-step-primary:hover,
+    button.lt-btn-step-primary:hover:not(:disabled) {
+        background: #143b2d !important;
+        color: #ffffff !important;
+        text-decoration: none !important;
     }
-    .lt-btn-step-primary:disabled {
-        background: #cbd5e1;
+    .lt-btn-step-primary:disabled,
+    button.lt-btn-step-primary:disabled {
+        background: #cbd5e1 !important;
+        color: #64748b !important;
         cursor: not-allowed;
     }
-    .lt-btn-step-outline {
-        background: #f8fafc;
-        color: #175b43;
-        border: 1px solid #cbd5e1;
+    .lt-btn-step-outline,
+    a.lt-btn-step-outline,
+    a.lt-btn-step-outline:link,
+    a.lt-btn-step-outline:visited,
+    button.lt-btn-step-outline {
+        background: #f8fafc !important;
+        color: #175b43 !important;
+        border: 1.5px solid #cbd5e1 !important;
+        text-decoration: none !important;
     }
     .lt-btn-step-outline:hover {
         background: #f1f5f9;

@@ -1,6 +1,8 @@
 package controller.expense;
 
 import dao.ExpenseDAO;
+import dao.GroupFundDAO;
+import dao.SettlementDAO;
 import dao.TripDAO;
 import dao.TripMemberDAO;
 import java.io.IOException;
@@ -17,6 +19,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import model.Expense;
+import model.GroupFundSummary;
+import model.SettlementBalance;
 import model.Trip;
 import model.User;
 
@@ -29,10 +33,10 @@ import model.User;
 public class ExpenseServlet extends HttpServlet {
 
     private final TripDAO tripDAO = new TripDAO();
-    private final TripMemberDAO tripMemberDAO
-            = new TripMemberDAO();
-    private final ExpenseDAO expenseDAO
-            = new ExpenseDAO();
+    private final TripMemberDAO tripMemberDAO = new TripMemberDAO();
+    private final ExpenseDAO expenseDAO = new ExpenseDAO();
+    private final GroupFundDAO groupFundDAO = new GroupFundDAO();
+    private final SettlementDAO settlementDAO = new SettlementDAO();
 
     @Override
     protected void doGet(
@@ -40,10 +44,7 @@ public class ExpenseServlet extends HttpServlet {
             HttpServletResponse response
     ) throws ServletException, IOException {
 
-        User currentUser = getCurrentUser(
-                request,
-                response
-        );
+        User currentUser = getCurrentUser(request, response);
 
         if (currentUser == null) {
             return;
@@ -62,7 +63,7 @@ public class ExpenseServlet extends HttpServlet {
             if (trip == null) {
                 response.sendError(
                         HttpServletResponse.SC_NOT_FOUND,
-                        "Không tìm thấy Trip hoặc bạn không có quyền truy cập."
+                        "Trip not found or access denied."
                 );
                 return;
             }
@@ -75,7 +76,7 @@ public class ExpenseServlet extends HttpServlet {
 
                 request.getSession().setAttribute(
                         "errorMessage",
-                        "Không thể thay đổi chi phí của chuyến đi đã hoàn thành hoặc đã hủy."
+                        "Cannot modify expenses for a completed or cancelled trip."
                 );
 
                 response.sendRedirect(
@@ -84,6 +85,7 @@ public class ExpenseServlet extends HttpServlet {
                 );
                 return;
             }
+
             if ("/expenses/create".equals(path)) {
                 showCreateForm(request, response, trip);
                 return;
@@ -105,6 +107,13 @@ public class ExpenseServlet extends HttpServlet {
                     expenseDAO.findByTrip(tripId)
             );
 
+            // Summary metrics: Fund balance & Member share balances
+            GroupFundSummary fundSummary = groupFundDAO.findSummary(tripId);
+            request.setAttribute("fundSummary", fundSummary);
+
+            List<SettlementBalance> memberBalances = settlementDAO.findBalances(tripId);
+            request.setAttribute("memberBalances", memberBalances);
+
             request.getRequestDispatcher(
                     "/WEB-INF/views/expense/expense-list.jsp"
             ).forward(request, response);
@@ -116,7 +125,7 @@ public class ExpenseServlet extends HttpServlet {
             );
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể tải dữ liệu chi phí.",
+                    "Unable to load expense data.",
                     e
             );
         }
@@ -163,10 +172,11 @@ public class ExpenseServlet extends HttpServlet {
             if (trip == null) {
                 response.sendError(
                         HttpServletResponse.SC_NOT_FOUND,
-                        "Không tìm thấy Trip hoặc bạn không có quyền truy cập."
+                        "Trip not found or access denied."
                 );
                 return;
             }
+
             if ("/expenses/delete".equals(
                     request.getServletPath()
             )) {
@@ -175,7 +185,7 @@ public class ExpenseServlet extends HttpServlet {
 
                     request.getSession().setAttribute(
                             "errorMessage",
-                            "Không thể thay đổi chi phí của chuyến đi đã hoàn thành hoặc đã hủy."
+                            "Cannot modify expenses for a completed or cancelled trip."
                     );
 
                     response.sendRedirect(
@@ -184,6 +194,7 @@ public class ExpenseServlet extends HttpServlet {
                     );
                     return;
                 }
+
                 deleteExpense(
                         request,
                         response,
@@ -192,6 +203,7 @@ public class ExpenseServlet extends HttpServlet {
                 );
                 return;
             }
+
             createExpense(
                     request,
                     response,
@@ -201,7 +213,7 @@ public class ExpenseServlet extends HttpServlet {
 
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể lưu khoản chi.",
+                    "Unable to save expense.",
                     e
             );
         }
@@ -223,7 +235,7 @@ public class ExpenseServlet extends HttpServlet {
 
         request.getRequestDispatcher(
                 "/WEB-INF/views/expense/expense-form.jsp"
-        ).forward(request, response);
+            ).forward(request, response);
     }
 
     private void showEditForm(
@@ -242,7 +254,7 @@ public class ExpenseServlet extends HttpServlet {
         } catch (IllegalArgumentException e) {
             response.sendError(
                     HttpServletResponse.SC_BAD_REQUEST,
-                    "Expense ID không hợp lệ."
+                    "Invalid expense ID."
             );
             return;
         }
@@ -255,7 +267,7 @@ public class ExpenseServlet extends HttpServlet {
         if (expense == null) {
             response.sendError(
                     HttpServletResponse.SC_NOT_FOUND,
-                    "Không tìm thấy khoản chi."
+                    "Expense not found."
             );
             return;
         }
@@ -270,7 +282,7 @@ public class ExpenseServlet extends HttpServlet {
         if (!isOwner && !isCreator) {
             response.sendError(
                     HttpServletResponse.SC_FORBIDDEN,
-                    "Bạn không có quyền sửa khoản chi này."
+                    "You do not have permission to edit this expense."
             );
             return;
         }
@@ -315,7 +327,7 @@ public class ExpenseServlet extends HttpServlet {
                     request,
                     response,
                     trip,
-                    "Vui lòng nhập mô tả khoản chi."
+                    "Please enter an expense description."
             );
             return;
         }
@@ -325,7 +337,7 @@ public class ExpenseServlet extends HttpServlet {
                     request,
                     response,
                     trip,
-                    "Mô tả không được vượt quá 200 ký tự."
+                    "Description must not exceed 200 characters."
             );
             return;
         }
@@ -350,7 +362,7 @@ public class ExpenseServlet extends HttpServlet {
                     request,
                     response,
                     trip,
-                    "Người trả hoặc số tiền không hợp lệ."
+                    "Invalid payer or amount."
             );
             return;
         }
@@ -360,7 +372,7 @@ public class ExpenseServlet extends HttpServlet {
                     request,
                     response,
                     trip,
-                    "Số tiền phải lớn hơn 0."
+                    "Amount must be greater than 0."
             );
             return;
         }
@@ -373,7 +385,7 @@ public class ExpenseServlet extends HttpServlet {
                     request,
                     response,
                     trip,
-                    "Số tiền quá lớn."
+                    "Amount is too large."
             );
             return;
         }
@@ -386,7 +398,7 @@ public class ExpenseServlet extends HttpServlet {
                     request,
                     response,
                     trip,
-                    "Người trả không thuộc Trip này."
+                    "Payer does not belong to this trip."
             );
             return;
         }
@@ -403,7 +415,7 @@ public class ExpenseServlet extends HttpServlet {
                     request,
                     response,
                     trip,
-                    "Phải chọn ít nhất một người tham gia."
+                    "Please select at least one participant to split this expense."
             );
             return;
         }
@@ -424,7 +436,7 @@ public class ExpenseServlet extends HttpServlet {
                             request,
                             response,
                             trip,
-                            "Có người tham gia không thuộc Trip."
+                            "Selected participant does not belong to this trip."
                     );
                     return;
                 }
@@ -437,7 +449,7 @@ public class ExpenseServlet extends HttpServlet {
                     request,
                     response,
                     trip,
-                    "Danh sách người tham gia không hợp lệ."
+                    "Invalid participant selection."
             );
             return;
         }
@@ -478,7 +490,7 @@ public class ExpenseServlet extends HttpServlet {
             } catch (IllegalArgumentException e) {
                 response.sendError(
                         HttpServletResponse.SC_BAD_REQUEST,
-                        "Expense ID không hợp lệ."
+                        "Invalid expense ID."
                 );
                 return;
             }
@@ -494,7 +506,7 @@ public class ExpenseServlet extends HttpServlet {
             if (!updated) {
                 response.sendError(
                         HttpServletResponse.SC_FORBIDDEN,
-                        "Bạn không có quyền sửa khoản chi này."
+                        "You do not have permission to edit this expense."
                 );
                 return;
             }
@@ -510,7 +522,7 @@ public class ExpenseServlet extends HttpServlet {
                         request,
                         response,
                         trip,
-                        "Không thể lưu khoản chi."
+                        "Unable to save expense."
                 );
                 return;
             }
@@ -540,7 +552,7 @@ public class ExpenseServlet extends HttpServlet {
         } catch (IllegalArgumentException e) {
             response.sendError(
                     HttpServletResponse.SC_BAD_REQUEST,
-                    "Expense ID không hợp lệ."
+                    "Invalid expense ID."
             );
             return;
         }
@@ -554,7 +566,7 @@ public class ExpenseServlet extends HttpServlet {
         if (!deleted) {
             response.sendError(
                     HttpServletResponse.SC_FORBIDDEN,
-                    "Bạn không có quyền xóa khoản chi này."
+                    "You do not have permission to delete this expense."
             );
             return;
         }
@@ -614,7 +626,7 @@ public class ExpenseServlet extends HttpServlet {
         )) {
             response.sendError(
                     HttpServletResponse.SC_FORBIDDEN,
-                    "Bạn không có quyền sử dụng chức năng này."
+                    "You do not have permission to access this feature."
             );
 
             return null;
@@ -635,7 +647,7 @@ public class ExpenseServlet extends HttpServlet {
 
         } catch (Exception e) {
             throw new IllegalArgumentException(
-                    "ID không hợp lệ."
+                    "Invalid ID."
             );
         }
     }

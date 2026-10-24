@@ -103,11 +103,11 @@ public class AdminPlaceServlet extends HttpServlet {
             request.setAttribute("keyword", keyword);
             request.setAttribute("selectedCategory", categoryId);
             request.setAttribute("selectedStatus", status);
-            request.setAttribute("pageTitle", "Quản lý địa điểm");
+            request.setAttribute("pageTitle", "Place Management");
 
             request.getRequestDispatcher(LIST_VIEW).forward(request, response);
         } catch (RuntimeException e) {
-            request.setAttribute("errorMessage", "Không thể tải danh sách địa điểm.");
+            request.setAttribute("errorMessage", "Failed to load place list.");
             request.setAttribute("keyword", keyword);
             request.setAttribute("selectedCategory", categoryId);
             request.setAttribute("selectedStatus", status);
@@ -121,13 +121,13 @@ public class AdminPlaceServlet extends HttpServlet {
 
         int placeId = parseInt(request.getParameter("id"), -1);
         if (placeId <= 0) {
-            redirectError(request, response, "Mã địa điểm không hợp lệ.");
+            redirectError(request, response, "Invalid place ID.");
             return;
         }
 
         Place place = placeDAO.findByIdAdmin(placeId);
         if (place == null) {
-            redirectError(request, response, "Không tìm thấy địa điểm.");
+            redirectError(request, response, "Place not found.");
             return;
         }
 
@@ -139,7 +139,7 @@ public class AdminPlaceServlet extends HttpServlet {
 
         request.setAttribute("categories", categoryDAO.findAll());
         request.setAttribute("item", place);
-        request.setAttribute("pageTitle", place == null ? "Thêm địa điểm" : "Sửa địa điểm");
+        request.setAttribute("pageTitle", place == null ? "Add Place" : "Edit Place");
         request.getRequestDispatcher(FORM_VIEW).forward(request, response);
     }
 
@@ -153,7 +153,7 @@ public class AdminPlaceServlet extends HttpServlet {
             request.setAttribute("errorMessage", validationError);
             request.setAttribute("categories", categoryDAO.findAll());
             request.setAttribute("item", data.toPlace());
-            request.setAttribute("pageTitle", "Thêm địa điểm");
+            request.setAttribute("pageTitle", "Add Place");
             request.getRequestDispatcher(FORM_VIEW).forward(request, response);
             return;
         }
@@ -161,13 +161,13 @@ public class AdminPlaceServlet extends HttpServlet {
         Place place = data.toPlace();
         try {
             int id = placeDAO.insert(place);
-            logAction(request, "CREATE_PLACE", "Tạo địa điểm #" + id + " - " + place.getPlaceName());
-            redirectSuccess(request, response, "Đã thêm địa điểm thành công.");
+            logAction(request, "CREATE_PLACE", "Created place #" + id + " - " + place.getPlaceName());
+            redirectSuccess(request, response, "Place created successfully.");
         } catch (RuntimeException e) {
-            request.setAttribute("errorMessage", "Không thể thêm địa điểm. Có thể dữ liệu bị trùng hoặc không hợp lệ.");
+            request.setAttribute("errorMessage", "Failed to add place. Data may be duplicate or invalid.");
             request.setAttribute("categories", categoryDAO.findAll());
             request.setAttribute("item", place);
-            request.setAttribute("pageTitle", "Thêm địa điểm");
+            request.setAttribute("pageTitle", "Add Place");
             request.getRequestDispatcher(FORM_VIEW).forward(request, response);
         }
     }
@@ -177,7 +177,7 @@ public class AdminPlaceServlet extends HttpServlet {
 
         int placeId = parseInt(request.getParameter("placeId"), -1);
         if (placeId <= 0) {
-            redirectError(request, response, "Mã địa điểm không hợp lệ.");
+            redirectError(request, response, "Invalid place ID.");
             return;
         }
 
@@ -190,23 +190,23 @@ public class AdminPlaceServlet extends HttpServlet {
             request.setAttribute("errorMessage", validationError);
             request.setAttribute("categories", categoryDAO.findAll());
             request.setAttribute("item", place);
-            request.setAttribute("pageTitle", "Sửa địa điểm");
+            request.setAttribute("pageTitle", "Edit Place");
             request.getRequestDispatcher(FORM_VIEW).forward(request, response);
             return;
         }
 
         try {
             if (!placeDAO.update(place)) {
-                redirectError(request, response, "Không tìm thấy địa điểm để cập nhật.");
+                redirectError(request, response, "Place not found to update.");
                 return;
             }
-            logAction(request, "UPDATE_PLACE", "Cập nhật địa điểm #" + placeId + " - " + place.getPlaceName());
-            redirectSuccess(request, response, "Đã cập nhật địa điểm thành công.");
+            logAction(request, "UPDATE_PLACE", "Updated place #" + placeId + " - " + place.getPlaceName());
+            redirectSuccess(request, response, "Place updated successfully.");
         } catch (RuntimeException e) {
-            request.setAttribute("errorMessage", "Không thể cập nhật địa điểm.");
+            request.setAttribute("errorMessage", "Failed to update place.");
             request.setAttribute("categories", categoryDAO.findAll());
             request.setAttribute("item", place);
-            request.setAttribute("pageTitle", "Sửa địa điểm");
+            request.setAttribute("pageTitle", "Edit Place");
             request.getRequestDispatcher(FORM_VIEW).forward(request, response);
         }
     }
@@ -216,29 +216,29 @@ public class AdminPlaceServlet extends HttpServlet {
 
         int placeId = parseInt(request.getParameter("id"), -1);
         if (placeId <= 0) {
-            redirectError(request, response, "Mã địa điểm không hợp lệ.");
+            redirectError(request, response, "Invalid place ID.");
             return;
         }
 
         try {
             Place place = placeDAO.findByIdAdmin(placeId);
             if (place == null) {
-                redirectError(request, response, "Không tìm thấy địa điểm.");
+                redirectError(request, response, "Place not found.");
                 return;
             }
 
             boolean newStatus = !place.isActive();
             if (!placeDAO.setActive(placeId, newStatus)) {
-                redirectError(request, response, "Không thể thay đổi trạng thái địa điểm.");
+                redirectError(request, response, "Failed to update place status.");
                 return;
             }
 
             String action = newStatus ? "ACTIVATE_PLACE" : "DEACTIVATE_PLACE";
-            String statusText = newStatus ? "kích hoạt" : "tạm ẩn";
-            logAction(request, action, "Đã " + statusText + " địa điểm #" + placeId + " - " + place.getPlaceName());
-            redirectSuccess(request, response, newStatus ? "Đã kích hoạt địa điểm." : "Đã tạm ẩn địa điểm.");
+            String statusText = newStatus ? "activated" : "deactivated";
+            logAction(request, action, "Successfully " + statusText + " place #" + placeId + " - " + place.getPlaceName());
+            redirectSuccess(request, response, newStatus ? "Place activated successfully." : "Place deactivated successfully.");
         } catch (RuntimeException e) {
-            redirectError(request, response, "Không thể thay đổi trạng thái địa điểm.");
+            redirectError(request, response, "Failed to update place status.");
         }
     }
 
@@ -259,18 +259,18 @@ public class AdminPlaceServlet extends HttpServlet {
     }
 
     private String validate(PlaceFormData data) {
-        if (data.categoryId <= 0) return "Vui lòng chọn danh mục.";
-        if (data.placeName.isEmpty()) return "Tên địa điểm không được để trống.";
-        if (data.placeName.length() > 200) return "Tên địa điểm tối đa 200 ký tự.";
-        if (data.address.isEmpty()) return "Địa chỉ không được để trống.";
-        if (data.address.length() > 300) return "Địa chỉ tối đa 300 ký tự.";
-        if (data.description.length() > 1000) return "Mô tả tối đa 1000 ký tự.";
-        if (data.estimatedCost == null || data.estimatedCost.compareTo(BigDecimal.ZERO) < 0) return "Chi phí ước tính phải lớn hơn hoặc bằng 0.";
-        if (data.rating == null || data.rating.compareTo(BigDecimal.ZERO) < 0 || data.rating.compareTo(new BigDecimal("5.00")) > 0) return "Đánh giá phải từ 0 đến 5.";
-        if (data.openingTime != null && data.closingTime != null && data.openingTime.after(data.closingTime)) return "Giờ mở cửa không được sau giờ đóng cửa.";
-        if (data.latitude != null && (data.latitude.compareTo(new BigDecimal("-90")) < 0 || data.latitude.compareTo(new BigDecimal("90")) > 0)) return "Latitude phải từ -90 đến 90.";
-        if (data.longitude != null && (data.longitude.compareTo(new BigDecimal("-180")) < 0 || data.longitude.compareTo(new BigDecimal("180")) > 0)) return "Longitude phải từ -180 đến 180.";
-        if (!"INDOOR".equals(data.placeType) && !"OUTDOOR".equals(data.placeType)) return "Loại địa điểm không hợp lệ.";
+        if (data.categoryId <= 0) return "Please select a category.";
+        if (data.placeName.isEmpty()) return "Place name cannot be empty.";
+        if (data.placeName.length() > 200) return "Place name cannot exceed 200 characters.";
+        if (data.address.isEmpty()) return "Address cannot be empty.";
+        if (data.address.length() > 300) return "Address cannot exceed 300 characters.";
+        if (data.description.length() > 1000) return "Description cannot exceed 1000 characters.";
+        if (data.estimatedCost == null || data.estimatedCost.compareTo(BigDecimal.ZERO) < 0) return "Estimated cost must be greater than or equal to 0.";
+        if (data.rating == null || data.rating.compareTo(BigDecimal.ZERO) < 0 || data.rating.compareTo(new BigDecimal("5.00")) > 0) return "Rating must be between 0 and 5.";
+        if (data.openingTime != null && data.closingTime != null && data.openingTime.after(data.closingTime)) return "Opening time cannot be after closing time.";
+        if (data.latitude != null && (data.latitude.compareTo(new BigDecimal("-90")) < 0 || data.latitude.compareTo(new BigDecimal("90")) > 0)) return "Latitude must be between -90 and 90.";
+        if (data.longitude != null && (data.longitude.compareTo(new BigDecimal("-180")) < 0 || data.longitude.compareTo(new BigDecimal("180")) > 0)) return "Longitude must be between -180 and 180.";
+        if (!"INDOOR".equals(data.placeType) && !"OUTDOOR".equals(data.placeType)) return "Invalid place type.";
         return null;
     }
 

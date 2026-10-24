@@ -169,14 +169,14 @@ public class PreferenceServlet extends HttpServlet {
 
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể lưu Preferences.",
+                    "Unable to save preferences.",
                     e
             );
         }
 
         request.getSession().setAttribute(
                 "successMessage",
-                "Lưu sở thích thành công."
+                "Preferences saved successfully."
         );
 
         response.sendRedirect(
@@ -214,7 +214,7 @@ public class PreferenceServlet extends HttpServlet {
 
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể tải Preferences.",
+                    "Unable to load preferences.",
                     e
             );
         }
@@ -248,7 +248,7 @@ public class PreferenceServlet extends HttpServlet {
 
         } catch (RuntimeException e) {
             throw new ServletException(
-                    "Không thể tải sở thích nhóm.",
+                    "Unable to load group preferences.",
                     e
             );
         }

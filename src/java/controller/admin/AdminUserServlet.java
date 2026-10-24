@@ -157,7 +157,7 @@ public class AdminUserServlet extends HttpServlet {
 
             request.setAttribute(
                     "pageTitle",
-                    "Quản lý người dùng"
+                    "User Management"
             );
 
             request.getRequestDispatcher(LIST_VIEW)
@@ -166,7 +166,7 @@ public class AdminUserServlet extends HttpServlet {
         } catch (RuntimeException e) {
             request.setAttribute(
                     "errorMessage",
-                    "Không thể tải danh sách người dùng."
+                    "Failed to load user list."
             );
 
             request.setAttribute("keyword", keyword);
@@ -182,7 +182,7 @@ public class AdminUserServlet extends HttpServlet {
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        request.setAttribute("pageTitle", "Thêm người dùng");
+        request.setAttribute("pageTitle", "Add User");
 
         request.getRequestDispatcher(FORM_VIEW)
                 .forward(request, response);
@@ -199,7 +199,7 @@ public class AdminUserServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             request.getSession().setAttribute(
                     "errorMessage",
-                    "Mã người dùng không hợp lệ."
+                    "Invalid user ID."
             );
 
             response.sendRedirect(
@@ -214,7 +214,7 @@ public class AdminUserServlet extends HttpServlet {
             if (item == null) {
                 request.getSession().setAttribute(
                         "errorMessage",
-                        "Không tìm thấy người dùng."
+                        "User not found."
                 );
 
                 response.sendRedirect(
@@ -224,7 +224,7 @@ public class AdminUserServlet extends HttpServlet {
             }
 
             request.setAttribute("item", item);
-            request.setAttribute("pageTitle", "Sửa người dùng");
+            request.setAttribute("pageTitle", "Edit User");
 
             request.getRequestDispatcher(FORM_VIEW)
                     .forward(request, response);
@@ -232,7 +232,7 @@ public class AdminUserServlet extends HttpServlet {
         } catch (RuntimeException e) {
             request.getSession().setAttribute(
                     "errorMessage",
-                    "Không thể tải thông tin người dùng."
+                    "Failed to load user information."
             );
 
             response.sendRedirect(
@@ -255,7 +255,7 @@ public class AdminUserServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             request.getSession().setAttribute(
                     "errorMessage",
-                    "Mã người dùng không hợp lệ."
+                    "Invalid user ID."
             );
 
             response.sendRedirect(
@@ -270,7 +270,7 @@ public class AdminUserServlet extends HttpServlet {
             if (item == null) {
                 request.getSession().setAttribute(
                         "errorMessage",
-                        "Không tìm thấy người dùng."
+                        "User not found."
                 );
 
                 response.sendRedirect(
@@ -287,7 +287,7 @@ public class AdminUserServlet extends HttpServlet {
         } catch (RuntimeException e) {
             request.getSession().setAttribute(
                     "errorMessage",
-                    "Không thể tải thông tin người dùng."
+                    "Failed to load user information."
             );
 
             response.sendRedirect(
@@ -330,7 +330,7 @@ public class AdminUserServlet extends HttpServlet {
                 forwardWithError(
                         request,
                         response,
-                        "Email này đã được sử dụng."
+                        "This email address is already in use."
                 );
                 return;
             }
@@ -347,7 +347,7 @@ public class AdminUserServlet extends HttpServlet {
                 forwardWithError(
                         request,
                         response,
-                        "Email này đã được sử dụng."
+                        "This email address is already in use."
                 );
                 return;
             }
@@ -366,7 +366,7 @@ public class AdminUserServlet extends HttpServlet {
                             actor.getUserId(),
                             "CREATE_USER",
                             Integer.valueOf(createdUser.getUserId()),
-                            "Tạo user " + email
+                            "Created user " + email
                             + ", role=" + role
                             + ", status="
                             + (active ? "ACTIVE" : "LOCKED")
@@ -381,7 +381,7 @@ public class AdminUserServlet extends HttpServlet {
 
             request.getSession().setAttribute(
                     "successMessage",
-                    "Đã tạo người dùng " + email
+                    "Successfully created user " + email
             );
 
             response.sendRedirect(
@@ -392,7 +392,7 @@ public class AdminUserServlet extends HttpServlet {
             forwardWithError(
                     request,
                     response,
-                    "Không thể tạo người dùng. Vui lòng thử lại."
+                    "Failed to create user. Please try again."
             );
         }
     }
@@ -410,7 +410,7 @@ public class AdminUserServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             request.getSession().setAttribute(
                     "errorMessage",
-                    "Mã người dùng không hợp lệ."
+                    "Invalid user ID."
             );
 
             response.sendRedirect(
@@ -430,7 +430,7 @@ public class AdminUserServlet extends HttpServlet {
         if (item == null) {
             request.getSession().setAttribute(
                     "errorMessage",
-                    "Không tìm thấy người dùng."
+                    "User not found."
             );
 
             response.sendRedirect(
@@ -473,7 +473,7 @@ public class AdminUserServlet extends HttpServlet {
                     request,
                     response,
                     item,
-                    "Bạn không thể tự hạ quyền hoặc khóa tài khoản đang đăng nhập."
+                    "You cannot demote or deactivate your currently logged-in account."
             );
             return;
         }
@@ -484,7 +484,7 @@ public class AdminUserServlet extends HttpServlet {
                         request,
                         response,
                         item,
-                        "Email này đã được tài khoản khác sử dụng."
+                        "This email address is already in use by another account."
                 );
                 return;
             }
@@ -502,7 +502,7 @@ public class AdminUserServlet extends HttpServlet {
                         request,
                         response,
                         item,
-                        "Không thể cập nhật người dùng."
+                        "Failed to update user."
                 );
                 return;
             }
@@ -515,7 +515,7 @@ public class AdminUserServlet extends HttpServlet {
                             actor.getUserId(),
                             "UPDATE_USER",
                             Integer.valueOf(userId),
-                            "Cập nhật user "
+                            "Updated user "
                             + item.getEmail()
                             + " -> " + email
                             + ", role="
@@ -548,7 +548,7 @@ public class AdminUserServlet extends HttpServlet {
 
             request.getSession().setAttribute(
                     "successMessage",
-                    "Đã cập nhật người dùng " + email
+                    "Successfully updated user " + email
             );
 
             response.sendRedirect(
@@ -560,7 +560,7 @@ public class AdminUserServlet extends HttpServlet {
                     request,
                     response,
                     item,
-                    "Không thể cập nhật người dùng. Vui lòng thử lại."
+                    "Failed to update user. Please try again."
             );
         }
     }
@@ -578,7 +578,7 @@ public class AdminUserServlet extends HttpServlet {
         } catch (NumberFormatException e) {
             request.getSession().setAttribute(
                     "errorMessage",
-                    "Mã người dùng không hợp lệ."
+                    "Invalid user ID."
             );
 
             response.sendRedirect(
@@ -598,7 +598,7 @@ public class AdminUserServlet extends HttpServlet {
         if (item == null) {
             request.getSession().setAttribute(
                     "errorMessage",
-                    "Không tìm thấy người dùng."
+                    "User not found."
             );
 
             response.sendRedirect(
@@ -618,7 +618,7 @@ public class AdminUserServlet extends HttpServlet {
                     request,
                     response,
                     item,
-                    "Vui lòng nhập đầy đủ mật khẩu mới."
+                    "Please enter the complete new password."
             );
             return;
         }
@@ -628,11 +628,11 @@ public class AdminUserServlet extends HttpServlet {
                     request,
                     response,
                     item,
-                    "Mật khẩu phải từ "
+                    "Password must be between "
                     + ValidationUtil.PASSWORD_MIN
-                    + " đến "
+                    + " and "
                     + ValidationUtil.PASSWORD_MAX
-                    + " ký tự."
+                    + " characters."
             );
             return;
         }
@@ -642,7 +642,7 @@ public class AdminUserServlet extends HttpServlet {
                     request,
                     response,
                     item,
-                    "Mật khẩu nhập lại không khớp."
+                    "Password confirmation does not match."
             );
             return;
         }
@@ -662,7 +662,7 @@ public class AdminUserServlet extends HttpServlet {
                         request,
                         response,
                         item,
-                        "Không thể đặt lại mật khẩu."
+                        "Failed to reset password."
                 );
                 return;
             }
@@ -686,7 +686,7 @@ public class AdminUserServlet extends HttpServlet {
                             actor.getUserId(),
                             "RESET_PASSWORD",
                             Integer.valueOf(userId),
-                            "Đặt lại mật khẩu cho user "
+                            "Reset password for user "
                             + item.getEmail()
                     );
                 }
@@ -698,7 +698,7 @@ public class AdminUserServlet extends HttpServlet {
             }
             request.getSession().setAttribute(
                     "successMessage",
-                    "Đã đặt lại mật khẩu cho "
+                    "Successfully reset password for "
                     + item.getEmail()
             );
 
@@ -711,7 +711,7 @@ public class AdminUserServlet extends HttpServlet {
                     request,
                     response,
                     item,
-                    "Không thể đặt lại mật khẩu. Vui lòng thử lại."
+                    "Failed to reset password. Please try again."
             );
         }
     }
@@ -722,20 +722,20 @@ public class AdminUserServlet extends HttpServlet {
 
         if (ValidationUtil.isBlank(fullName)
                 || ValidationUtil.isBlank(email)) {
-            return "Vui lòng nhập đầy đủ họ tên và email.";
+            return "Please enter full name and email.";
         }
 
         if (!ValidationUtil.isValidName(fullName)) {
-            return "Họ tên không được vượt quá "
-                    + ValidationUtil.NAME_MAX + " ký tự.";
+            return "Full name cannot exceed "
+                    + ValidationUtil.NAME_MAX + " characters.";
         }
 
         if (!ValidationUtil.isValidEmail(email)) {
-            return "Email không đúng định dạng.";
+            return "Invalid email format.";
         }
 
         if (!"ADMIN".equals(role) && !"USER".equals(role)) {
-            return "Vai trò không hợp lệ.";
+            return "Invalid role.";
         }
 
         return null;
@@ -749,7 +749,7 @@ public class AdminUserServlet extends HttpServlet {
 
         request.setAttribute("item", item);
         request.setAttribute("errorMessage", message);
-        request.setAttribute("pageTitle", "Sửa người dùng");
+        request.setAttribute("pageTitle", "Edit User");
 
         request.getRequestDispatcher(FORM_VIEW)
                 .forward(request, response);
@@ -766,16 +766,16 @@ public class AdminUserServlet extends HttpServlet {
                 || ValidationUtil.isBlank(password)
                 || ValidationUtil.isBlank(confirmPassword)) {
 
-            return "Vui lòng nhập đầy đủ thông tin.";
+            return "Please fill in all required fields.";
         }
 
         if (!ValidationUtil.isValidName(fullName)) {
-            return "Họ tên không được vượt quá "
-                    + ValidationUtil.NAME_MAX + " ký tự.";
+            return "Full name cannot exceed "
+                    + ValidationUtil.NAME_MAX + " characters.";
         }
 
         if (!ValidationUtil.isValidEmail(email)) {
-            return "Email không đúng định dạng.";
+            return "Invalid email format.";
         }
 
         String passwordError = PasswordValidator.validate(password);
@@ -785,11 +785,11 @@ public class AdminUserServlet extends HttpServlet {
         }
 
         if (!password.equals(confirmPassword)) {
-            return "Mật khẩu nhập lại không khớp.";
+            return "Password confirmation does not match.";
         }
 
         if (!"ADMIN".equals(role) && !"USER".equals(role)) {
-            return "Vai trò không hợp lệ.";
+            return "Invalid role.";
         }
 
         return null;
@@ -806,7 +806,7 @@ public class AdminUserServlet extends HttpServlet {
         request.setAttribute("errorMessage", message);
         request.setAttribute(
                 "pageTitle",
-                "Đặt lại mật khẩu"
+                "Reset Password"
         );
 
         request.getRequestDispatcher(RESET_PASSWORD_VIEW)
@@ -819,7 +819,7 @@ public class AdminUserServlet extends HttpServlet {
             throws ServletException, IOException {
 
         request.setAttribute("errorMessage", message);
-        request.setAttribute("pageTitle", "Thêm người dùng");
+        request.setAttribute("pageTitle", "Add User");
 
         request.getRequestDispatcher(FORM_VIEW)
                 .forward(request, response);

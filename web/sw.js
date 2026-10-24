@@ -1,20 +1,36 @@
 // LocalTrip PWA - Service Worker
-// Version: 1.4.0 (Network-First Itinerary Offline Support)
+// Version: 2.0.0 (Dynamic Scope & Network-First Itinerary Offline Support)
 
-const CACHE_NAME = 'localtrip-static-v5';
-const OFFLINE_FALLBACK = '/LocalTrip/offline.html';
+const CACHE_NAME = 'localtrip-static-v6';
+
+// Derive relative paths dynamically from service worker scope to support root domains (e.g. Render / Azure) and subpaths (/LocalTrip/)
+const SCOPE_BASE = (function () {
+    try {
+        const scopeUrl = new URL(self.registration.scope);
+        let path = scopeUrl.pathname;
+        if (!path.endsWith('/')) {
+            path += '/';
+        }
+        return path;
+    } catch (e) {
+        return './';
+    }
+})();
+
+const OFFLINE_FALLBACK = SCOPE_BASE + 'offline.html';
+const MANIFEST_URL = SCOPE_BASE + 'manifest.json';
 
 // 1. Install event: pre-cache offline page & core branding
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             return Promise.allSettled([
-                cache.add(new Request('/LocalTrip/offline.html', { cache: 'reload' })),
-                cache.add(new Request('/LocalTrip/manifest.json', { cache: 'reload' })),
-                cache.add(new Request('/LocalTrip/css/mobile-user.css?v=2', { cache: 'reload' })),
-                cache.add(new Request('/LocalTrip/css/localtrip.css?v=2', { cache: 'reload' })),
-                cache.add(new Request('/LocalTrip/js/image-compressor.js', { cache: 'reload' })),
-                cache.add(new Request('/LocalTrip/images/icon-192.png', { cache: 'reload' }))
+                cache.add(new Request(OFFLINE_FALLBACK, { cache: 'reload' })),
+                cache.add(new Request(MANIFEST_URL, { cache: 'reload' })),
+                cache.add(new Request(SCOPE_BASE + 'css/mobile-user.css?v=2', { cache: 'reload' })),
+                cache.add(new Request(SCOPE_BASE + 'css/localtrip.css?v=2', { cache: 'reload' })),
+                cache.add(new Request(SCOPE_BASE + 'js/image-compressor.js', { cache: 'reload' })),
+                cache.add(new Request(SCOPE_BASE + 'images/icon-192.png', { cache: 'reload' }))
             ]);
         }).then(() => self.skipWaiting())
     );
@@ -84,7 +100,7 @@ self.addEventListener('fetch', (event) => {
                 if (cachedOffline) {
                     return cachedOffline;
                 }
-                return (await caches.match('/LocalTrip/offline.html')) || (await caches.match('offline.html'));
+                return (await cache.match(SCOPE_BASE + 'offline.html')) || (await caches.match('offline.html'));
             })
         );
         return;

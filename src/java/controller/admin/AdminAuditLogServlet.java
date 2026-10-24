@@ -52,14 +52,14 @@ public class AdminAuditLogServlet extends HttpServlet {
             request.setAttribute("page", page);
             request.setAttribute("totalPages", totalPages);
             request.setAttribute("pageSize", PAGE_SIZE);
-            request.setAttribute("pageTitle", "Nhật ký quản trị");
+            request.setAttribute("pageTitle", "Admin Audit Logs");
         } catch (RuntimeException e) {
             request.setAttribute("logs", Collections.emptyList());
             request.setAttribute("keyword", keyword);
             request.setAttribute("selectedAction", action);
             request.setAttribute("actions", ACTIONS);
-            request.setAttribute("errorMessage", "Không thể tải nhật ký quản trị.");
-            request.setAttribute("pageTitle", "Nhật ký quản trị");
+            request.setAttribute("errorMessage", "Failed to load admin audit logs.");
+            request.setAttribute("pageTitle", "Admin Audit Logs");
         }
 
         request.getRequestDispatcher(VIEW).forward(request, response);

@@ -7,7 +7,7 @@
     }
     function readPoint(element) {
         const data = element.dataset;
-        return {id: Number(data.id), name: data.name || 'Địa điểm',
+        return {id: Number(data.id), name: data.name || 'Place',
             lat: coordinate(data.lat, 90), lng: coordinate(data.lng, 180),
             date: data.date || '', start: data.start || '', end: data.end || ''};
     }

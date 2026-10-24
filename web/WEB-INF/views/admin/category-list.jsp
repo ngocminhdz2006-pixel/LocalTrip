@@ -11,7 +11,7 @@
         keyword = "";
     }
 
-    request.setAttribute("pageTitle", "Quản lý danh mục");
+    request.setAttribute("pageTitle", "Category Management");
     request.setAttribute("tripRedesign", Boolean.TRUE);
 %>
 
@@ -21,33 +21,32 @@
     <div class="rd-hero-top">
         <div>
             <div class="small text-white-50 mb-2">
-                LOCALTRIP · QUẢN TRỊ ĐỊA ĐIỂM
+                LOCALTRIP · PLACE ADMINISTRATION
             </div>
 
-            <h1 class="mb-2">Quản lý danh mục</h1>
+            <h1 class="mb-2">Category Management</h1>
 
             <p class="text-white mb-0">
-                Quản lý các nhóm địa điểm được sử dụng
-                trong hệ thống LocalTrip.
+                Manage place categories used across the LocalTrip system.
             </p>
         </div>
 
         <div class="d-flex flex-wrap gap-2">
             <a class="rd-back"
                href="<%= request.getContextPath() %>/admin/categories/create">
-                + Thêm danh mục
+                + Add Category
             </a>
 
             <a class="rd-back"
                href="<%= request.getContextPath() %>/admin">
-                ← Tổng quan quản trị
+                ← Admin Dashboard
             </a>
         </div>
     </div>
 </section>
 
 <section class="rd-card mb-4">
-    <h2 class="h5 mb-3">Tìm kiếm danh mục</h2>
+    <h2 class="h5 mb-3">Search Categories</h2>
 
     <form method="get"
           action="<%= request.getContextPath() %>/admin/categories">
@@ -56,7 +55,7 @@
             <div class="col-12 col-lg-8">
                 <label for="categoryKeyword"
                        class="form-label fw-semibold">
-                    Mã hoặc tên danh mục
+                    Category code or name
                 </label>
 
                 <input type="text"
@@ -64,19 +63,19 @@
                        name="keyword"
                        class="form-control"
                        value="<%= HtmlUtil.escape(keyword) %>"
-                       placeholder="Nhập mã hoặc tên danh mục">
+                       placeholder="Enter category code or name...">
             </div>
 
             <div class="col-12 col-lg-4">
                 <div class="d-flex flex-wrap gap-2">
                     <button type="submit"
                             class="btn btn-primary">
-                        Tìm kiếm
+                        Search
                     </button>
 
                     <a class="btn btn-outline-secondary"
                        href="<%= request.getContextPath() %>/admin/categories">
-                        Xóa bộ lọc
+                        Clear Filters
                     </a>
                 </div>
             </div>
@@ -87,10 +86,10 @@
 <section class="rd-card">
     <div class="d-flex justify-content-between
                 align-items-center flex-wrap gap-2 mb-4">
-        <h2 class="h4 mb-0">Danh sách danh mục</h2>
+        <h2 class="h4 mb-0">Category List</h2>
 
         <span class="rd-count">
-            <%= categories == null ? 0 : categories.size() %> kết quả
+            <%= categories == null ? 0 : categories.size() %> results
         </span>
     </div>
 
@@ -98,8 +97,7 @@
 
         <div class="border-top pt-4">
             <p class="text-muted mb-0">
-                Không tìm thấy danh mục phù hợp.
-                Hãy thử từ khóa khác hoặc xóa bộ lọc.
+                No matching categories found. Try a different keyword or clear filters.
             </p>
         </div>
 
@@ -110,12 +108,12 @@
                 <thead>
                     <tr>
                         <th scope="col">ID</th>
-                        <th scope="col">Mã danh mục</th>
-                        <th scope="col">Tên danh mục</th>
+                        <th scope="col">Category Code</th>
+                        <th scope="col">Category Name</th>
                         <th scope="col" class="text-center">
-                            Số địa điểm
+                            Place Count
                         </th>
-                        <th scope="col">Thao tác</th>
+                        <th scope="col">Actions</th>
                     </tr>
                 </thead>
 
@@ -147,13 +145,13 @@
                                 <div class="d-flex flex-wrap gap-2">
                                     <a class="btn btn-sm btn-outline-primary"
                                        href="<%= request.getContextPath() %>/admin/categories/edit?id=<%= category.getCategoryId() %>">
-                                        Sửa
+                                        Edit
                                     </a>
 
                                     <% if (category.getPlaceCount() == 0) { %>
                                         <form method="post"
                                               action="<%= request.getContextPath() %>/admin/categories/delete"
-                                              onsubmit="return confirm('Bạn có chắc muốn xóa danh mục này không?');">
+                                              onsubmit="return confirm('Are you sure you want to delete this category?');">
 
                                             <input type="hidden"
                                                    name="id"
@@ -161,14 +159,14 @@
 
                                             <button type="submit"
                                                     class="btn btn-sm btn-outline-danger">
-                                                Xóa
+                                                Delete
                                             </button>
                                         </form>
                                     <% } else { %>
                                         <button type="button"
                                                 class="btn btn-sm btn-outline-secondary"
                                                 disabled>
-                                            Đang được sử dụng
+                                            In Use
                                         </button>
                                     <% } %>
                                 </div>

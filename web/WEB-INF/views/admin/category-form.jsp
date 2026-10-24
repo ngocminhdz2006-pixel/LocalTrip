@@ -5,7 +5,7 @@
     Category item = (Category) request.getAttribute("item");
     boolean editing = item != null;
 
-    String formTitle = editing ? "Sửa danh mục" : "Thêm danh mục";
+    String formTitle = editing ? "Edit Category" : "Add Category";
 
     String codeValue = request.getParameter("categoryCode");
     String nameValue = request.getParameter("categoryName");
@@ -28,20 +28,19 @@
     <div class="rd-hero-top">
         <div>
             <div class="small text-white-50 mb-2">
-                LOCALTRIP · QUẢN TRỊ ĐỊA ĐIỂM
+                LOCALTRIP · PLACE ADMINISTRATION
             </div>
 
             <h1 class="mb-2"><%= formTitle %></h1>
 
             <p class="text-white mb-0">
-                Cập nhật danh mục để phân loại địa điểm
-                trong hệ thống LocalTrip.
+                Manage categories to classify places across LocalTrip.
             </p>
         </div>
 
         <a class="rd-back"
            href="<%= request.getContextPath() %>/admin/categories">
-            ← Danh sách danh mục
+            ← Category List
         </a>
     </div>
 </section>
@@ -49,10 +48,10 @@
 <div class="row justify-content-center">
     <div class="col-12 col-lg-8">
         <section class="rd-card">
-            <h2 class="h4 mb-2">Thông tin danh mục</h2>
+            <h2 class="h4 mb-2">Category Information</h2>
 
             <p class="text-muted mb-4">
-                Nhập mã nhận diện và tên hiển thị của danh mục.
+                Enter unique code and display name for this category.
             </p>
 
             <form method="post"
@@ -67,7 +66,7 @@
                 <div class="mb-4">
                     <label for="categoryCode"
                            class="form-label fw-semibold">
-                        Mã danh mục
+                        Category Code
                     </label>
 
                     <input type="text"
@@ -76,19 +75,19 @@
                            class="form-control"
                            maxlength="50"
                            value="<%= HtmlUtil.escape(codeValue) %>"
-                           placeholder="Ví dụ: FOOD, NATURE, SHOPPING"
+                           placeholder="e.g. FOOD, NATURE, SHOPPING"
                            aria-describedby="categoryCodeHelp"
                            required>
 
                     <div id="categoryCodeHelp" class="form-text">
-                        Chỉ dùng chữ cái, số, dấu - hoặc _.
+                        Letters, numbers, hyphens or underscores only.
                     </div>
                 </div>
 
                 <div class="mb-4">
                     <label for="categoryName"
                            class="form-label fw-semibold">
-                        Tên danh mục
+                        Category Name
                     </label>
 
                     <input type="text"
@@ -97,19 +96,19 @@
                            class="form-control"
                            maxlength="100"
                            value="<%= HtmlUtil.escape(nameValue) %>"
-                           placeholder="Ví dụ: Ăn uống"
+                           placeholder="e.g. Dining & Street Food"
                            required>
                 </div>
 
                 <div class="border-top pt-4 d-flex flex-wrap gap-2">
                     <button type="submit"
                             class="btn btn-primary px-4">
-                        <%= editing ? "Lưu thay đổi" : "Thêm danh mục" %>
+                        <%= editing ? "Save Changes" : "Create Category" %>
                     </button>
 
                     <a class="btn btn-outline-secondary px-4"
                        href="<%= request.getContextPath() %>/admin/categories">
-                        Hủy
+                        Cancel
                     </a>
                 </div>
             </form>

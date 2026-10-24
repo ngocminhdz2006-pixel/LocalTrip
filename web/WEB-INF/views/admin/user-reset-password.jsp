@@ -4,7 +4,7 @@
 <%
     User item = (User) request.getAttribute("item");
 
-    request.setAttribute("pageTitle", "Đặt lại mật khẩu");
+    request.setAttribute("pageTitle", "Reset Password");
     request.setAttribute("tripRedesign", Boolean.TRUE);
 %>
 
@@ -14,19 +14,19 @@
     <div class="rd-hero-top">
         <div>
             <div class="small text-white-50 mb-2">
-                LOCALTRIP · QUẢN TRỊ TÀI KHOẢN
+                LOCALTRIP · USER ADMINISTRATION
             </div>
 
-            <h1 class="mb-2">Đặt lại mật khẩu</h1>
+            <h1 class="mb-2">Reset Password</h1>
 
             <p class="text-white mb-0">
-                Tạo mật khẩu mới cho tài khoản người dùng.
+                Generate a new password for this user account.
             </p>
         </div>
 
         <a class="rd-back"
            href="<%= request.getContextPath() %>/admin/users">
-            ← Danh sách người dùng
+            ← User List
         </a>
     </div>
 </section>
@@ -36,22 +36,22 @@
         <section class="rd-card">
             <% if (item == null) { %>
 
-                <h2 class="h4 mb-3">Không tìm thấy người dùng</h2>
+                <h2 class="h4 mb-3">User Not Found</h2>
 
                 <p class="text-muted mb-4">
-                    Quay lại danh sách để chọn tài khoản cần cập nhật.
+                    Return to the user list to select an account.
                 </p>
 
                 <a class="btn btn-outline-secondary"
                    href="<%= request.getContextPath() %>/admin/users">
-                    Danh sách người dùng
+                    User List
                 </a>
 
             <% } else { %>
 
                 <div class="border-bottom pb-4 mb-4">
                     <div class="small text-muted mb-2">
-                        Tài khoản cần đặt lại mật khẩu
+                        Target User Account
                     </div>
 
                     <h2 class="h4 mb-1"
@@ -76,7 +76,7 @@
                     <div class="mb-3">
                         <label for="adminNewPassword"
                                class="form-label fw-semibold">
-                            Mật khẩu mới
+                            New Password
                         </label>
 
                         <input type="password"
@@ -86,21 +86,20 @@
                                minlength="8"
                                maxlength="64"
                                pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,64}"
-                               title="Mật khẩu phải có 8–64 ký tự, gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt."
+                               title="Password must be 8–64 characters with uppercase, lowercase, number, and special character."
                                autocomplete="new-password"
                                aria-describedby="adminPasswordHelp"
                                required>
 
                         <div id="adminPasswordHelp" class="form-text">
-                            Từ 8 đến 64 ký tự, gồm chữ hoa,
-                            chữ thường, chữ số và ký tự đặc biệt.
+                            8 to 64 characters, including uppercase, lowercase, number, and symbol.
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label for="adminConfirmPassword"
                                class="form-label fw-semibold">
-                            Nhập lại mật khẩu mới
+                            Confirm New Password
                         </label>
 
                         <input type="password"
@@ -120,19 +119,19 @@
 
                         <label for="showAdminPasswords"
                                class="form-check-label">
-                            Hiển thị mật khẩu
+                            Show password
                         </label>
                     </div>
 
                     <div class="border-top pt-4 d-flex flex-wrap gap-2">
                         <button type="submit"
                                 class="btn btn-primary px-4">
-                            Lưu mật khẩu mới
+                            Save New Password
                         </button>
 
                         <a class="btn btn-outline-secondary px-4"
                            href="<%= request.getContextPath() %>/admin/users">
-                            Hủy
+                            Cancel
                         </a>
                     </div>
                 </form>
@@ -157,7 +156,7 @@
     function validateConfirmation() {
         confirmation.setCustomValidity(
             confirmation.value && confirmation.value !== password.value
-                ? 'Mật khẩu nhập lại chưa khớp.'
+                ? 'Password confirmation does not match.'
                 : ''
         );
     }

@@ -129,6 +129,30 @@
     Past days will be preserved.
     This preview remains valid for 30 minutes.
 </div>
+<%-- Trip Pace Selector --%>
+<div class="rd-card mb-4" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 18px;">
+    <h3 style="font-size: 14px; font-weight: 700; color: #175b43; margin-bottom: 6px;">Trip Pace (Intensity)</h3>
+    <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">Choose how relaxed or packed your days should be, then regenerate:</p>
+    <form method="get" action="${pageContext.request.contextPath}/itinerary/auto" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+        <input type="hidden" name="tripId" value="${trip.id}">
+        <label style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer;">
+            <input type="radio" name="pace" value="RELAXED" ${selectedPace == 'RELAXED' ? 'checked' : ''} style="accent-color: #175b43;">
+            Relaxed 🌿 (2-3 stops/day)
+        </label>
+        <label style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer;">
+            <input type="radio" name="pace" value="BALANCED" ${empty selectedPace or selectedPace == 'BALANCED' ? 'checked' : ''} style="accent-color: #175b43;">
+            Balanced ⚖️ (3-4 stops/day)
+        </label>
+        <label style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer;">
+            <input type="radio" name="pace" value="PACKED" ${selectedPace == 'PACKED' ? 'checked' : ''} style="accent-color: #175b43;">
+            Packed ⚡ (4-6 stops/day)
+        </label>
+        <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3" style="background: #175b43; border-color: #175b43; font-weight: 600;">
+            Apply Pace & Regenerate
+        </button>
+    </form>
+</div>
+
 <div class="rd-preview-stats">
     <div class="rd-preview-stat">
         <span>Current items in affected range</span>
@@ -166,7 +190,12 @@
             <tbody><c:forEach var="item" items="${draft.items}"><tr>
                         <td><fmt:formatDate value="${item.visitDate}" pattern="dd/MM/yyyy"/></td>
                         <td><fmt:formatDate value="${item.startTime}" pattern="HH:mm"/> – <fmt:formatDate value="${item.endTime}" pattern="HH:mm"/></td>
-                        <td><c:out value="${item.placeName}"/></td><td><c:out value="${item.note}"/></td>
+                        <td>
+    <strong><c:out value="${item.placeName}"/></strong>
+    <c:if test="${item.locked}">
+        <span class="badge" style="background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; font-size:10px; margin-left:4px;">🔒 Pinned (Preserved)</span>
+    </c:if>
+</td><td><span style="font-size: 12px; color: #15803d; font-weight: 600;"><c:out value="${item.note}"/></span></td>
                         <td><fmt:formatNumber value="${item.estimatedCost}" maxFractionDigits="0"/> VND</td>
                     </tr></c:forEach></tbody>
             </table></div>

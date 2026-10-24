@@ -23,7 +23,7 @@
     String dashboardError =
         (String) request.getAttribute("dashboardError");
 
-    request.setAttribute("pageTitle", "Tổng quan quản trị");
+    request.setAttribute("pageTitle", "Admin Dashboard");
     request.setAttribute("tripRedesign", Boolean.TRUE);
 %>
 
@@ -33,22 +33,22 @@
     <div class="rd-hero-top">
         <div>
             <div class="small text-white-50 mb-2">
-                LOCALTRIP · KHÔNG GIAN QUẢN TRỊ
+                LOCALTRIP · ADMIN WORKSPACE
             </div>
 
-            <h1 class="mb-3">Tổng quan hệ thống</h1>
+            <h1 class="mb-3">System Overview</h1>
 
             <p class="text-white mb-0">
-                Xin chào,
+                Welcome back,
                 <strong><%= HtmlUtil.escape(currentUser.getFullName()) %></strong>.
                 <br>
-                Quản lý dữ liệu và theo dõi hoạt động của LocalTrip.
+                Manage data, curate itineraries, and monitor LocalTrip system operations.
             </p>
         </div>
 
         <a class="rd-back"
            href="<%= request.getContextPath() %>/admin/audit-logs">
-            Nhật ký quản trị →
+            Admin Audit Logs →
         </a>
     </div>
 </section>
@@ -63,7 +63,7 @@
     <div class="col-12 col-md-4">
         <section class="rd-card h-100">
             <div class="small text-muted mb-2">
-                Tổng người dùng
+                Total Users
             </div>
             <strong class="h2 d-block mb-0">
                 <%= userCount == null ? 0 : userCount %>
@@ -74,7 +74,7 @@
     <div class="col-12 col-md-4">
         <section class="rd-card h-100">
             <div class="small text-muted mb-2">
-                Người dùng đang hoạt động
+                Active Users
             </div>
             <strong class="h2 d-block mb-0">
                 <%= activeUserCount == null ? 0 : activeUserCount %>
@@ -85,7 +85,7 @@
     <div class="col-12 col-md-4">
         <section class="rd-card h-100">
             <div class="small text-muted mb-2">
-                Tổng chuyến đi
+                Total Trips
             </div>
             <strong class="h2 d-block mb-0">
                 <%= tripCount == null ? 0 : tripCount %>
@@ -96,7 +96,7 @@
     <div class="col-12 col-md-6">
         <section class="rd-card h-100">
             <div class="small text-muted mb-2">
-                Địa điểm đang hoạt động
+                Active Places
             </div>
             <strong class="h2 d-block mb-0">
                 <%= placeCount == null ? 0 : placeCount %>
@@ -107,7 +107,7 @@
     <div class="col-12 col-md-6">
         <section class="rd-card h-100">
             <div class="small text-muted mb-2">
-                Danh mục địa điểm
+                Place Categories
             </div>
             <strong class="h2 d-block mb-0">
                 <%= categoryCount == null ? 0 : categoryCount %>
@@ -117,46 +117,45 @@
 </div>
 
 <section class="rd-card">
-    <h2 class="h4 mb-2">Chức năng quản trị</h2>
+    <h2 class="h4 mb-2">Administrative Modules</h2>
 
     <p class="text-muted mb-4">
-        Quản lý người dùng, địa điểm và danh mục;
-        kiểm tra lịch sử hoạt động của hệ thống.
+        Manage users, places, categories, combos, and system audit history.
     </p>
 
     <div class="row g-3">
         <div class="col-12 col-md-6 col-lg-4">
             <a class="btn btn-outline-secondary w-100 py-3"
                href="<%= request.getContextPath() %>/admin/users">
-                Quản lý người dùng
+                User Management
             </a>
         </div>
 
         <div class="col-12 col-md-6 col-lg-4">
             <a class="btn btn-outline-secondary w-100 py-3"
                href="<%= request.getContextPath() %>/admin/places">
-                Quản lý địa điểm
+                Place Management
             </a>
         </div>
 
         <div class="col-12 col-md-6 col-lg-4">
             <a class="btn btn-outline-secondary w-100 py-3"
                href="<%= request.getContextPath() %>/admin/categories">
-                Quản lý danh mục
+                Category Management
             </a>
         </div>
 
         <div class="col-12 col-md-6">
             <a class="btn btn-outline-secondary w-100 py-3"
                href="<%= request.getContextPath() %>/admin/audit-logs">
-                Nhật ký quản trị
+                Admin Audit Logs
             </a>
         </div>
 
         <div class="col-12 col-md-6">
             <a class="btn btn-outline-secondary w-100 py-3"
                href="<%= request.getContextPath() %>/admin/login-logs">
-                Lịch sử đăng nhập
+                Login History
             </a>
         </div>
     </div>

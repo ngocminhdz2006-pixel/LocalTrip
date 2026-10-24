@@ -233,7 +233,7 @@ public class ComboTemplateDAO {
                     }
                 }
             }
-        } catch(SQLException e) { throw new RuntimeException("Không thể kiểm tra dữ liệu combo.",e); }
+        } catch(SQLException e) { throw new RuntimeException("Failed to verify combo data.",e); }
         result.put("area",area); result.put("active",active);
         result.put("exact",exact); result.put("usable",usable);
         return result;

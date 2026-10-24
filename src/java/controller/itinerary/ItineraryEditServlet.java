@@ -65,8 +65,13 @@ public class ItineraryEditServlet extends HttpServlet {
                     edited.setVisitDate(Date.valueOf(req.getParameter("visitDate")));
                     edited.setStartTime(Time.valueOf(LocalTime.parse(req.getParameter("startTime"))));
                     edited.setEndTime(Time.valueOf(LocalTime.parse(req.getParameter("endTime"))));
-                    edited.setEstimatedCost(new BigDecimal(req.getParameter("estimatedCost")));
-                    String note = req.getParameter("note"); edited.setNote(note == null ? "" : note.trim());
+                    String costParam = req.getParameter("estimatedCost");
+                    edited.setEstimatedCost(costParam != null && !costParam.trim().isEmpty() ? new BigDecimal(costParam.trim()) : original.getEstimatedCost());
+                    String note = req.getParameter("note");
+                    edited.setNote(note != null ? note.trim() : (original.getNote() != null ? original.getNote() : ""));
+                    edited.setLocked(original.isLocked());
+                    edited.setSourceType(original.getSourceType());
+                    edited.setActivityStatus(original.getActivityStatus());
                     Place selected = null;
                     for (Place place : candidates) if (place.getPlaceId() == edited.getPlaceId()) selected = place;
                     ItineraryEditValidation.validate(trip, original, edited, selected, today);
