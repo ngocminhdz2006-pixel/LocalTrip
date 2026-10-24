@@ -365,11 +365,11 @@ BEGIN
         category_name
     )
     VALUES
-        ('FOOD',          N'Ăn uống'),
-        ('CAFE',          N'Cà phê'),
-        ('SIGHTSEEING',   N'Tham quan'),
-        ('ENTERTAINMENT', N'Giải trí'),
-        ('SHOPPING',      N'Mua sắm');
+        ('FOOD',          N'Food & Dining'),
+        ('CAFE',          N'Cafe & Drinks'),
+        ('SIGHTSEEING',   N'Sightseeing'),
+        ('ENTERTAINMENT', N'Entertainment'),
+        ('SHOPPING',      N'Shopping');
 END;
 GO
 

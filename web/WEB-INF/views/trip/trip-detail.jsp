@@ -156,64 +156,133 @@
 
         <div class="lt-wizard-steps">
             <%-- STEP 1: Invite Companions & Sync Vibes --%>
-            <div class="lt-wizard-step-item">
-                <div class="lt-wizard-step-header">
-                    <div class="lt-step-circle ${fn:length(members) > 0 ? 'is-complete' : 'is-active'}">
-                        ✓
-                    </div>
-                    <div class="lt-step-meta" style="flex: 1;">
-                        <div class="lt-step-title-row">
-                            <h3 class="lt-step-title">Step 1: Invite Companions & Sync Vibes</h3>
-                            <span class="lt-pill-status lt-pill-success">${fn:length(members)} traveler(s) connected</span>
+            <div class="lt-wizard-step-item lt-wizard-step-mockup">
+                <%-- Header Row: Left = Circle + Title, Right = Travelers connected pill --%>
+                <div class="lt-wizard-step-header" style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 10px; margin-bottom: 0;">
+                    <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                        <div style="width: 28px; height: 28px; border-radius: 50%; background: #175b43; color: #ffffff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
                         </div>
-                        <p class="lt-step-desc" style="margin-bottom: 8px;">
-                            Calculated automatically from ${fn:length(members)} members' profile preferences — 
-                            <a href="${pageContext.request.contextPath}/account" style="color: #175b43; font-weight: 700; text-decoration: underline;">
-                                [Edit my vibes in Account]
-                            </a>
-                        </p>
-
-                        <%-- Group Matched Vibes Tags --%>
-                        <c:choose>
-                            <c:when test="${not empty groupMatchedPrefs}">
-                                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px;">
-                                    <c:forEach var="gp" items="${groupMatchedPrefs}">
-                                        <div style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 16px; font-size: 11.5px; font-weight: 700; color: #143b2d;">
-                                            <span>🎯 <c:out value="${gp.categoryName}"/></span>
-                                            <span style="font-size: 9.5px; background: #175b43; color: #ffffff; padding: 1px 5px; border-radius: 8px;">
-                                                <fmt:formatNumber value="${gp.percentage}" maxFractionDigits="0"/>%
-                                            </span>
-                                        </div>
-                                    </c:forEach>
-                                </div>
-                            </c:when>
-                            <c:otherwise>
-                                <p style="font-size: 11px; color: #64748b; margin: 4px 0 8px; font-style: italic;">
-                                    No common tastes found yet. Add members or update personal preferences in Account.
-                                </p>
-                            </c:otherwise>
-                        </c:choose>
-
-                        <%-- Invite Share Action Row --%>
-                        <c:if test="${not empty tripInvite}">
-                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
-                                <button type="button" class="lt-btn-step-action" style="background: #175b43; color: #fff; border: none; font-size: 11.5px; padding: 6px 12px;" onclick="copyTripInviteLink('${pageContext.request.scheme}://${pageContext.request.serverName}:${pageContext.request.serverPort}${pageContext.request.contextPath}/trip/join?token=${tripInvite.inviteToken}')">
-                                    📋 Copy Invite Link
-                                </button>
-                                <button type="button" class="lt-btn-step-action lt-btn-step-outline" style="font-size: 11.5px; padding: 6px 12px;" onclick="openTripQrModal('${pageContext.request.scheme}://${pageContext.request.serverName}:${pageContext.request.serverPort}${pageContext.request.contextPath}/trip/join?token=${tripInvite.inviteToken}')">
-                                    📲 Invite QR
-                                </button>
-                                <c:if test="${trip.role == 'OWNER'}">
-                                    <form method="post" action="${pageContext.request.contextPath}/trip/invite" style="margin:0;">
-                                        <input type="hidden" name="tripId" value="${trip.id}">
-                                        <button type="submit" class="btn btn-link btn-sm text-secondary text-decoration-none" style="font-size: 11px;" title="Revoke and generate a fresh invite link">
-                                            🔄 Refresh link
-                                        </button>
-                                    </form>
-                                </c:if>
-                            </div>
-                        </c:if>
+                        <h3 style="font-size: 16px; font-weight: 800; color: #1e293b; margin: 0; letter-spacing: -0.2px; white-space: nowrap;">
+                            Step 1: Invite Companions &amp; Sync Vibes
+                        </h3>
                     </div>
+                    <span style="font-size: 12px; font-weight: 700; color: #166534; background: #eefaf3; border: 1.5px solid #a7f3d0; border-radius: 999px; padding: 4px 14px; white-space: nowrap; flex-shrink: 0;">
+                        ${fn:length(members)} traveler<c:if test="${fn:length(members) > 1}">s</c:if> connected
+                    </span>
+                </div>
+
+                <%-- Full-width Body: Aligned with the left boundary of the card --%>
+                <div class="lt-step-body" style="width: 100%; margin-top: 10px;">
+                    <%-- Description & Edit Vibes link --%>
+                    <div style="font-size: 13.5px; color: #64748b; font-weight: 500; margin: 0 0 14px 0; display: flex; align-items: center; flex-wrap: wrap; gap: 6px;">
+                        <span>Auto-synced from ${fn:length(members)} members' profiles</span>
+                        <span style="color: #94a3b8; font-weight: bold; margin: 0 2px;">&bull;</span>
+                        <a href="${pageContext.request.contextPath}/account" class="lt-inline-vibes-link">
+                            Edit my vibes &gt;
+                        </a>
+                    </div>
+
+                    <%-- Group Matched Vibes Chips --%>
+                    <c:choose>
+                        <c:when test="${not empty groupMatchedPrefs}">
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px 10px; margin: 4px 0 16px 0;">
+                                <c:forEach var="gp" items="${groupMatchedPrefs}">
+                                    <div class="lt-vibe-chip">
+                                        <span class="lt-vibe-chip-label">
+                                            <c:choose>
+                                                <c:when test="${gp.categoryCode == 'FOOD'}">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#144a36" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+                                                        <circle cx="12" cy="12" r="8"/>
+                                                        <circle cx="12" cy="12" r="2.5" fill="#144a36"/>
+                                                    </svg>
+                                                </c:when>
+                                                <c:when test="${gp.categoryCode == 'CAFE'}">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#144a36" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+                                                        <rect x="3" y="8" width="13" height="10" rx="3"/>
+                                                        <path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/>
+                                                    </svg>
+                                                </c:when>
+                                                <c:when test="${gp.categoryCode == 'SIGHTSEEING' or gp.categoryCode == 'CULTURE'}">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#144a36" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+                                                        <path d="M3 21h18"/>
+                                                        <path d="M5 21V10"/>
+                                                        <path d="M12 21V10"/>
+                                                        <path d="M19 21V10"/>
+                                                        <path d="M2 10h20"/>
+                                                        <path d="M4 10l8-6 8 6"/>
+                                                    </svg>
+                                                </c:when>
+                                                <c:when test="${gp.categoryCode == 'ENTERTAINMENT'}">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#144a36" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+                                                        <path d="M12 3l8 9-8 9-8-9z"/>
+                                                    </svg>
+                                                </c:when>
+                                                <c:when test="${gp.categoryCode == 'SHOPPING'}">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#144a36" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+                                                        <path d="M8 8V6a4 4 0 0 1 8 0v2"/>
+                                                        <rect x="4" y="8" width="16" height="13" rx="3"/>
+                                                    </svg>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span style="font-size: 13px;">${gp.icon}</span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <c:out value="${gp.displayCategoryName}"/>
+                                        </span>
+                                        <span class="lt-vibe-chip-pct">
+                                            <fmt:formatNumber value="${gp.percentage}" maxFractionDigits="0"/>%
+                                        </span>
+                                    </div>
+                                </c:forEach>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <p style="font-size: 11px; color: #64748b; margin: 4px 0 12px; font-style: italic;">
+                                No common tastes found yet. Add members or update personal preferences in Account.
+                            </p>
+                        </c:otherwise>
+                    </c:choose>
+
+                    <%-- Dashed Divider Line --%>
+                    <div style="border-top: 1.5px dashed #cbd5e1; margin-top: 18px; margin-bottom: 16px; width: 100%;"></div>
+
+                    <%-- Action Buttons: Copy Invite Link, Invite QR, Refresh on a Single Row --%>
+                    <c:if test="${not empty tripInvite}">
+                        <div class="lt-step-invite-row">
+                            <button type="button" class="lt-btn-copy-invite" onclick="copyTripInviteLink('${pageContext.request.scheme}://${pageContext.request.serverName}:${pageContext.request.serverPort}${pageContext.request.contextPath}/trip/join?token=${tripInvite.inviteToken}')">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                                    <rect x="5" y="3" width="14" height="18" rx="2.5"/>
+                                    <line x1="9" y1="8" x2="15" y2="8"/>
+                                    <line x1="9" y1="12" x2="15" y2="12"/>
+                                    <line x1="9" y1="16" x2="13" y2="16"/>
+                                </svg>
+                                <span>Copy Invite Link</span>
+                            </button>
+                            <button type="button" class="lt-btn-qr-invite" onclick="openTripQrModal('${pageContext.request.scheme}://${pageContext.request.serverName}:${pageContext.request.serverPort}${pageContext.request.contextPath}/trip/join?token=${tripInvite.inviteToken}')">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                                    <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+                                    <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                                    <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+                                    <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+                                </svg>
+                                <span>Invite QR</span>
+                            </button>
+                            <c:if test="${trip.role == 'OWNER'}">
+                                <form method="post" action="${pageContext.request.contextPath}/trip/invite" style="margin: 0; display: inline-flex;">
+                                    <input type="hidden" name="tripId" value="${trip.id}">
+                                    <button type="submit" class="lt-btn-refresh-invite" title="Generate new invite link (revoke old link)">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 12a9 9 0 1 1-2.64-6.36L21 8"/>
+                                            <path d="M21 3v5h-5"/>
+                                        </svg>
+                                    </button>
+                                </form>
+                            </c:if>
+                        </div>
+                    </c:if>
                 </div>
             </div>
 
@@ -959,6 +1028,163 @@ function closeTripQrModal() {
     }
     .lt-btn-quick-add:hover {
         background: #143b2d;
+    }
+    .lt-inline-link {
+        color: #175b43;
+        font-weight: 700;
+        text-decoration: none;
+        transition: color 0.15s ease;
+    }
+    .lt-inline-link:hover {
+        color: #0f3d2d;
+        text-decoration: underline;
+    }
+    .lt-btn-icon-sq {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        color: #64748b;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        padding: 0;
+    }
+    .lt-btn-icon-sq:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #1e293b;
+    }
+
+    /* Step 1: Pixel-perfect Mockup Styling */
+    .lt-wizard-step-mockup {
+        border: 1.5px solid #d1ded6;
+        border-radius: 20px;
+        padding: 22px 24px;
+        background: #ffffff;
+        box-shadow: 0 2px 8px rgba(20, 59, 45, 0.04);
+    }
+    .lt-vibe-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 5px 4px 14px;
+        background: #f0fdf4;
+        border: 1.5px solid #6ee7b7;
+        border-radius: 999px;
+        height: 36px;
+        box-sizing: border-box;
+        transition: all 0.15s ease;
+    }
+    .lt-vibe-chip:hover {
+        background: #e6f9ed;
+        border-color: #34d399;
+    }
+    .lt-vibe-chip-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #143b2d;
+        white-space: nowrap;
+    }
+    .lt-vibe-chip-pct {
+        background: #175b43;
+        color: #ffffff;
+        border-radius: 999px;
+        padding: 2.5px 9px;
+        font-size: 11.5px;
+        font-weight: 700;
+        letter-spacing: -0.2px;
+        min-width: 40px;
+        text-align: center;
+        display: inline-block;
+    }
+    .lt-step-invite-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .lt-btn-copy-invite {
+        flex: 1;
+        height: 44px;
+        background: #175b43;
+        color: #ffffff;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        text-decoration: none;
+    }
+    .lt-btn-copy-invite:hover {
+        background: #124935;
+        color: #ffffff;
+    }
+    .lt-btn-qr-invite {
+        height: 44px;
+        padding: 0 18px;
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 14px;
+        color: #1e293b;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.15s ease;
+        text-decoration: none;
+    }
+    .lt-btn-qr-invite:hover {
+        background: #f8fafc;
+        border-color: #94a3b8;
+        color: #0f172a;
+    }
+    .lt-btn-refresh-invite {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        border: 1.5px solid #cbd5e1;
+        background: #ffffff;
+        color: #1e293b;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        padding: 0;
+        flex-shrink: 0;
+    }
+    .lt-btn-refresh-invite:hover {
+        background: #f8fafc;
+        border-color: #94a3b8;
+    }
+    .lt-inline-vibes-link {
+        color: #175b43;
+        font-weight: 700;
+        font-size: 13.5px;
+        text-decoration: none;
+        transition: color 0.15s ease;
+    }
+    .lt-inline-vibes-link:hover {
+        color: #0f3d2d;
+        text-decoration: underline;
     }
 </style>
 
