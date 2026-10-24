@@ -103,11 +103,12 @@ BEGIN TRY
        ===================================================================== */
     IF OBJECT_ID(N'dbo.Categories', N'U') IS NOT NULL
     BEGIN
-        UPDATE dbo.Categories SET category_name = 'Food & Dining' WHERE category_code = 'FOOD' OR category_name LIKE N'%Ăn uống%' OR category_name LIKE N'%Food%';
-        UPDATE dbo.Categories SET category_name = 'Cafe & Drinks' WHERE category_code = 'CAFE' OR category_name LIKE N'%Cà phê%' OR category_name LIKE N'%Cafe%';
-        UPDATE dbo.Categories SET category_name = 'Sightseeing' WHERE category_code = 'SIGHTSEEING' OR category_name LIKE N'%Tham quan%' OR category_name LIKE N'%Sightseeing%';
-        UPDATE dbo.Categories SET category_name = 'Entertainment' WHERE category_code = 'ENTERTAINMENT' OR category_name LIKE N'%Giải trí%' OR category_name LIKE N'%Entertainment%';
-        UPDATE dbo.Categories SET category_name = 'Shopping' WHERE category_code = 'SHOPPING' OR category_name LIKE N'%Mua sắm%' OR category_name LIKE N'%Shopping%';
+        UPDATE dbo.Categories SET category_name = 'Cafe & Coffee' WHERE category_name LIKE N'%Cà phê%' OR category_name LIKE N'%Cafe%';
+        UPDATE dbo.Categories SET category_name = 'Local Food & Dining' WHERE category_name LIKE N'%Ẩm thực%' OR category_name LIKE N'%Ăn uống%';
+        UPDATE dbo.Categories SET category_name = 'Culture & Heritage' WHERE category_name LIKE N'%Văn hóa%' OR category_name LIKE N'%Di tích%';
+        UPDATE dbo.Categories SET category_name = 'Nature & Parks' WHERE category_name LIKE N'%Thiên nhiên%' OR category_name LIKE N'%Công viên%';
+        UPDATE dbo.Categories SET category_name = 'Shopping & Markets' WHERE category_name LIKE N'%Mua sắm%' OR category_name LIKE N'%Chợ%';
+        UPDATE dbo.Categories SET category_name = 'Entertainment & Nightlife' WHERE category_name LIKE N'%Giải trí%' OR category_name LIKE N'%Vui chơi%';
     END;
 
     IF OBJECT_ID(N'dbo.TravelBadges', N'U') IS NOT NULL
