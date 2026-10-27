@@ -2746,44 +2746,42 @@ button {
 
 .lt-home-card-cover {
     position: relative;
-    height: 120px;
-    border-radius: 14px;
+    height: 125px;
+    border-radius: 12px;
     overflow: hidden;
+    background: #e2e8f0;
 }
 
 .lt-home-cover-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-}
-
-.lt-home-cover-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);
+    display: block;
 }
 
 .lt-home-status-tag {
     position: absolute;
     top: 8px;
     left: 8px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 2px 8px;
+    padding: 3px 8px;
     border-radius: 20px;
-    background: rgba(254, 243, 199, 0.95);
-    color: #78350f;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    color: #1e293b;
     font-size: 10px;
     font-weight: 700;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
 .lt-status-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #f59e0b;
+    background: #10b981;
 }
 
 .lt-card-menu {
@@ -2796,46 +2794,52 @@ button {
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     border: none;
-    color: #334155;
+    color: #1e293b;
     font-size: 11px;
     font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
     cursor: pointer;
+    transition: transform 0.15s ease;
 }
 
-.lt-home-cover-info {
-    position: absolute;
-    bottom: 8px;
-    left: 10px;
-    right: 10px;
-    color: #ffffff;
+.lt-card-menu-btn:hover {
+    transform: scale(1.05);
+}
+
+.lt-home-card-body {
+    padding: 8px 4px 4px 4px;
 }
 
 .lt-home-card-title {
-    font-size: 14px;
-    font-weight: 700;
-    margin: 0 0 2px;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-    color: #ffffff;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #143b2d;
+    line-height: 1.35;
+    margin: 0 0 4px;
+    text-shadow: none;
+    word-break: break-word;
 }
 
 .lt-home-card-dates {
-    font-size: 10px;
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 500;
     margin: 0;
-    opacity: 0.9;
-    color: #ffffff;
+    text-shadow: none;
 }
 
 .lt-home-card-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin: 10px 2px 8px;
+    margin: 6px 2px 8px;
 }
 
 .lt-home-card-members {

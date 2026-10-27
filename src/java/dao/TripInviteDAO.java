@@ -17,7 +17,7 @@ public class TripInviteDAO {
     public TripInvite getActiveInvite(int tripId) {
         String sql = "SELECT invite_id, trip_id, invite_token, created_by, expires_at, is_active, created_at "
                    + "FROM TripInvites "
-                   + "WHERE trip_id = ? AND is_active = 1 AND expires_at > SYSDATETIME() "
+                   /* SECURITY: Invite link validity check must use real wall clock time */ + "WHERE trip_id = ? AND is_active = 1 AND expires_at > SYSDATETIME() "
                    + "ORDER BY created_at DESC";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -41,6 +41,7 @@ public class TripInviteDAO {
 
         String token = UUID.randomUUID().toString().replace("-", "") + UUID.randomUUID().toString().replace("-", "");
         // 30 days validity
+        // SECURITY: Invite token expiration must track real wall clock time
         Timestamp expiresAt = new Timestamp(System.currentTimeMillis() + 30L * 24 * 3600 * 1000);
 
         try (Connection conn = DBContext.getConnection()) {
@@ -78,7 +79,7 @@ public class TripInviteDAO {
         }
         String sql = "SELECT invite_id, trip_id, invite_token, created_by, expires_at, is_active, created_at "
                    + "FROM TripInvites "
-                   + "WHERE invite_token = ? AND is_active = 1 AND expires_at > SYSDATETIME()";
+                   /* SECURITY: Invite link lookup must use real wall clock time */ + "WHERE invite_token = ? AND is_active = 1 AND expires_at > SYSDATETIME()";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, token.trim());

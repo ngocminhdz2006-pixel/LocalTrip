@@ -41,7 +41,9 @@ public class ForgotPasswordServlet extends HttpServlet {
             User user = userDAO.findActiveByEmail(cleanEmail);
             if (user != null) {
                 String rawToken = TokenUtil.generateToken();
-                long expires = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(30);
+                // SECURITY: Password reset token expiry must track real wall clock time
+        // SECURITY: Password reset token expiry must track real wall clock time
+        long expires = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(30);
                 resetDAO.createToken(user.getUserId(), TokenUtil.sha256(rawToken), expires);
 
                 String resetUrl = request.getScheme() + "://" + request.getServerName()

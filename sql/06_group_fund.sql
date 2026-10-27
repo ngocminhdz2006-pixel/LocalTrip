@@ -1,4 +1,4 @@
-USE LocalTripDB;
+﻿USE LocalTripDB;
 GO
 
 /* Quỹ nhóm: chỉ lưu các khoản đóng góp.

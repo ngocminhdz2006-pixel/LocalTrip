@@ -263,26 +263,8 @@ public class RecommendationDAO {
         if (categoryName == null) {
             return "category";
         }
-        String lower = categoryName.trim().toLowerCase();
-        if (lower.contains("ăn") || lower.contains("ẩm thực") || lower.contains("dining") || lower.contains("food")) {
-            return "Dining & Food";
-        }
-        if (lower.contains("cà phê") || lower.contains("cafe") || lower.contains("coffee") || lower.contains("uống") || lower.contains("drink")) {
-            return "Cafe & Drinks";
-        }
-        if (lower.contains("tham quan") || lower.contains("sightseeing") || lower.contains("du lịch") || lower.contains("attraction")) {
-            return "Sightseeing & Attractions";
-        }
-        if (lower.contains("giải trí") || lower.contains("entertainment") || lower.contains("vui chơi")) {
-            return "Entertainment";
-        }
-        if (lower.contains("mua sắm") || lower.contains("shopping") || lower.contains("chợ")) {
-            return "Shopping";
-        }
-        if (lower.contains("lưu trú") || lower.contains("hotel") || lower.contains("stay") || lower.contains("khách sạn")) {
-            return "Accommodation";
-        }
-        return categoryName;
+        String label = utils.CategoryUi.label(categoryName);
+        return "Other".equals(label) ? categoryName : label;
     }
 
     private double calculateBudgetMatch(

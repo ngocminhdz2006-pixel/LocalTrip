@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path="/LocalTrip">
+    <!-- Enforce SameSite=Lax on Tomcat session cookies (JSESSIONID) -->
+    <CookieProcessor sameSiteCookies="lax"/>
+    <!--
+        Tomcat JNDI Connection Pool for LocalTrip (SAMPLE TEMPLATE)
+        ===========================================================
+        DO NOT commit real credentials to version control.
+
+        How to use:
+        1. Copy this file to web/META-INF/context.xml (which is git-ignored).
+        2. Set username and password for your local or production database.
+        3. For production, ensure:
+           - User is NOT 'sa' (use dedicated user, see sql/create_app_user.sql)
+           - encrypt=true
+           - trustServerCertificate=false
+    -->
+    <Resource name="jdbc/LocalTripDB"
+              auth="Container"
+              type="javax.sql.DataSource"
+              driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+              url="jdbc:sqlserver://localhost:1433;databaseName=LocalTripDB;encrypt=false;trustServerCertificate=true"
+              username="YOUR_DB_USER"
+              password="YOUR_DB_PASSWORD"
+              maxTotal="20"
+              maxIdle="10"
+              maxWaitMillis="10000"
+              validationQuery="SELECT 1"
+              testOnBorrow="true"/>
+</Context>

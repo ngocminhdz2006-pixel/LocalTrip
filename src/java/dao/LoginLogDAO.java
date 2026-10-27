@@ -116,7 +116,7 @@ public class LoginLogDAO {
                 + "WHERE email = ? "
                 + "AND success = 0 "
                 + "AND failure_reason = 'INVALID_CREDENTIALS' "
-                + "AND attempted_at >= DATEADD(MINUTE, ?, SYSDATETIME()) "
+                /* SECURITY: Brute-force lockout window must track real wall clock time */ + "AND attempted_at >= DATEADD(MINUTE, ?, SYSDATETIME()) "
                 + "AND attempted_at > ISNULL((" 
                 + "SELECT MAX(attempted_at) FROM LoginLogs "
                 + "WHERE email = ? AND success = 1" 

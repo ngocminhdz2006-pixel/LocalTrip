@@ -14,6 +14,7 @@ import model.SettlementBalance;
 import model.SettlementTransfer;
 import model.Trip;
 import model.User;
+import utils.NotificationService;
 
 @WebServlet(name = "SettlementServlet", urlPatterns = {
     "/settlement"
@@ -128,11 +129,36 @@ public class SettlementServlet extends HttpServlet {
         }
 
         if (newStatus != null) {
+            SettlementTransfer transfer = settlementDAO.findPaymentById(paymentId);
             boolean ok = settlementDAO.updatePaymentStatus(paymentId, tripId, currentUser.getUserId(), newStatus);
             if (ok) {
                 session.setAttribute("successMessage", "SENT".equals(newStatus)
                         ? "Payment marked as SENT. Waiting for recipient confirmation."
                         : "Payment confirmed successfully!");
+
+                if (transfer != null) {
+                    Trip trip = tripDAO.findById(tripId);
+                    String tripName = trip != null ? trip.getName() : "the trip";
+                    if ("SENT".equals(newStatus)) {
+                        NotificationService.notify(
+                                transfer.getToMemberId(),
+                                currentUser.getUserId(),
+                                "PAYMENT_SENT",
+                                tripId,
+                                paymentId,
+                                currentUser.getFullName() + " marked payment sent. Please confirm you received the settlement payment for \"" + tripName + "\"."
+                        );
+                    } else if ("CONFIRMED".equals(newStatus)) {
+                        NotificationService.notify(
+                                transfer.getFromMemberId(),
+                                currentUser.getUserId(),
+                                "PAYMENT_CONFIRMED",
+                                tripId,
+                                paymentId,
+                                currentUser.getFullName() + " confirmed receipt of your settlement payment for \"" + tripName + "\"."
+                        );
+                    }
+                }
             } else {
                 session.setAttribute("errorMessage", "Unable to update payment status. Access denied or invalid state.");
             }

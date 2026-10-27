@@ -21,6 +21,7 @@ public final class ItineraryDraft {
         this.fromDate = new Date(fromDate.getTime());
         this.revision = revision;
         this.token = UUID.randomUUID().toString();
+        // CACHE/SESSION: In-memory session draft creation tracks real wall clock time
         this.createdAt = System.currentTimeMillis();
         this.items = copy(items);
     }
@@ -33,6 +34,7 @@ public final class ItineraryDraft {
     public String getRevision() { return revision; }
     public String getToken() { return token; }
     public List<ItineraryItem> getItems() { return copy(items); }
+    // CACHE/SESSION: Session draft TTL expiration must track real wall clock time
     public boolean isExpired() { return System.currentTimeMillis() - createdAt > 30 * 60 * 1000L; }
 
     public BigDecimal totalCost() {

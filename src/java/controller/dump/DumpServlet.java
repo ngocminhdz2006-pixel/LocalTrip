@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 import model.User;
+import utils.NotificationService;
 
 @WebServlet({"/dump", "/dump/create", "/dump/action", "/dump/friends"})
 @MultipartConfig(fileSizeThreshold=1024*1024, maxFileSize=5*1024*1024, maxRequestSize=30*1024*1024)
@@ -69,7 +70,23 @@ public class DumpServlet extends HttpServlet {
         String path=req.getServletPath();
         try {
             if("/dump/create".equals(path)) { createPost(req,user); req.getSession().setAttribute("successMessage","Story posted to Dump feed successfully."); resp.sendRedirect(req.getContextPath()+"/dump");return; }
-            if("/dump/friends".equals(path)) { handleFriendAction(req,user); resp.sendRedirect(req.getContextPath()+"/dump/friends");return; }
+            if("/dump/friends".equals(path)) {
+                handleFriendAction(req,user);
+                req.getSession().removeAttribute("unreadNotificationCount");
+                if ("XMLHttpRequest".equalsIgnoreCase(req.getHeader("X-Requested-With")) ||
+                    (req.getHeader("Accept") != null && req.getHeader("Accept").contains("application/json"))) {
+                    resp.setContentType("application/json;charset=UTF-8");
+                    resp.getWriter().write("{\"success\":true}");
+                    return;
+                }
+                String r = req.getParameter("redirect");
+                if (r != null && r.startsWith(req.getContextPath())) {
+                    resp.sendRedirect(r);
+                } else {
+                    resp.sendRedirect(req.getContextPath()+"/dump/friends");
+                }
+                return;
+            }
             String action=req.getParameter("action"); int postId=parsePositive(req.getParameter("postId"));
             if("like".equals(action))dao.toggleLike(postId,user.getUserId());
             else if("bookmark".equals(action))dao.toggleBookmark(postId,user.getUserId());
@@ -120,7 +137,19 @@ public class DumpServlet extends HttpServlet {
             dao.sendFriendRequest(user.getUserId(), parsePositive(req.getParameter("targetUserId")));
             req.getSession().setAttribute("successMessage", "Friend request sent successfully.");
         } else if ("accept".equals(action)) {
-            dao.respondFriendRequest(parsePositive(req.getParameter("friendshipId")), user.getUserId(), true);
+            int fsId = parsePositive(req.getParameter("friendshipId"));
+            int reqId = dao.findRequesterId(fsId, user.getUserId());
+            dao.respondFriendRequest(fsId, user.getUserId(), true);
+            if (reqId > 0) {
+                NotificationService.notify(
+                        reqId,
+                        user.getUserId(),
+                        "FRIEND_ACCEPTED",
+                        null,
+                        fsId,
+                        user.getFullName() + " accepted your friend request."
+                );
+            }
             req.getSession().setAttribute("successMessage", "Friend request accepted.");
         } else if ("decline".equals(action)) {
             dao.respondFriendRequest(parsePositive(req.getParameter("friendshipId")), user.getUserId(), false);

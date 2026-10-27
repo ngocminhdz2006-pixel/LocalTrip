@@ -61,7 +61,7 @@ public class ItineraryDAO {
                         if (!rs.next() || !("PLANNING".equals(rs.getString("status")) || "ONGOING".equals(rs.getString("status")))) {
                             throw new IllegalArgumentException("Trip schedule is no longer editable.");
                         }
-                        Date today = Date.valueOf(java.time.LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
+                        Date today = utils.AppClock.todaySql();
                         for (ItineraryItem item : items) {
                             if (item.getTripId() != tripId || item.getVisitDate().before(today)
                                     || item.getVisitDate().before(rs.getDate("start_date")) || item.getVisitDate().after(rs.getDate("end_date"))) {

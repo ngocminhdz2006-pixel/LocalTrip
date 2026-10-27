@@ -1,4 +1,4 @@
-/*
+﻿/*
     LocalTrip - Quỹ nhóm / Settlement diagnostics
     CHỈ ĐỌC DỮ LIỆU. Không INSERT/UPDATE/DELETE, không reset database.
     Chọn đúng database LocalTripDB trước khi chạy.

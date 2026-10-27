@@ -12,6 +12,29 @@
 
 <div class="lt-account-container">
 
+    <c:if test="${not empty errorMessage}">
+        <div class="alert alert-danger" style="border-radius: 12px; font-size: 13px; margin-bottom: 16px;">
+            ⚠️ <c:out value="${errorMessage}"/>
+        </div>
+    </c:if>
+    <c:if test="${not empty sessionScope.errorMessage}">
+        <div class="alert alert-danger" style="border-radius: 12px; font-size: 13px; margin-bottom: 16px;">
+            ⚠️ <c:out value="${sessionScope.errorMessage}"/>
+        </div>
+        <c:remove var="errorMessage" scope="session"/>
+    </c:if>
+    <c:if test="${not empty successMessage}">
+        <div class="alert alert-success" style="border-radius: 12px; font-size: 13px; margin-bottom: 16px;">
+            ✅ <c:out value="${successMessage}"/>
+        </div>
+    </c:if>
+    <c:if test="${not empty sessionScope.successMessage}">
+        <div class="alert alert-success" style="border-radius: 12px; font-size: 13px; margin-bottom: 16px;">
+            ✅ <c:out value="${sessionScope.successMessage}"/>
+        </div>
+        <c:remove var="successMessage" scope="session"/>
+    </c:if>
+
     <%-- 1. Header Bar --%>
     <div class="lt-account-head-bar">
         <h1 class="lt-account-head-title">Account Profile</h1>
@@ -204,9 +227,27 @@
                     Permanently deactivate your account, anonymize your email and profile name, and revoke all active sessions. This action cannot be undone.
                 </p>
             </div>
-            <form method="post" action="${pageContext.request.contextPath}/account" onsubmit="return confirm('Are you sure you want to delete and deactivate your account permanently? You will be signed out immediately.');" style="margin-top: 6px; width: 100%;">
+            <form method="post" action="${pageContext.request.contextPath}/account" onsubmit="return confirm('Are you sure you want to permanently delete and deactivate your account? You will be signed out immediately.');" style="margin-top: 6px; width: 100%;">
                 <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
                 <input type="hidden" name="action" value="deleteAccount">
+
+                <div class="mb-2">
+                    <label class="form-label" style="font-size: 11.5px; font-weight: 700; color: #475569; margin-bottom: 4px;">
+                        Current Password <span class="text-danger">*</span>
+                    </label>
+                    <input type="password" name="currentPassword" class="form-control form-control-sm" required placeholder="Enter your current password" style="font-size: 12px; border-radius: 8px;">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" style="font-size: 11.5px; font-weight: 700; color: #475569; margin-bottom: 4px;">
+                        Confirmation <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" name="confirmText" class="form-control form-control-sm" required placeholder="Type DELETE to confirm" style="font-size: 12px; border-radius: 8px;">
+                    <div class="form-text" style="font-size: 10.5px; color: #94a3b8;">
+                        Please type <strong style="color: #991b1b;">DELETE</strong> exactly to authorize permanent account deactivation.
+                    </div>
+                </div>
+
                 <button type="submit" class="btn btn-outline-danger btn-sm w-100 rounded-3 fw-bold py-2">
                     Delete My Account
                 </button>

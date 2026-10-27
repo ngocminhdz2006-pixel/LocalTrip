@@ -12,7 +12,7 @@ import utils.ActivityLifecycle;
 public class ActivityLifecycleDAO {
     private DateToday today() { return new DateToday(); }
     private static final class DateToday {
-        final java.sql.Date value = java.sql.Date.valueOf(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+        final java.sql.Date value = utils.AppClock.todaySql();
     }
 
     public void updateRunningEnd(int tripId,int itemId,int ownerId,String expectedEnd,Time newEnd) {

@@ -16,7 +16,7 @@ B. NETBEANS
 2. NetBeans -> File -> Open Project -> chọn thư mục LocalTrip (thư mục có build.xml và nbproject).
 3. Kiểm tra web/WEB-INF/lib/sqljdbc4.jar có tồn tại.
 4. Mở src/java/dao/DBContext.java và kiểm tra URL/user/password trùng SQL Server máy bạn.
-   Hiện file dùng localhost:1433, database LocalTripDB, user sa, password 12345.
+   Hiện file dùng localhost:1433, database LocalTripDB, user va password qua file web/META-INF/context.xml hoac bien moi truong DB_PASSWORD.
 5. Stop Tomcat. Xóa deployment cũ của LocalTrip và cache work/temp trong thư mục Tomcat nếu biết chính xác đường dẫn.
 6. Nhấn Clean and Build. Chỉ tiếp tục khi thấy BUILD SUCCESSFUL.
 7. Run project từ NetBeans.

@@ -410,7 +410,7 @@ public class ItineraryServlet extends HttpServlet {
 
 
 
-        java.time.LocalDate today = java.time.LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+        java.time.LocalDate today = utils.AppClock.today();
 
         java.time.LocalDate startDate = trip.getStartDate().toLocalDate();
 
@@ -550,7 +550,7 @@ public class ItineraryServlet extends HttpServlet {
 
 
 
-        java.time.LocalDate todayLocalDate = java.time.LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+        java.time.LocalDate todayLocalDate = utils.AppClock.today();
 
         java.sql.Date todayDate = java.sql.Date.valueOf(todayLocalDate);
 
@@ -578,19 +578,7 @@ public class ItineraryServlet extends HttpServlet {
 
         }
 
-        request.getSession().setAttribute("activityStatusToken", request.getSession().getAttribute("travelCsrf"));
 
-        if (request.getSession().getAttribute("tripStatusToken") == null) {
-
-            request.getSession().setAttribute("tripStatusToken", java.util.UUID.randomUUID().toString());
-
-        }
-
-        if (request.getSession().getAttribute("autoItineraryToken") == null) {
-
-            request.getSession().setAttribute("autoItineraryToken", java.util.UUID.randomUUID().toString());
-
-        }
 
 
 
@@ -1142,11 +1130,7 @@ public class ItineraryServlet extends HttpServlet {
 
         }
 
-        java.time.LocalDate today = java.time.LocalDate.now(
-
-                java.time.ZoneId.of("Asia/Ho_Chi_Minh")
-
-        );
+        java.time.LocalDate today = utils.AppClock.today();
 
 
 
@@ -1380,7 +1364,7 @@ public class ItineraryServlet extends HttpServlet {
 
     ) throws IOException {
 
-        Object token=request.getSession().getAttribute("activityStatusToken");
+        Object token=request.getSession().getAttribute("travelCsrf");
 
         if(token==null || !token.equals(request.getParameter("csrfToken"))) { response.sendError(403); return; }
 

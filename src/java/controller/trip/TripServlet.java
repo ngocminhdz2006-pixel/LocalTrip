@@ -17,6 +17,7 @@ import dao.TripMemberDAO;
 import dao.UserDAO;
 import dao.ItineraryDAO;
 import model.ItineraryItem;
+import utils.NotificationService;
 
 @WebServlet({
     "/trips",
@@ -273,7 +274,7 @@ public class TripServlet extends HttpServlet {
         if (!viewMembers.isEmpty()) {
             request.setAttribute("viewBudgetPerMember", trip.getBudget().divide(java.math.BigDecimal.valueOf(viewMembers.size()), 0, java.math.RoundingMode.HALF_UP));
         }
-        java.time.LocalDate viewToday = java.time.LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+        java.time.LocalDate viewToday = utils.AppClock.today();
         boolean viewInDates = !viewToday.isBefore(trip.getStartDate().toLocalDate()) && !viewToday.isAfter(trip.getEndDate().toLocalDate());
         java.util.List<ItineraryItem> itineraryItems = new dao.ItineraryDAO().findByTrip(tripId);
         int itineraryCount = itineraryItems.size();
@@ -443,9 +444,7 @@ public class TripServlet extends HttpServlet {
             );
             return;
         }
-        java.time.LocalDate today = java.time.LocalDate.now(
-                java.time.ZoneId.of("Asia/Ho_Chi_Minh")
-        );
+        java.time.LocalDate today = utils.AppClock.today();
 
         if (requestedTripId <= 0
                 && startDate.toLocalDate().isBefore(today)) {
@@ -718,9 +717,20 @@ public class TripServlet extends HttpServlet {
             return;
         }
 
+        Trip trip = tripDAO.findById(tripId);
+        String tripName = trip != null ? trip.getName() : "the trip";
+        NotificationService.notify(
+                member.getUserId(),
+                currentUser.getUserId(),
+                "TRIP_ADDED",
+                tripId,
+                tripId,
+                currentUser.getFullName() + " added you to the trip \"" + tripName + "\"."
+        );
+
         request.getSession().setAttribute(
                 "successMessage",
-                    "Member added successfully."
+                "Member added successfully."
         );
 
         redirectToDetail(request, response, tripId);

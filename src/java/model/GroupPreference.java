@@ -52,32 +52,9 @@ public class GroupPreference {
     }
 
     public String getIcon() {
-        if (categoryCode == null) {
-            return "📍";
+        if (categoryCode != null && !categoryCode.trim().isEmpty()) {
+            return utils.CategoryUi.icon(categoryCode);
         }
-
-        String code = categoryCode.toUpperCase();
-
-        if ("FOOD".equals(code)) {
-            return "🍜";
-        }
-
-        if ("NATURE".equals(code)) {
-            return "🌳";
-        }
-
-        if ("SHOPPING".equals(code)) {
-            return "🛍️";
-        }
-
-        if ("ENTERTAINMENT".equals(code)) {
-            return "🎡";
-        }
-
-        if ("CULTURE".equals(code)) {
-            return "🏛️";
-        }
-
-        return "📍";
+        return utils.CategoryUi.icon(categoryName);
     }
 }

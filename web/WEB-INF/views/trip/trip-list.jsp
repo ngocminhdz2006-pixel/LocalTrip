@@ -62,13 +62,12 @@
             <div class="lt-home-trip-grid">
                 <c:forEach var="trip" items="${trips}">
                     <article class="lt-home-trip-card">
-                        <%-- Card Cover with Gradient and Badges --%>
+                        <%-- Card Cover with Badges (No overlapping text) --%>
                         <div class="lt-home-card-cover">
                             <img class="lt-home-cover-img"
                                  src="${pageContext.request.contextPath}/images/trip-cover.jpg"
                                  alt="${fn:escapeXml(trip.name)}"
                                  onerror="this.src='https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=600&auto=format&fit=crop&q=80'">
-                            <div class="lt-home-cover-overlay"></div>
 
                             <%-- Status Tag --%>
                             <div class="lt-home-status-tag">
@@ -88,14 +87,14 @@
                             <div class="lt-card-menu">
                                 <button type="button" class="lt-card-menu-btn" title="Actions" onclick="event.stopPropagation(); window.location.href='${pageContext.request.contextPath}/trip/detail?tripId=${trip.id}';">•••</button>
                             </div>
+                        </div>
 
-                            <%-- Title & Dates on Cover --%>
-                            <div class="lt-home-cover-info">
-                                <h3 class="lt-home-card-title"><c:out value="${trip.name}"/></h3>
-                                <p class="lt-home-card-dates">
-                                    📅 <fmt:formatDate value="${trip.startDate}" pattern="MMM d"/> – <fmt:formatDate value="${trip.endDate}" pattern="MMM d, yyyy"/>
-                                </p>
-                            </div>
+                        <%-- Card Body: Title & Dates on Clean Background (Below Image) --%>
+                        <div class="lt-home-card-body">
+                            <h3 class="lt-home-card-title"><c:out value="${trip.name}"/></h3>
+                            <p class="lt-home-card-dates">
+                                📅 <fmt:formatDate value="${trip.startDate}" pattern="MMM d"/> – <fmt:formatDate value="${trip.endDate}" pattern="MMM d, yyyy"/>
+                            </p>
                         </div>
 
                         <%-- Card Footer: Members & Readiness Status --%>

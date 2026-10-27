@@ -43,7 +43,7 @@ public class ComboTemplateStatusDAO {
 
                 String sql =
                         "UPDATE dbo.ComboTemplates "
-                        + "SET status = ?, updated_at = SYSDATETIME() "
+                        /* AUDIT: Modification timestamp must record real wall clock time */ + "SET status = ?, updated_at = SYSDATETIME() "
                         + "WHERE combo_id = ? AND status = ?";
 
                 try (PreparedStatement ps =

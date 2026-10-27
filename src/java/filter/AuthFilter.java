@@ -23,6 +23,24 @@ public class AuthFilter implements Filter {
     private final UserDAO userDAO = new UserDAO();
     private static final long USER_VERIFY_TTL_MS = 60000L; // 60 seconds session cache
 
+    /**
+     * One-line switch to flip Content-Security-Policy between Report-Only and Enforcing.
+     * When false: Content-Security-Policy-Report-Only is sent.
+     * When true: Content-Security-Policy (enforcing) is sent.
+     */
+    private static final boolean CSP_ENFORCE = false;
+
+    private static final String CSP_POLICY
+            = "default-src 'self'; "
+            + "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; "
+            + "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com; "
+            + "img-src 'self' data: blob: https://images.unsplash.com https://commons.wikimedia.org https://tile.openstreetmap.org https://api.qrserver.com https://img.vietqr.io https://*.openstreetmap.org; "
+            + "font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; "
+            + "connect-src 'self' https://api.open-meteo.com https://router.project-osrm.org https://tile.openstreetmap.org; "
+            + "frame-ancestors 'self'; "
+            + "base-uri 'self'; "
+            + "form-action 'self'";
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response,
             FilterChain chain) throws IOException, ServletException {
@@ -33,6 +51,7 @@ public class AuthFilter implements Filter {
         resp.setHeader("X-Content-Type-Options", "nosniff");
         resp.setHeader("X-Frame-Options", "SAMEORIGIN");
         resp.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+        resp.setHeader(CSP_ENFORCE ? "Content-Security-Policy" : "Content-Security-Policy-Report-Only", CSP_POLICY);
         String contextPath = req.getContextPath();
         String uri = req.getRequestURI();
         String path = uri.substring(contextPath.length());
@@ -74,7 +93,8 @@ public class AuthFilter implements Filter {
          */
         try {
             Long lastVerifiedAt = (Long) session.getAttribute("userLastVerifiedAt");
-            long now = System.currentTimeMillis();
+            // TELEMETRY: HTTP request duration header tracks real wall clock time
+        long now = System.currentTimeMillis();
 
             if (lastVerifiedAt == null || (now - lastVerifiedAt > USER_VERIFY_TTL_MS)) {
                 User freshUser = userDAO.findById(user.getUserId());
@@ -137,11 +157,7 @@ public class AuthFilter implements Filter {
                 String paramToken = req.getParameter("csrfToken");
                 Object sessionToken = session.getAttribute("travelCsrf");
 
-                boolean valid = (sessionToken instanceof String && ((String) sessionToken).equals(paramToken))
-                        || (paramToken != null && paramToken.equals(session.getAttribute("activityStatusToken")))
-                        || (req.getParameter("statusToken") != null && req.getParameter("statusToken").equals(session.getAttribute("tripStatusToken")))
-                        || (req.getParameter("deleteToken") != null && req.getParameter("deleteToken").equals(session.getAttribute("tripDeleteToken")))
-                        || (req.getParameter("token") != null && req.getParameter("token").equals(session.getAttribute("autoItineraryToken")));
+                boolean valid = sessionToken instanceof String && ((String) sessionToken).equals(paramToken);
 
                 if (!valid) {
                     resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid or missing CSRF security token.");

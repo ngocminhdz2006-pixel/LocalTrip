@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
-<%@ page import="utils.HtmlUtil" %>
+<%@ page import="utils.HtmlUtil,utils.ScenarioLabConfig" %>
 
 <%
     model.User currentUser =
@@ -145,19 +145,42 @@
             </a>
         </div>
 
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-md-6 col-lg-4">
             <a class="btn btn-outline-secondary w-100 py-3"
                href="<%= request.getContextPath() %>/admin/audit-logs">
                 Admin Audit Logs
             </a>
         </div>
 
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-md-6 col-lg-4">
             <a class="btn btn-outline-secondary w-100 py-3"
                href="<%= request.getContextPath() %>/admin/login-logs">
                 Login History
             </a>
         </div>
+
+        <div class="col-12 col-md-6 col-lg-4">
+            <a class="btn btn-outline-secondary w-100 py-3"
+               href="<%= request.getContextPath() %>/admin/combos">
+                🍱 Combo Management
+            </a>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4">
+            <a class="btn btn-outline-secondary w-100 py-3"
+               href="<%= request.getContextPath() %>/admin/dump-reports">
+                🚩 Dump Reports
+            </a>
+        </div>
+
+        <% if (ScenarioLabConfig.isScenarioLabEnabled()) { %>
+        <div class="col-12 col-md-6 col-lg-4">
+            <a class="btn btn-outline-warning text-dark border-warning border-2 fw-semibold w-100 py-3"
+               href="<%= request.getContextPath() %>/admin/lab">
+                🧪 Scenario Lab (Simulation & Time Travel)
+            </a>
+        </div>
+        <% } %>
     </div>
 </section>
 

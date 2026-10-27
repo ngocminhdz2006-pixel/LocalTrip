@@ -1,4 +1,4 @@
-USE LocalTripDB;
+﻿USE LocalTripDB;
 GO
 
 UPDATE ItineraryItems

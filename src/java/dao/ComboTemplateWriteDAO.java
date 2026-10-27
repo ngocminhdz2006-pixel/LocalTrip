@@ -128,7 +128,7 @@ public class ComboTemplateWriteDAO {
                         + "SET combo_name = ?, description = ?, "
                         + "city_name = ?, district_name = ?, "
                         + "duration_days = ?, status = 'DRAFT', "
-                        + "updated_at = SYSDATETIME() "
+                        /* AUDIT: Modification timestamp must record real wall clock time */ + "updated_at = SYSDATETIME() "
                         + "WHERE combo_id = ?";
 
                 try ( PreparedStatement ps

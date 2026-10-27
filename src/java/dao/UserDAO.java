@@ -414,6 +414,10 @@ public class UserDAO {
         }
     }
 
+    public boolean updatePasswordHash(int userId, String passwordHash) {
+        return updatePasswordByAdmin(userId, passwordHash);
+    }
+
     public boolean updatePasswordByAdmin(int userId,
             String passwordHash) {
 
@@ -436,15 +440,178 @@ public class UserDAO {
         }
     }
 
-    public boolean deactivateAndAnonymize(int userId) {
-        String sql = "UPDATE Users SET is_active = 0, full_name = 'Former Traveler', email = ? WHERE user_id = ?";
-        String anonymizedEmail = "deleted_" + userId + "_" + System.currentTimeMillis() + "@localtrip.local";
+    public boolean hasActiveOwnedTrips(int userId) {
+        String sql = "SELECT COUNT(*) FROM Trips WHERE owner_id = ? AND status IN ('PLANNING', 'ONGOING')";
         try (Connection con = DBContext.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, anonymizedEmail);
-            ps.setInt(2, userId);
-            return ps.executeUpdate() == 1;
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
         } catch (SQLException e) {
+            throw new RuntimeException("Error checking active owned trips for user " + userId, e);
+        }
+        return false;
+    }
+
+    public boolean hasUnsettledPayments(int userId) {
+        String sql = "SELECT COUNT(*) FROM SettlementPayments WHERE (from_user_id = ? OR to_user_id = ?) AND status IN ('PENDING', 'SENT')";
+        try (Connection con = DBContext.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error checking unsettled payments for user " + userId, e);
+        }
+        return false;
+    }
+
+    public boolean deactivateAndAnonymize(int userId) {
+        // AUDIT/SECURITY: Real wall clock timestamp ensures collision-free GDPR anonymization
+        String anonymizedEmail = "deleted_" + userId + "_" + System.currentTimeMillis() + "@localtrip.local";
+        Connection con = null;
+        try {
+            con = DBContext.getConnection();
+            con.setAutoCommit(false);
+
+            // 1. Notifications (both received and acted)
+            try (PreparedStatement ps = con.prepareStatement("DELETE FROM Notifications WHERE user_id = ? OR actor_user_id = ?")) {
+                ps.setInt(1, userId);
+                ps.setInt(2, userId);
+                ps.executeUpdate();
+            }
+
+            // 2. Active or created trip invites
+            try (PreparedStatement ps = con.prepareStatement("DELETE FROM TripInvites WHERE created_by = ?")) {
+                ps.setInt(1, userId);
+                ps.executeUpdate();
+            }
+
+            // 3. Post interactions and posts:
+            // 3a. PostReports (where reporter is user or on user's posts)
+            try (PreparedStatement ps = con.prepareStatement(
+                    "DELETE FROM PostReports WHERE reporter_id = ? OR post_id IN (SELECT post_id FROM Posts WHERE user_id = ?)")) {
+                ps.setInt(1, userId);
+                ps.setInt(2, userId);
+                ps.executeUpdate();
+            }
+            // 3b. PostLikes
+            try (PreparedStatement ps = con.prepareStatement(
+                    "DELETE FROM PostLikes WHERE user_id = ? OR post_id IN (SELECT post_id FROM Posts WHERE user_id = ?)")) {
+                ps.setInt(1, userId);
+                ps.setInt(2, userId);
+                ps.executeUpdate();
+            }
+            // 3c. PostComments
+            try (PreparedStatement ps = con.prepareStatement(
+                    "DELETE FROM PostComments WHERE user_id = ? OR post_id IN (SELECT post_id FROM Posts WHERE user_id = ?)")) {
+                ps.setInt(1, userId);
+                ps.setInt(2, userId);
+                ps.executeUpdate();
+            }
+            // 3d. PostBookmarks
+            try (PreparedStatement ps = con.prepareStatement(
+                    "DELETE FROM PostBookmarks WHERE user_id = ? OR post_id IN (SELECT post_id FROM Posts WHERE user_id = ?)")) {
+                ps.setInt(1, userId);
+                ps.setInt(2, userId);
+                ps.executeUpdate();
+            }
+            // 3e. PostImages
+            try (PreparedStatement ps = con.prepareStatement(
+                    "DELETE FROM PostImages WHERE post_id IN (SELECT post_id FROM Posts WHERE user_id = ?)")) {
+                ps.setInt(1, userId);
+                ps.executeUpdate();
+            }
+            // 3f. Posts
+            try (PreparedStatement ps = con.prepareStatement("DELETE FROM Posts WHERE user_id = ?")) {
+                ps.setInt(1, userId);
+                ps.executeUpdate();
+            }
+
+            // 4. CheckInImages & CheckIns
+            try (PreparedStatement ps = con.prepareStatement(
+                    "DELETE FROM CheckInImages WHERE checkin_id IN (SELECT checkin_id FROM CheckIns WHERE user_id = ?)")) {
+                ps.setInt(1, userId);
+                ps.executeUpdate();
+            }
+            try (PreparedStatement ps = con.prepareStatement("DELETE FROM CheckIns WHERE user_id = ?")) {
+                ps.setInt(1, userId);
+                ps.executeUpdate();
+            }
+
+            // 5. Friendships
+            try (PreparedStatement ps = con.prepareStatement("DELETE FROM Friendships WHERE requester_id = ? OR addressee_id = ?")) {
+                ps.setInt(1, userId);
+                ps.setInt(2, userId);
+                ps.executeUpdate();
+            }
+
+            // 6. UserBadges
+            try (PreparedStatement ps = con.prepareStatement("DELETE FROM UserBadges WHERE user_id = ?")) {
+                ps.setInt(1, userId);
+                ps.executeUpdate();
+            }
+
+            // 7. TravelPassportSettings
+            try (PreparedStatement ps = con.prepareStatement("DELETE FROM TravelPassportSettings WHERE user_id = ?")) {
+                ps.setInt(1, userId);
+                ps.executeUpdate();
+            }
+
+            // 8. UserPreferences & TripMemberPreferences
+            try (PreparedStatement ps = con.prepareStatement("DELETE FROM UserPreferences WHERE user_id = ?")) {
+                ps.setInt(1, userId);
+                ps.executeUpdate();
+            }
+            try (PreparedStatement ps = con.prepareStatement("DELETE FROM TripMemberPreferences WHERE user_id = ?")) {
+                ps.setInt(1, userId);
+                ps.executeUpdate();
+            }
+
+            // 9. RememberMeTokens & PasswordResetTokens
+            try (PreparedStatement ps = con.prepareStatement("DELETE FROM RememberMeTokens WHERE user_id = ?")) {
+                ps.setInt(1, userId);
+                ps.executeUpdate();
+            }
+            try (PreparedStatement ps = con.prepareStatement("DELETE FROM PasswordResetTokens WHERE user_id = ?")) {
+                ps.setInt(1, userId);
+                ps.executeUpdate();
+            }
+
+            // 10. Anonymize user row
+            int rowsUpdated = 0;
+            try (PreparedStatement ps = con.prepareStatement(
+                    "UPDATE Users SET is_active = 0, full_name = 'Former Traveler', email = ?, password_hash = 'DELETED' WHERE user_id = ?")) {
+                ps.setString(1, anonymizedEmail);
+                ps.setInt(2, userId);
+                rowsUpdated = ps.executeUpdate();
+            }
+
+            con.commit();
+            return rowsUpdated == 1;
+        } catch (SQLException e) {
+            if (con != null) {
+                try {
+                    con.rollback();
+                } catch (SQLException rbEx) {
+                    // ignore rollback exception
+                }
+            }
             throw new RuntimeException("Unable to deactivate and anonymize user account: " + userId, e);
+        } finally {
+            if (con != null) {
+                try {
+                    con.setAutoCommit(true);
+                    con.close();
+                } catch (SQLException closeEx) {
+                    // ignore
+                }
+            }
         }
     }
 

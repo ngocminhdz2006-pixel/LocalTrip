@@ -208,38 +208,17 @@ public class Place {
     }
 
     public String getCategoryIcon() {
-        if (categoryName == null) {
-            return "📍";
+        if (categoryCode != null && !categoryCode.trim().isEmpty()) {
+            return utils.CategoryUi.icon(categoryCode);
         }
+        return utils.CategoryUi.icon(categoryName);
+    }
 
-        String value = categoryName.toUpperCase();
-
-        if (value.contains("FOOD")
-                || value.contains("ẨM THỰC")) {
-            return "🍜";
+    public String getCategoryLabel() {
+        if (categoryCode != null && !categoryCode.trim().isEmpty()) {
+            return utils.CategoryUi.label(categoryCode);
         }
-
-        if (value.contains("NATURE")
-                || value.contains("THIÊN NHIÊN")) {
-            return "🌳";
-        }
-
-        if (value.contains("SHOP")
-                || value.contains("MUA SẮM")) {
-            return "🛍️";
-        }
-
-        if (value.contains("ENTERTAINMENT")
-                || value.contains("GIẢI TRÍ")) {
-            return "🎡";
-        }
-
-        if (value.contains("CULTURE")
-                || value.contains("VĂN HÓA")) {
-            return "🏛️";
-        }
-
-        return "📍";
+        return utils.CategoryUi.label(categoryName);
     }
 
     private String formatTime(Time time) {

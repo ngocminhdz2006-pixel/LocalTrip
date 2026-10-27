@@ -167,12 +167,21 @@ public class ComboServlet extends HttpServlet {
                 && ("PLANNING".equalsIgnoreCase(trip.getStatus()) || "ONGOING".equalsIgnoreCase(trip.getStatus()));
     }
     private Date minimumDate(Trip trip) {
-        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        LocalDate today = utils.AppClock.today();
         LocalDate start = trip.getStartDate().toLocalDate();
         return Date.valueOf(start.isAfter(today) ? start : today);
     }
     public static boolean slotMatches(Place place, int slot) {
+        if (place == null) return false;
         String code = place.getCategoryCode();
+        if (code == null && place.getCategoryName() != null) {
+            String label = utils.CategoryUi.label(place.getCategoryName());
+            if ("Food & Dining".equals(label)) code = "FOOD";
+            else if ("Cafe & Drinks".equals(label)) code = "CAFE";
+            else if ("Sightseeing".equals(label)) code = "SIGHTSEEING";
+            else if ("Entertainment".equals(label)) code = "ENTERTAINMENT";
+            else if ("Shopping".equals(label)) code = "SHOPPING";
+        }
         return code != null && (slot == 1 ? "FOOD".equals(code) : slot == 2 ? "CAFE".equals(code)
                 : ("SIGHTSEEING".equals(code) || "ENTERTAINMENT".equals(code) || "SHOPPING".equals(code)));
     }

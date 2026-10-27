@@ -17,17 +17,44 @@ public final class RememberMeUtil {
 
     private RememberMeUtil() { }
 
+    public static boolean isSecure(HttpServletRequest request) {
+        if (request == null) {
+            return false;
+        }
+        if (request.isSecure()) {
+            return true;
+        }
+        // Only honor X-Forwarded-Proto from a trusted local reverse proxy (loopback)
+        String remoteAddr = request.getRemoteAddr();
+        if ("127.0.0.1".equals(remoteAddr) || "0:0:0:0:0:0:0:1".equals(remoteAddr) || "::1".equals(remoteAddr)) {
+            String proto = request.getHeader("X-Forwarded-Proto");
+            if ("https".equalsIgnoreCase(proto)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static void create(HttpServletRequest request, HttpServletResponse response, User user) {
         String rawToken = TokenUtil.generateToken();
+        // SECURITY: Persistent login token expiry must track real wall clock time
+        // SECURITY: Persistent login token expiry must track real wall clock time
         long expires = System.currentTimeMillis() + TimeUnit.DAYS.toMillis(30);
         DAO.createToken(user.getUserId(), TokenUtil.sha256(rawToken), expires);
 
-        Cookie cookie = new Cookie(COOKIE_NAME, rawToken);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(request.isSecure());
-        cookie.setMaxAge(MAX_AGE_SECONDS);
-        cookie.setPath(contextCookiePath(request));
-        response.addCookie(cookie);
+        boolean secure = isSecure(request);
+        String path = contextCookiePath(request);
+
+        StringBuilder cookieHeader = new StringBuilder();
+        cookieHeader.append(COOKIE_NAME).append("=").append(rawToken);
+        cookieHeader.append("; Path=").append(path);
+        cookieHeader.append("; Max-Age=").append(MAX_AGE_SECONDS);
+        cookieHeader.append("; HttpOnly");
+        cookieHeader.append("; SameSite=Lax");
+        if (secure) {
+            cookieHeader.append("; Secure");
+        }
+        response.addHeader("Set-Cookie", cookieHeader.toString());
     }
 
     public static User restore(HttpServletRequest request) {
@@ -54,12 +81,20 @@ public final class RememberMeUtil {
     }
 
     private static void clearCookie(HttpServletRequest request, HttpServletResponse response) {
-        Cookie cookie = new Cookie(COOKIE_NAME, "");
-        cookie.setHttpOnly(true);
-        cookie.setSecure(request.isSecure());
-        cookie.setMaxAge(0);
-        cookie.setPath(contextCookiePath(request));
-        response.addCookie(cookie);
+        boolean secure = isSecure(request);
+        String path = contextCookiePath(request);
+
+        StringBuilder cookieHeader = new StringBuilder();
+        cookieHeader.append(COOKIE_NAME).append("=");
+        cookieHeader.append("; Path=").append(path);
+        cookieHeader.append("; Max-Age=0");
+        cookieHeader.append("; Expires=Thu, 01 Jan 1970 00:00:00 GMT");
+        cookieHeader.append("; HttpOnly");
+        cookieHeader.append("; SameSite=Lax");
+        if (secure) {
+            cookieHeader.append("; Secure");
+        }
+        response.addHeader("Set-Cookie", cookieHeader.toString());
     }
 
     private static String contextCookiePath(HttpServletRequest request) {

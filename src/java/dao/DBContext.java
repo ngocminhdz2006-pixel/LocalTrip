@@ -28,12 +28,11 @@ public class DBContext {
     private static final String DEFAULT_PORT = "1433";
     private static final String DEFAULT_DB = "LocalTripDB";
     private static final String DEFAULT_USER = "sa";
-    private static final String DEFAULT_PASSWORD = "12345";
 
     private static volatile DataSource jndiDataSource = null;
     private static volatile boolean jndiChecked = false;
 
-    private static String getConfig(String key, String defaultValue) {
+    public static String getConfig(String key, String defaultValue) {
         String val = System.getenv(key);
         if (val != null && !val.trim().isEmpty()) {
             return val.trim();
@@ -53,17 +52,22 @@ public class DBContext {
         return defaultValue;
     }
 
+    public static boolean isProduction() {
+        return "production".equalsIgnoreCase(getConfig("APP_ENV", "development"));
+    }
+
     public static String getJdbcUrl() {
         String customUrl = getConfig("DB_URL", null);
         if (customUrl != null) {
             return customUrl;
         }
 
+        boolean isProd = isProduction();
         String host = getConfig("DB_SERVER", getConfig("DB_HOST", DEFAULT_HOST));
         String port = getConfig("DB_PORT", DEFAULT_PORT);
         String dbName = getConfig("DB_NAME", DEFAULT_DB);
-        String encrypt = getConfig("DB_ENCRYPT", host.endsWith(".database.windows.net") ? "true" : "false");
-        String trustCert = getConfig("DB_TRUST_CERT", "true");
+        String encrypt = getConfig("DB_ENCRYPT", (isProd || host.endsWith(".database.windows.net")) ? "true" : "false");
+        String trustCert = getConfig("DB_TRUST_CERT", isProd ? "false" : "true");
 
         if (host.contains("\\")) {
             return String.format(
@@ -79,11 +83,14 @@ public class DBContext {
     }
 
     public static String getUser() {
+        if (isProduction()) {
+            return getConfig("DB_USER", "");
+        }
         return getConfig("DB_USER", DEFAULT_USER);
     }
 
     public static String getPassword() {
-        return getConfig("DB_PASSWORD", DEFAULT_PASSWORD);
+        return getConfig("DB_PASSWORD", "");
     }
 
     private static DataSource getJndiDataSource() {
@@ -118,17 +125,9 @@ public class DBContext {
         }
 
         // 2. Production fail-fast check: disallow default credentials in production
-        String appEnv = getConfig("APP_ENV", "development");
-        String rawPassword = System.getenv("DB_PASSWORD");
-        if (rawPassword == null) {
-            rawPassword = System.getProperty("DB_PASSWORD");
-            if (rawPassword == null) {
-                rawPassword = System.getProperty("db.password");
-            }
-        }
-
-        if ("production".equalsIgnoreCase(appEnv)) {
-            if (rawPassword == null || rawPassword.trim().isEmpty() || DEFAULT_PASSWORD.equals(rawPassword.trim())) {
+        if (isProduction()) {
+            String rawPassword = getPassword();
+            if (rawPassword == null || rawPassword.trim().isEmpty() || "12345".equals(rawPassword.trim())) {
                 throw new SQLException("CRITICAL: Production environment detected (APP_ENV=production) but DB_PASSWORD is not explicitly provided or is using insecure default.");
             }
         }

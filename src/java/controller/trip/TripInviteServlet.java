@@ -13,6 +13,7 @@ import javax.servlet.http.HttpSession;
 import model.Trip;
 import model.TripInvite;
 import model.User;
+import utils.NotificationService;
 
 @WebServlet(name = "TripInviteServlet", urlPatterns = {"/trip/invite", "/trip/join"})
 public class TripInviteServlet extends HttpServlet {
@@ -55,12 +56,24 @@ public class TripInviteServlet extends HttpServlet {
             }
 
             int tripId = invite.getTripId();
+            boolean newlyAdded = false;
             if (!tripMemberDAO.exists(tripId, user.getUserId())) {
-                tripMemberDAO.addMember(tripId, user.getUserId());
+                newlyAdded = tripMemberDAO.addMember(tripId, user.getUserId());
             }
 
             Trip trip = tripDAO.findById(tripId);
             String tripName = trip != null ? trip.getName() : "the trip";
+
+            if (newlyAdded && trip != null && trip.getOwnerId() != user.getUserId()) {
+                NotificationService.notify(
+                        trip.getOwnerId(),
+                        user.getUserId(),
+                        "TRIP_JOINED",
+                        tripId,
+                        tripId,
+                        user.getFullName() + " joined \"" + tripName + "\" via invite link."
+                );
+            }
 
             session.setAttribute("successMessage", "Welcome aboard! You have joined \"" + tripName + "\".");
             response.sendRedirect(request.getContextPath() + "/trip/detail?tripId=" + tripId);

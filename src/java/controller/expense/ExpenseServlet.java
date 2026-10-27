@@ -23,6 +23,7 @@ import model.GroupFundSummary;
 import model.SettlementBalance;
 import model.Trip;
 import model.User;
+import utils.NotificationService;
 
 @WebServlet(name = "ExpenseServlet", urlPatterns = {
     "/expenses",
@@ -525,6 +526,19 @@ public class ExpenseServlet extends HttpServlet {
                         "Unable to save expense."
                 );
                 return;
+            }
+
+            for (Integer participantId : participantIds) {
+                if (participantId != null && participantId != currentUser.getUserId()) {
+                    NotificationService.notify(
+                            participantId,
+                            currentUser.getUserId(),
+                            "EXPENSE_ADDED",
+                            trip.getTripId(),
+                            newExpenseId,
+                            currentUser.getFullName() + " added an expense \"" + description + "\" to \"" + trip.getName() + "\"."
+                    );
+                }
             }
         }
 

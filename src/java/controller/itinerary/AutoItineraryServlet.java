@@ -160,9 +160,7 @@ public class AutoItineraryServlet extends HttpServlet {
                 }
             }
 
-            if (session.getAttribute("autoItineraryToken") == null) {
-                session.setAttribute("autoItineraryToken", UUID.randomUUID().toString());
-            }
+
 
             List<ItineraryItem> oldItems = new ArrayList<ItineraryItem>();
             for (ItineraryItem item : itineraryDAO.findByTrip(tripId)) {
@@ -233,8 +231,8 @@ public class AutoItineraryServlet extends HttpServlet {
                 return;
             }
 
-            String csrf = request.getParameter("autoToken");
-            String sessionToken = (String) session.getAttribute("autoItineraryToken");
+            String csrf = request.getParameter("csrfToken");
+            String sessionToken = (String) session.getAttribute("travelCsrf");
             if (sessionToken != null && csrf != null && !csrf.equals(sessionToken)) {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "Form session expired. Please reload the itinerary.");
                 return;
@@ -318,7 +316,7 @@ public class AutoItineraryServlet extends HttpServlet {
         List<ItineraryItem> existing = new ArrayList<ItineraryItem>();
         Set<Integer> scheduledPlaceIds = new HashSet<Integer>();
 
-        Date fromDate = Date.valueOf(LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
+        Date fromDate = utils.AppClock.todaySql();
         if (trip.getStartDate() != null && trip.getStartDate().after(fromDate)) {
             fromDate = trip.getStartDate();
         }
@@ -359,7 +357,7 @@ public class AutoItineraryServlet extends HttpServlet {
             };
         }
 
-        LocalDate today = LocalDate.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+        LocalDate today = utils.AppClock.today();
         LocalDate currentDate = trip.getStartDate().toLocalDate();
         LocalDate endDate = trip.getEndDate().toLocalDate();
 
@@ -1348,9 +1346,8 @@ public class AutoItineraryServlet extends HttpServlet {
         item.setSourceType("AI");
         item.setLocked(false);
         String catName = recommendation.getPlace().getCategoryName() != null ? recommendation.getPlace().getCategoryName() : (note != null ? note : "Attraction");
-        String icon = "CAFE".equalsIgnoreCase(activityType) || catName.toLowerCase().contains("cafe") || catName.toLowerCase().contains("coffee") ? "☕" :
-                      (("MEAL".equalsIgnoreCase(activityType) || catName.toLowerCase().contains("food") || catName.toLowerCase().contains("dining")) ? "🍽️" : "🎯");
-        item.setNote(icon + " Recommended for " + catName + " • 🔥 " + Math.round(recommendation.getScore()) + "% Group Vibe Match");
+        String icon = utils.CategoryUi.icon(recommendation.getPlace().getCategoryCode() != null ? recommendation.getPlace().getCategoryCode() : catName);
+        item.setNote(icon + " Recommended for " + catName + " • " + Math.round(recommendation.getScore()) + "% Group Match");
 
         item.setPlaceName(recommendation.getPlace().getPlaceName());
         item.setLatitude(recommendation.getPlace().getLatitude()); item.setLongitude(recommendation.getPlace().getLongitude());

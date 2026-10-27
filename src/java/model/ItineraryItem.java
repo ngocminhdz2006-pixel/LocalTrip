@@ -179,15 +179,14 @@ public class ItineraryItem {
                 "^(.*?)(?:\\s*-\\s*Slot\\s*\\d{2}:\\d{2}\\s*-\\s*\\d{2}:\\d{2})?\\s*-\\s*structured milestone;?\\s*match score:\\s*(\\d+)\\.?$",
                 java.util.regex.Pattern.CASE_INSENSITIVE).matcher(n);
             if (m.find()) {
-                String cat = m.group(1).trim();
-                if (cat.contains("Tham quan")) cat = "Sightseeing";
-                if (cat.contains("Gi?i tr") || cat.contains("Giải trí")) cat = "Entertainment";
-                if (cat.contains("Mua s") || cat.contains("Mua sắm")) cat = "Shopping";
-                if (cat.startsWith("Activity (") && cat.endsWith(")")) cat = cat.substring(10, cat.length() - 1);
+                String rawCat = m.group(1).trim();
+                if (rawCat.startsWith("Activity (") && rawCat.endsWith(")")) {
+                    rawCat = rawCat.substring(10, rawCat.length() - 1);
+                }
+                String cat = utils.CategoryUi.label(rawCat);
                 String score = m.group(2).trim();
-                String icon = cat.toLowerCase().contains("cafe") || cat.toLowerCase().contains("coffee") ? "☕ " :
-                             (cat.toLowerCase().contains("dining") || cat.toLowerCase().contains("meal") || cat.toLowerCase().contains("food") ? "🍽️ " : "🎯 ");
-                return icon + cat + " • " + score + "% Group Match";
+                String icon = utils.CategoryUi.icon(rawCat);
+                return icon + " " + cat + " • " + score + "% Group Match";
             }
         }
         if (n.contains("Matches group vibe")) {
@@ -195,11 +194,11 @@ public class ItineraryItem {
                 "Matches group vibe \\((.*?)\\).*?Score:\\s*(\\d+)%",
                 java.util.regex.Pattern.CASE_INSENSITIVE).matcher(n);
             if (m2.find()) {
-                String cat = m2.group(1).trim();
+                String rawCat = m2.group(1).trim();
+                String cat = utils.CategoryUi.label(rawCat);
                 String score = m2.group(2).trim();
-                String icon = cat.toLowerCase().contains("cafe") || cat.toLowerCase().contains("coffee") ? "☕ " :
-                             (cat.toLowerCase().contains("dining") || cat.toLowerCase().contains("meal") || cat.toLowerCase().contains("food") ? "🍽️ " : "🎯 ");
-                return icon + cat + " • " + score + "% Group Match";
+                String icon = utils.CategoryUi.icon(rawCat);
+                return icon + " " + cat + " • " + score + "% Group Match";
             }
         }
         return n;

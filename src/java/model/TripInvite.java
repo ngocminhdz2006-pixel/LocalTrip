@@ -71,6 +71,7 @@ public class TripInvite {
     }
 
     public boolean isExpired() {
+        // SECURITY: In-memory invite expiration check tracks real wall clock time
         return expiresAt != null && expiresAt.getTime() < System.currentTimeMillis();
     }
 }

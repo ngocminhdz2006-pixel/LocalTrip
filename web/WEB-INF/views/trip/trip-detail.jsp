@@ -166,54 +166,55 @@
                             <h3 class="lt-step-title">Step 1: Invite Companions & Sync Vibes</h3>
                             <span class="lt-pill-status lt-pill-success">${fn:length(members)} traveler(s) connected</span>
                         </div>
-                        <p class="lt-step-desc" style="margin-bottom: 8px;">
-                            Calculated automatically from ${fn:length(members)} members' profile preferences — 
-                            <a href="${pageContext.request.contextPath}/account" style="color: #175b43; font-weight: 700; text-decoration: underline;">
-                                [Edit my vibes in Account]
-                            </a>
-                        </p>
-
-                        <%-- Group Matched Vibes Tags --%>
-                        <c:choose>
-                            <c:when test="${not empty groupMatchedPrefs}">
-                                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px;">
-                                    <c:forEach var="gp" items="${groupMatchedPrefs}">
-                                        <div style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 16px; font-size: 11.5px; font-weight: 700; color: #143b2d;">
-                                            <span>🎯 <c:out value="${gp.categoryName}"/></span>
-                                            <span style="font-size: 9.5px; background: #175b43; color: #ffffff; padding: 1px 5px; border-radius: 8px;">
-                                                <fmt:formatNumber value="${gp.percentage}" maxFractionDigits="0"/>%
-                                            </span>
-                                        </div>
-                                    </c:forEach>
-                                </div>
-                            </c:when>
-                            <c:otherwise>
-                                <p style="font-size: 11px; color: #64748b; margin: 4px 0 8px; font-style: italic;">
-                                    No common tastes found yet. Add members or update personal preferences in Account.
-                                </p>
-                            </c:otherwise>
-                        </c:choose>
-
-                        <%-- Invite Share Action Row --%>
-                        <c:if test="${not empty tripInvite}">
-                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
-                                <button type="button" class="lt-btn-step-action" style="background: #175b43; color: #fff; border: none; font-size: 11.5px; padding: 6px 12px;" onclick="copyTripInviteLink('${pageContext.request.scheme}://${pageContext.request.serverName}:${pageContext.request.serverPort}${pageContext.request.contextPath}/trip/join?token=${tripInvite.inviteToken}')">
-                                    📋 Copy Invite Link
-                                </button>
-                                <button type="button" class="lt-btn-step-action lt-btn-step-outline" style="font-size: 11.5px; padding: 6px 12px;" onclick="openTripQrModal('${pageContext.request.scheme}://${pageContext.request.serverName}:${pageContext.request.serverPort}${pageContext.request.contextPath}/trip/join?token=${tripInvite.inviteToken}')">
-                                    📲 Invite QR
-                                </button>
-                                <c:if test="${trip.role == 'OWNER'}">
-                                    <form method="post" action="${pageContext.request.contextPath}/trip/invite" style="margin:0;">
-                                        <input type="hidden" name="tripId" value="${trip.id}">
-                                        <button type="submit" class="btn btn-link btn-sm text-secondary text-decoration-none" style="font-size: 11px;" title="Revoke and generate a fresh invite link">
-                                            🔄 Refresh link
-                                        </button>
-                                    </form>
-                                </c:if>
-                            </div>
-                        </c:if>
                     </div>
+                </div>
+
+                <div class="lt-step-body" style="padding-top: 8px;">
+                    <p class="lt-step-desc" style="margin-bottom: 8px;">
+                        Auto-synced from ${fn:length(members)} members' profiles · <a href="${pageContext.request.contextPath}/account" style="color:#175b43; font-weight:700; text-decoration:none;">Edit my vibes &rarr;</a>
+                    </p>
+
+                    <%-- Group Matched Vibes Tags --%>
+                    <c:choose>
+                        <c:when test="${not empty groupMatchedPrefs}">
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px;">
+                                <c:forEach var="gp" items="${groupMatchedPrefs}">
+                                    <div style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 16px; font-size: 11.5px; font-weight: 700; color: #143b2d;">
+                                        <span><c:out value="${empty gp.icon ? '📍' : gp.icon}"/> <c:out value="${gp.categoryName}"/></span>
+                                        <span style="font-size: 9.5px; background: #175b43; color: #ffffff; padding: 1px 5px; border-radius: 8px;">
+                                            <fmt:formatNumber value="${gp.percentage}" maxFractionDigits="0"/>%
+                                        </span>
+                                    </div>
+                                </c:forEach>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <p style="font-size: 11px; color: #64748b; margin: 4px 0 8px; font-style: italic;">
+                                No common tastes found yet. Add members or update personal preferences in Account.
+                            </p>
+                        </c:otherwise>
+                    </c:choose>
+
+                    <%-- Invite Share Action Row: single horizontal row with 3 actions --%>
+                    <c:if test="${not empty tripInvite}">
+                        <div style="display: flex; align-items: center; gap: 8px; padding-top: 12px; margin-top: 14px; border-top: 1px dashed #e2e8f0;">
+                            <button type="button" class="lt-btn-step-action" style="flex: 1; height: 38px; background: #175b43; color: #fff; border: none; font-size: 12px; font-weight: 600; border-radius: 8px;" onclick="copyTripInviteLink('${pageContext.request.scheme}://${pageContext.request.serverName}:${pageContext.request.serverPort}${pageContext.request.contextPath}/trip/join?token=${tripInvite.inviteToken}')">
+                                📋 Copy Invite Link
+                            </button>
+                            <button type="button" class="lt-btn-step-action lt-btn-step-outline" style="height: 38px; padding: 0 14px; font-size: 12px; font-weight: 600; border-radius: 8px; white-space: nowrap;" onclick="openTripQrModal('${pageContext.request.scheme}://${pageContext.request.serverName}:${pageContext.request.serverPort}${pageContext.request.contextPath}/trip/join?token=${tripInvite.inviteToken}')">
+                                🔳 Invite QR
+                            </button>
+                            <c:if test="${trip.role == 'OWNER'}">
+                                <form method="post" action="${pageContext.request.contextPath}/trip/invite" style="margin: 0; display: inline-flex;">
+                                    <input type="hidden" name="tripId" value="${trip.id}">
+                                    <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
+                                    <button type="submit" class="btn btn-outline-secondary" style="width: 38px; height: 38px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 8px;" title="Generate new invite link">
+                                        🔄
+                                    </button>
+                                </form>
+                            </c:if>
+                        </div>
+                    </c:if>
                 </div>
             </div>
 
@@ -340,7 +341,7 @@
                                       onsubmit="return confirm('Launch this trip live now? You will be able to track live activity milestones and check-ins.');" style="margin: 0;">
                                     <input type="hidden" name="tripId" value="${trip.id}">
                                     <input type="hidden" name="status" value="ONGOING">
-                                    <input type="hidden" name="statusToken" value="${sessionScope.tripStatusToken}">
+                                    <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
                                     <button type="submit" class="lt-btn-step-action lt-btn-step-primary" ${viewCanStart ? '' : 'disabled'}>
                                         🚀 Start Trip Now
                                     </button>
@@ -516,14 +517,7 @@
     <%-- 3. Manage Trip Actions --%>
     <c:choose>
         <c:when test="${trip.role == 'OWNER'}">
-            <%
-                if (session.getAttribute("tripStatusToken") == null) {
-                    session.setAttribute("tripStatusToken", java.util.UUID.randomUUID().toString());
-                }
-                if (session.getAttribute("tripDeleteToken") == null) {
-                    session.setAttribute("tripDeleteToken", java.util.UUID.randomUUID().toString());
-                }
-            %>
+
 
             <section class="lt-overview-card">
                 <div class="lt-overview-head">
@@ -543,7 +537,7 @@
                               onsubmit="return confirm('Confirm current itinerary and start trip?');" style="margin: 0;">
                             <input type="hidden" name="tripId" value="${trip.id}">
                             <input type="hidden" name="status" value="ONGOING">
-                            <input type="hidden" name="statusToken" value="${sessionScope.tripStatusToken}">
+                            <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
 
                             <button type="submit" class="lt-btn-manage-primary" ${viewCanStart ? '' : 'disabled'}>
                                 🚀 Start trip now
@@ -561,7 +555,7 @@
                               onsubmit="var count = ${incompleteActivityCount != null ? incompleteActivityCount : 0}; if (count > 0) { return confirm('You still have ' + count + ' incomplete activity/activities in this itinerary. Completing the trip will finalize it. Are you sure you want to finish the trip?'); } return confirm('Mark trip as completed?');" style="margin: 0;">
                             <input type="hidden" name="tripId" value="${trip.id}">
                             <input type="hidden" name="status" value="COMPLETED">
-                            <input type="hidden" name="statusToken" value="${sessionScope.tripStatusToken}">
+                            <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
 
                             <button type="submit" class="lt-btn-manage-primary" style="background: #047857;">
                                 ✓ Mark trip as completed
@@ -585,7 +579,7 @@
                                   onsubmit="return confirm('Cancel this trip? Its itinerary and expense records will remain available for history.');" style="margin: 0;">
                                 <input type="hidden" name="tripId" value="${trip.id}">
                                 <input type="hidden" name="status" value="CANCELLED">
-                                <input type="hidden" name="statusToken" value="${sessionScope.tripStatusToken}">
+                                <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
                                 <button type="submit" class="lt-btn-danger-outline" style="font-size: 12px; padding: 6px 14px;">
                                     Cancel trip
                                 </button>
@@ -601,7 +595,7 @@
                                 <form method="post" action="${pageContext.request.contextPath}/trip/delete"
                                       onsubmit="return confirm('PERMANENT DELETION: Are you sure you want to permanently delete this trip and all its data? This cannot be undone.');" style="margin: 0;">
                                     <input type="hidden" name="tripId" value="${trip.id}">
-                                    <input type="hidden" name="deleteToken" value="${sessionScope.tripDeleteToken}">
+                                    <input type="hidden" name="csrfToken" value="${sessionScope.travelCsrf}">
                                     <button type="submit" class="lt-btn-danger-outline" style="background: #fee2e2; border-color: #f87171; color: #991b1b; font-size: 12px; padding: 6px 14px;">
                                         Delete trip permanently
                                     </button>

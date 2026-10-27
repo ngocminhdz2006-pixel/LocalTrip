@@ -17,6 +17,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import model.*;
 import utils.ItineraryEditValidation;
+import utils.NotificationService;
 
 @WebServlet("/itinerary/edit")
 public class ItineraryEditServlet extends HttpServlet {
@@ -46,7 +47,7 @@ public class ItineraryEditServlet extends HttpServlet {
             if(!"UPCOMING".equals(original.getActivityStatus())) { resp.sendError(403,"Only upcoming activities can be edited."); return; }
             boolean restWithoutPlace="REST".equals(original.getActivityType()) && original.getPlaceId()==0;
             req.setAttribute("restWithoutPlace",restWithoutPlace);
-            Date today = Date.valueOf(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")));
+            Date today = utils.AppClock.todaySql();
             if (original.getVisitDate().before(today)) { resp.sendError(403, "Cannot edit activities for past dates."); return; }
             List<Place> candidates = places.findForDestination(trip.getDestination());
             if (session.getAttribute("itineraryEditToken") == null) session.setAttribute("itineraryEditToken", UUID.randomUUID().toString());
@@ -76,6 +77,7 @@ public class ItineraryEditServlet extends HttpServlet {
                     for (Place place : candidates) if (place.getPlaceId() == edited.getPlaceId()) selected = place;
                     ItineraryEditValidation.validate(trip, original, edited, selected, today);
                     itinerary.updateItemAuthorized(edited, user.getUserId(), req.getParameter("revision"));
+                    NotificationService.notifyItineraryChange(tripId, user.getUserId(), itemId, user.getFullName() + " updated an activity in the itinerary for \"" + trip.getName() + "\".");
                     session.setAttribute("successMessage", "Activity updated successfully.");
                     resp.sendRedirect(req.getContextPath() + "/itinerary?tripId=" + tripId); return;
                 } catch (IllegalArgumentException ex) { req.setAttribute("error", ex.getMessage()); }

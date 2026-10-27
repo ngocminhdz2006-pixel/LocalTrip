@@ -40,8 +40,8 @@ public class TripDeleteServlet extends HttpServlet {
             return;
         }
 
-        String token = request.getParameter("deleteToken");
-        Object expectedToken = session.getAttribute("tripDeleteToken");
+        String token = request.getParameter("csrfToken");
+        Object expectedToken = session.getAttribute("travelCsrf");
 
         if (token == null || !token.equals(expectedToken)) {
             response.sendError(

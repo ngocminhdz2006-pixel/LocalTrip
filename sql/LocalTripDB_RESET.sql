@@ -29,6 +29,7 @@ CREATE TABLE Users (
     role VARCHAR(20) NOT NULL DEFAULT 'USER',
     is_active BIT NOT NULL DEFAULT 1,
     created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+    sim_batch_id VARCHAR(50) NULL,
 
     CONSTRAINT CK_Users_Role
         CHECK (role IN ('ADMIN', 'USER'))
@@ -50,6 +51,7 @@ CREATE TABLE Trips (
     status VARCHAR(20) NOT NULL DEFAULT 'PLANNING',
     applied_combo_id INT NULL,
     created_at DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+    sim_batch_id VARCHAR(50) NULL,
 
     CONSTRAINT FK_Trips_Owner
         FOREIGN KEY (owner_id) REFERENCES Users(user_id),
@@ -658,7 +660,13 @@ BEGIN
         'DEACTIVATE_PLACE',
         'CREATE_CATEGORY',
         'UPDATE_CATEGORY',
-        'DELETE_CATEGORY'
+        'DELETE_CATEGORY',
+        'SCENARIO_LAB_LOAD',
+        'SCENARIO_LAB_TIME',
+        'SCENARIO_LAB_CHECKIN',
+        'SCENARIO_LAB_EXPENSE',
+        'PURGE_SIM_BATCH',
+        'PURGE_ALL_SIM'
     ));
 END;
 GO

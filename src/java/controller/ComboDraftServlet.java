@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import model.ItineraryItem;
 import model.Place;
+import utils.AppClock;
 
 @WebServlet("/combos/draft")
 public class ComboDraftServlet extends HttpServlet {
@@ -219,8 +220,7 @@ public class ComboDraftServlet extends HttpServlet {
                 List<ItineraryItem> originals = draft.getItems();
                 List<ItineraryItem> updated = new ArrayList<>();
 
-                LocalDate today = LocalDate.now(
-                        ZoneId.of("Asia/Ho_Chi_Minh"));
+                LocalDate today = utils.AppClock.today();
 
                 for (int i = 0; i < originals.size(); i++) {
                     if ("yes".equals(

@@ -6,6 +6,7 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import model.User;
+import utils.NotificationService;
 
 @WebServlet({"/itinerary/activity/status", "/itinerary/lock"})
 public class ActivityStatusServlet extends HttpServlet {
@@ -15,11 +16,9 @@ public class ActivityStatusServlet extends HttpServlet {
         User user=session==null?null:(User)session.getAttribute("user");
         if(user==null) { resp.sendRedirect(req.getContextPath()+"/login"); return; }
         if(!"USER".equals(user.getRole())) { resp.sendError(403); return; }
-        Object token = session.getAttribute("activityStatusToken");
         Object travelCsrf = session.getAttribute("travelCsrf");
         String paramCsrf = req.getParameter("csrfToken");
-        boolean csrfOk = (token != null && token.equals(paramCsrf))
-                || (travelCsrf != null && travelCsrf.equals(paramCsrf));
+        boolean csrfOk = travelCsrf != null && travelCsrf.equals(paramCsrf);
         if (!csrfOk) { resp.sendError(403); return; }
         int tripId,itemId;
         try { tripId=Integer.parseInt(req.getParameter("tripId")); itemId=Integer.parseInt(req.getParameter("itemId")); if(tripId<=0||itemId<=0) throw new NumberFormatException(); }
@@ -36,8 +35,14 @@ public class ActivityStatusServlet extends HttpServlet {
                 if(value==null || !value.matches("\\d{2}:\\d{2}")) throw new IllegalArgumentException("Invalid end time.");
                 java.time.LocalTime time=java.time.LocalTime.parse(value);
                 dao.updateRunningEnd(tripId,itemId,user.getUserId(),req.getParameter("expectedEnd"),java.sql.Time.valueOf(time));
+                NotificationService.notifyItineraryChange(tripId, user.getUserId(), itemId, user.getFullName() + " updated an activity schedule in the itinerary.");
             } else {
-                dao.changeStatus(tripId,itemId,user.getUserId(),req.getParameter("expectedStatus"),req.getParameter("nextStatus"));
+                String nextStatus = req.getParameter("nextStatus");
+                dao.changeStatus(tripId,itemId,user.getUserId(),req.getParameter("expectedStatus"),nextStatus);
+                String actDesc = "SKIPPED".equalsIgnoreCase(nextStatus) ? "skipped an activity"
+                        : "CANCELLED".equalsIgnoreCase(nextStatus) ? "cancelled an activity"
+                        : "updated an activity status";
+                NotificationService.notifyItineraryChange(tripId, user.getUserId(), itemId, user.getFullName() + " " + actDesc + " in the itinerary.");
             }
             session.setAttribute("successMessage","Activity status updated successfully.");
         } catch(IllegalArgumentException e) { session.setAttribute("errorMessage",e.getMessage()); }

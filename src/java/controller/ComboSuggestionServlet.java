@@ -94,8 +94,7 @@ public class ComboSuggestionServlet extends HttpServlet {
                 return;
             }
 
-            LocalDate today = LocalDate.now(
-                    ZoneId.of("Asia/Ho_Chi_Minh"));
+            LocalDate today = utils.AppClock.today();
 
             LocalDate start = trip.getStartDate().toLocalDate();
             LocalDate end = trip.getEndDate().toLocalDate();

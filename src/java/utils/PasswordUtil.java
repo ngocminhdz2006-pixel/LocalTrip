@@ -12,7 +12,7 @@ import javax.crypto.spec.PBEKeySpec;
  */
 public class PasswordUtil {
 
-    private static final int ITERATIONS = 20000;
+    public static final int ITERATIONS = 600000;
     private static final int KEY_BITS = 256;
     private static final int SALT_BYTES = 16;
 
@@ -20,6 +20,22 @@ public class PasswordUtil {
         byte[] salt = new byte[SALT_BYTES];
         new SecureRandom().nextBytes(salt);
         return ITERATIONS + ":" + toHex(salt) + ":" + toHex(derive(password, salt, ITERATIONS));
+    }
+
+    public static boolean needsRehash(String stored) {
+        if (stored == null) {
+            return false;
+        }
+        String[] parts = stored.split(":");
+        if (parts.length != 3) {
+            return false;
+        }
+        try {
+            int iterations = Integer.parseInt(parts[0]);
+            return iterations < ITERATIONS;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     public static boolean verify(String password, String stored) {

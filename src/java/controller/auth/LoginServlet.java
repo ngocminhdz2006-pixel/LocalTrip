@@ -179,6 +179,16 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
+        // Rehash-on-login: upgrade old hashes to current standard (600,000 iterations)
+        if (PasswordUtil.needsRehash(user.getPasswordHash())) {
+            try {
+                String upgradedHash = PasswordUtil.hash(password);
+                userDAO.updatePasswordHash(user.getUserId(), upgradedHash);
+            } catch (Exception e) {
+                log("Failed to upgrade password hash for user " + user.getUserId(), e);
+            }
+        }
+
         // Đăng nhập thành công
         HttpSession oldSession = request.getSession(false);
         String redirectAfterLogin = null;

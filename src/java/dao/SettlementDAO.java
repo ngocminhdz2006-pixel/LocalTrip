@@ -202,6 +202,7 @@ public class SettlementDAO {
         }
 
         String selectSql = "SELECT payment_id, status, updated_at FROM SettlementPayments WHERE trip_id = ? AND from_user_id = ? AND to_user_id = ?";
+        // AUDIT: Financial settlement payments must record real wall clock time
         String insertSql = "INSERT INTO SettlementPayments (trip_id, from_user_id, to_user_id, amount, status, updated_at) VALUES (?, ?, ?, ?, 'PENDING', SYSDATETIME())";
 
         try (Connection conn = DBContext.getConnection()) {
@@ -239,12 +240,43 @@ public class SettlementDAO {
         }
     }
 
+    public SettlementTransfer findPaymentById(int paymentId) {
+        String sql = "SELECT p.payment_id, p.trip_id, p.from_user_id, fu.full_name AS from_name, "
+                   + "       p.to_user_id, tu.full_name AS to_name, p.amount, p.status, p.updated_at "
+                   + "FROM SettlementPayments p "
+                   + "LEFT JOIN Users fu ON fu.user_id = p.from_user_id "
+                   + "LEFT JOIN Users tu ON tu.user_id = p.to_user_id "
+                   + "WHERE p.payment_id = ?";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, paymentId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    SettlementTransfer t = new SettlementTransfer();
+                    t.setPaymentId(rs.getInt("payment_id"));
+                    t.setFromMemberId(rs.getInt("from_user_id"));
+                    t.setFromMemberName(rs.getString("from_name"));
+                    t.setToMemberId(rs.getInt("to_user_id"));
+                    t.setToMemberName(rs.getString("to_name"));
+                    t.setAmount(rs.getBigDecimal("amount"));
+                    t.setStatus(rs.getString("status"));
+                    t.setUpdatedAt(rs.getTimestamp("updated_at"));
+                    return t;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Unable to find settlement payment.", e);
+        }
+        return null;
+    }
+
     public boolean updatePaymentStatus(int paymentId, int tripId, int actingUserId, String newStatus) {
         if (!"PENDING".equalsIgnoreCase(newStatus) && !"SENT".equalsIgnoreCase(newStatus) && !"CONFIRMED".equalsIgnoreCase(newStatus)) {
             return false;
         }
 
-        String sql = "UPDATE SettlementPayments SET status = ?, updated_at = SYSDATETIME() "
+        /* AUDIT: Settlement payment update must record real wall clock time */ String sql = "UPDATE SettlementPayments SET status = ?, updated_at = SYSDATETIME() "
                    + "WHERE payment_id = ? AND trip_id = ? "
                    + "AND (from_user_id = ? OR to_user_id = ? OR EXISTS (SELECT 1 FROM Trips WHERE trip_id = ? AND owner_id = ?))";
 

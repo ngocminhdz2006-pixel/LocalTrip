@@ -141,7 +141,7 @@ public class TravelFeatureDAO {
         catch(SQLException e){throw failure("Unable to submit report.",e);}
     }
     public void deleteOwnPost(int postId,int userId) {
-        try(Connection c=DBContext.getConnection();PreparedStatement ps=c.prepareStatement("UPDATE dbo.Posts SET is_deleted=1,updated_at=SYSDATETIME() WHERE post_id=? AND user_id=?")){ps.setInt(1,postId);ps.setInt(2,userId);if(ps.executeUpdate()==0)throw new IllegalArgumentException("You can only delete your own posts.");}
+        /* AUDIT: Soft-delete timestamp must record real wall clock time */ try(Connection c=DBContext.getConnection();PreparedStatement ps=c.prepareStatement("UPDATE dbo.Posts SET is_deleted=1,updated_at=SYSDATETIME() WHERE post_id=? AND user_id=?")){ps.setInt(1,postId);ps.setInt(2,userId);if(ps.executeUpdate()==0)throw new IllegalArgumentException("You can only delete your own posts.");}
         catch(SQLException e){throw failure("Unable to delete post.",e);}
     }
 
@@ -169,13 +169,25 @@ public class TravelFeatureDAO {
     public void sendFriendRequest(int from,int to) {
         if(from==to)throw new IllegalArgumentException("You cannot friend yourself.");
         try(Connection c=DBContext.getConnection()) {if(areFriends(c,from,to))throw new IllegalArgumentException("You are already friends.");
-            try(PreparedStatement q=c.prepareStatement("SELECT friendship_id,status,requester_id FROM dbo.Friendships WHERE (requester_id=? AND addressee_id=?) OR (requester_id=? AND addressee_id=?)")){q.setInt(1,from);q.setInt(2,to);q.setInt(3,to);q.setInt(4,from);try(ResultSet rs=q.executeQuery()){if(rs.next()){String status=rs.getString("status");int requester=rs.getInt("requester_id");if("PENDING".equals(status)&&requester==to){try(PreparedStatement u=c.prepareStatement("UPDATE dbo.Friendships SET status='ACCEPTED',updated_at=SYSDATETIME() WHERE friendship_id=?")){u.setInt(1,rs.getInt("friendship_id"));u.executeUpdate();}return;}throw new IllegalArgumentException("Friend request already exists or was processed.");}}}
+            try(PreparedStatement q=c.prepareStatement("SELECT friendship_id,status,requester_id FROM dbo.Friendships WHERE (requester_id=? AND addressee_id=?) OR (requester_id=? AND addressee_id=?)")){q.setInt(1,from);q.setInt(2,to);q.setInt(3,to);q.setInt(4,from);try(ResultSet rs=q.executeQuery()){if(rs.next()){String status=rs.getString("status");int requester=rs.getInt("requester_id");if("PENDING".equals(status)&&requester==to){/* AUDIT: Friendship acceptance must record real wall clock time */ try(PreparedStatement u=c.prepareStatement("UPDATE dbo.Friendships SET status='ACCEPTED',updated_at=SYSDATETIME() WHERE friendship_id=?")){u.setInt(1,rs.getInt("friendship_id"));u.executeUpdate();}return;}throw new IllegalArgumentException("Friend request already exists or was processed.");}}}
             try(PreparedStatement i=c.prepareStatement("INSERT dbo.Friendships(requester_id,addressee_id,status) VALUES(?,?,'PENDING')")){i.setInt(1,from);i.setInt(2,to);i.executeUpdate();}
         }catch(SQLException e){throw failure("Unable to send friend request.",e);}
     }
 
+    public int findRequesterId(int friendshipId, int addresseeId) {
+        String sql = "SELECT requester_id FROM dbo.Friendships WHERE friendship_id=? AND addressee_id=? AND status='PENDING'";
+        try (Connection c = DBContext.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, friendshipId);
+            ps.setInt(2, addresseeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException ignored) {}
+        return 0;
+    }
+
     public void respondFriendRequest(int friendshipId,int userId,boolean accept) {
-        String sql="UPDATE dbo.Friendships SET status=?,updated_at=SYSDATETIME() WHERE friendship_id=? AND addressee_id=? AND status='PENDING'";
+        /* AUDIT: Friendship status update must record real wall clock time */ String sql="UPDATE dbo.Friendships SET status=?,updated_at=SYSDATETIME() WHERE friendship_id=? AND addressee_id=? AND status='PENDING'";
         try(Connection c=DBContext.getConnection();PreparedStatement ps=c.prepareStatement(sql)){ps.setString(1,accept?"ACCEPTED":"DECLINED");ps.setInt(2,friendshipId);ps.setInt(3,userId);if(ps.executeUpdate()==0)throw new IllegalArgumentException("Invalid friend request or already processed.");}
         catch(SQLException e){throw failure("Unable to process friend request.",e);}
     }
@@ -368,8 +380,8 @@ public class TravelFeatureDAO {
             try {
                 try(PreparedStatement q=c.prepareStatement("SELECT latitude,longitude FROM dbo.Places WHERE place_id=? AND is_active=1")){q.setInt(1,placeId);try(ResultSet rs=q.executeQuery()){if(!rs.next())throw new IllegalArgumentException("Place does not exist.");if(rs.getBigDecimal(1)==null||rs.getBigDecimal(2)==null)throw new IllegalArgumentException("Place does not have GPS coordinates yet.");double actualDistance=haversineMeters(lat,lng,rs.getDouble(1),rs.getDouble(2));if(actualDistance>200.0)throw new IllegalArgumentException("You are outside the check-in range (200 m). Estimated distance: "+Math.round(actualDistance)+" m.");distance=actualDistance;}}
                 if(tripId!=null){try(PreparedStatement q=c.prepareStatement("SELECT 1 FROM dbo.Trips t LEFT JOIN dbo.TripMembers tm ON tm.trip_id=t.trip_id AND tm.user_id=? WHERE t.trip_id=? AND (t.owner_id=? OR tm.user_id IS NOT NULL)")){q.setInt(1,userId);checkInTripMember(q,userId,tripId);}}
-                int id;String sql="INSERT dbo.CheckIns(user_id,place_id,trip_id,latitude,longitude,distance_meters,verification_method,status,has_photo,note) VALUES(?,?,?,?,?,?, 'GPS','VERIFIED',?,?)";
-                try(PreparedStatement ps=c.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS)){ps.setInt(1,userId);ps.setInt(2,placeId);if(tripId==null)ps.setNull(3,java.sql.Types.INTEGER);else ps.setInt(3,tripId);ps.setDouble(4,lat);ps.setDouble(5,lng);ps.setDouble(6,distance);ps.setBoolean(7,photo!=null);if(note==null||note.trim().isEmpty())ps.setNull(8,java.sql.Types.NVARCHAR);else ps.setString(8,note.trim().substring(0,Math.min(500,note.trim().length())));ps.executeUpdate();try(ResultSet rs=ps.getGeneratedKeys()){rs.next();id=rs.getInt(1);}}
+                int id;String sql="INSERT dbo.CheckIns(user_id,place_id,trip_id,checkin_time,latitude,longitude,distance_meters,verification_method,status,has_photo,note) VALUES(?,?,?,?,?,?,?, 'GPS','VERIFIED',?,?)";
+                try(PreparedStatement ps=c.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS)){ps.setInt(1,userId);ps.setInt(2,placeId);if(tripId==null)ps.setNull(3,java.sql.Types.INTEGER);else ps.setInt(3,tripId);ps.setTimestamp(4,utils.AppClock.nowTimestamp());ps.setDouble(5,lat);ps.setDouble(6,lng);ps.setDouble(7,distance);ps.setBoolean(8,photo!=null);if(note==null||note.trim().isEmpty())ps.setNull(9,java.sql.Types.NVARCHAR);else ps.setString(9,note.trim().substring(0,Math.min(500,note.trim().length())));ps.executeUpdate();try(ResultSet rs=ps.getGeneratedKeys()){rs.next();id=rs.getInt(1);}}
                 if(photo!=null)try(PreparedStatement image=c.prepareStatement("INSERT dbo.CheckInImages(checkin_id,stored_name,original_name,content_type) VALUES(?,?,?,?)")){image.setInt(1,id);image.setString(2,photo.storedName);image.setString(3,photo.originalName);image.setString(4,photo.contentType);image.executeUpdate();}
                 awardEligibleBadges(c,userId);c.commit();return id;
             }catch(Exception e){c.rollback();if(e instanceof SQLException)throw (SQLException)e;if(e instanceof RuntimeException)throw (RuntimeException)e;throw new RuntimeException(e);}finally{c.setAutoCommit(true);}
@@ -412,7 +424,7 @@ public class TravelFeatureDAO {
     }
     public void setPassportVisibility(int userId,String visibility) {
         if(!"PRIVATE".equals(visibility)&&!"PUBLIC".equals(visibility))throw new IllegalArgumentException("Invalid passport visibility.");
-        String sql="IF EXISTS(SELECT 1 FROM dbo.TravelPassportSettings WHERE user_id=?) UPDATE dbo.TravelPassportSettings SET visibility=?,updated_at=SYSDATETIME() WHERE user_id=? ELSE INSERT dbo.TravelPassportSettings(user_id,visibility) VALUES(?,?)";
+        /* AUDIT: Passport settings update must record real wall clock time */ String sql="IF EXISTS(SELECT 1 FROM dbo.TravelPassportSettings WHERE user_id=?) UPDATE dbo.TravelPassportSettings SET visibility=?,updated_at=SYSDATETIME() WHERE user_id=? ELSE INSERT dbo.TravelPassportSettings(user_id,visibility) VALUES(?,?)";
         try(Connection c=DBContext.getConnection();PreparedStatement ps=c.prepareStatement(sql)){ps.setInt(1,userId);ps.setString(2,visibility);ps.setInt(3,userId);ps.setInt(4,userId);ps.setString(5,visibility);ps.executeUpdate();}
         catch(SQLException e){throw failure("Unable to update passport visibility.",e);}
     }

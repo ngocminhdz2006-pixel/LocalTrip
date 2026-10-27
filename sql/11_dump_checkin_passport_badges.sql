@@ -1,4 +1,4 @@
-/* LocalTrip social Dump, GPS Check-in, Travel Passport and Badges.
+﻿/* LocalTrip social Dump, GPS Check-in, Travel Passport and Badges.
    Run once in SQL Server Management Studio while connected to LocalTripDB. */
 USE LocalTripDB;
 GO

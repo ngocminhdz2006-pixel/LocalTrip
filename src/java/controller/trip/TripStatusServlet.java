@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import model.Trip;
 import model.User;
+import utils.NotificationService;
 
 @WebServlet("/trip/status")
 public class TripStatusServlet extends HttpServlet {
@@ -46,8 +47,8 @@ public class TripStatusServlet extends HttpServlet {
             return;
         }
 
-        String token = request.getParameter("statusToken");
-        Object expectedToken = session.getAttribute("tripStatusToken");
+        String token = request.getParameter("csrfToken");
+        Object expectedToken = session.getAttribute("travelCsrf");
 
         if (token == null || !token.equals(expectedToken)) {
             response.sendError(
@@ -86,11 +87,7 @@ public class TripStatusServlet extends HttpServlet {
 
             String newStatus = request.getParameter("status");
 
-            Date today = Date.valueOf(
-                    LocalDate.now(
-                            ZoneId.of("Asia/Ho_Chi_Minh")
-                    )
-            );
+            Date today = utils.AppClock.todaySql();
 
             boolean updated = statusDAO.changeStatus(
                     tripId,
@@ -105,6 +102,17 @@ public class TripStatusServlet extends HttpServlet {
                         "successMessage",
                         "Trip status updated successfully."
                 );
+
+                String statusLabel = "updated";
+                if ("ONGOING".equalsIgnoreCase(newStatus)) {
+                    statusLabel = "started";
+                } else if ("COMPLETED".equalsIgnoreCase(newStatus)) {
+                    statusLabel = "completed";
+                } else if ("CANCELLED".equalsIgnoreCase(newStatus)) {
+                    statusLabel = "cancelled";
+                }
+                String message = "Trip \"" + trip.getName() + "\" has been " + statusLabel + ".";
+                NotificationService.notifyTripMembers(tripId, user.getUserId(), "TRIP_STATUS", tripId, message);
             } else {
                 session.setAttribute(
                         "errorMessage",

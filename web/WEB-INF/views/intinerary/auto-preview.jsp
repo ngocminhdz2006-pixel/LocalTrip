@@ -224,8 +224,8 @@
                value="${trip.id}">
 
         <input type="hidden"
-               name="autoToken"
-               value="<c:out value='${sessionScope.autoItineraryToken}'/>">
+               name="csrfToken"
+               value="<c:out value='${sessionScope.travelCsrf}'/>">
 
         <input type="hidden"
                name="draftToken"
